@@ -1,1 +1,7 @@
 this should be pretty secure
+
+build instructions:
+
+meson build
+cd ./build
+ninja

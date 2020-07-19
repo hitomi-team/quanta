@@ -1,0 +1,1 @@
+option('enable_debug', type : 'boolean', value : false, description : 'Enables debugging features.')
