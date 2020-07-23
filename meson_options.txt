@@ -1,1 +1,3 @@
 option('enable_debug', type : 'boolean', value : false, description : 'Enables debugging features.')
+option('opengl', type : 'boolean', value : true, description : 'Enables debugging features.')
+option('d3d11', type : 'boolean', value : false, description : 'Enables debugging features.')
