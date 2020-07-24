@@ -19,8 +19,25 @@ if target_machine.system() == 'windows'
 	lib_path 	= meson.source_root() + '/lib/win64release'
 	lib_sdl2	= compiler.find_library('SDL2', dirs : lib_path)
 	lib_sdl2main	= compiler.find_library('SDL2main', dirs : lib_path)
+
+	if get_option('d3d11') == true
+		lib_d3d11	= compiler.find_library('d3d11', dirs : lib_path)
+		lib_dxgi	= compiler.find_library('dxgi', dirs : lib_path)
+	elif get_option('opengl') == true
+		lib_gl		= compiler.find_library('opengl32')
+		lib_glew	= compiler.find_library('glew32s', dirs : lib_path)
+	endif
+
 else # linux
-	error('Will support Linux later..')
+	lib_sdl2	= compiler.find_library('SDL2')
+	lib_sdl2main	= compiler.find_library('SDL2main')
+	
+	if get_option('opengl') == true
+		lib_gl   = compiler.find_library('GL')
+		lib_glew = compiler.find_library('GLEW')
+	endif
+	# TODO: Vulkan support?
+
 endif
 
 binary = executable('quanta', src, dependencies : [lib_sdl2, lib_sdl2main], include_directories : [inc_directory])
