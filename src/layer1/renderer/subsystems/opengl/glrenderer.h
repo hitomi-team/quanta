@@ -2,21 +2,26 @@
 #define GL_RENDERIMP_H
 
 #include "../required.h"
+#include "../null/nullrenderer.h"
 
+#include <GL/glew.h>
 #include <glm/glm.hpp>
 #include <glm/gtc/type_ptr.hpp>
 
 namespace Renderer {
 
-	class GLRenderer {
+	class GLRenderer : public NullRendererImp {
 	public:
 		GLRenderer();
-		virtual ~GLRenderer() {}
+		~GLRenderer() {}
 		
-		virtual bool SetGraphicsMode(int width, int height, bool fullscreen, bool borderless, bool resizable, bool vsync, bool triplebuffer, int multisample) { return true; }
-		virtual bool BeginFrame() { return true; };
-		virtual void EndFrame() { };
-		virtual void Clear(unsigned flags, const glm::vec4& color = glm::vec4(0.0f, 0.0f, 0.0f, 0.0f), float depth = 1.0f, unsigned stencil = 0) { };
+		bool SetGraphicsMode(int width, int height, bool fullscreen, bool borderless, bool resizable, bool vsync, bool triplebuffer, int multisample);
+		void Clear(unsigned flags, const glm::vec4& color = glm::vec4(0.0f, 0.0f, 0.0f, 0.0f), float depth = 1.0f, unsigned stencil = 0);
+
+// TO BE IMPLEMENTED
+/*
+		bool BeginFrame() { return true; };
+		void EndFrame() { };
 
 		virtual bool IsInitialized() { return true; }
 
@@ -87,6 +92,12 @@ namespace Renderer {
 		virtual void ClearParameterSources() { };
 		virtual void ClearTransformSources() { };
 		virtual void CleanupShaderPrograms(Shader* variation) { };
+*/
+	private:
+		SDL_Window *window;
+		SDL_DisplayMode display;
+		SDL_GLContext context;
+		
 	};
 
 }

@@ -40,4 +40,4 @@ else # linux
 
 endif
 
-binary = executable('quanta', src, dependencies : [lib_sdl2, lib_sdl2main], include_directories : [inc_directory])
+binary = executable('quanta', src, dependencies : [lib_sdl2, lib_sdl2main, lib_gl, lib_glew], include_directories : [inc_directory])
