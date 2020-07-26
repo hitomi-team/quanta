@@ -1,3 +1,5 @@
 subdir('subsystems')
 
-renderer_src = subsystem_src
+renderer_src = files([
+	'runtime.cpp'
+]) + subsystem_src

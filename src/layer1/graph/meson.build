@@ -1,3 +1,4 @@
 graph_src = files([
-	'node.cpp'
+	'node.cpp',
+	'game.cpp'
 ])

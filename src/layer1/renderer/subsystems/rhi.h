@@ -89,6 +89,8 @@ namespace Renderer {
 		virtual void ClearParameterSources() { };
 		virtual void ClearTransformSources() { };
 		virtual void CleanupShaderPrograms(Shader* variation) { };
+
+		virtual SDL_Window *GetWindow() { return nullptr; }
 	};
 
 }

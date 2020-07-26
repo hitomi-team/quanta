@@ -92,6 +92,8 @@ namespace Renderer {
 //		void ClearTransformSources() { };
 //		void CleanupShaderPrograms(Shader* variation) { };
 
+		SDL_Window *GetWindow() { return window; }
+
 	private:
 		SDL_Window *window;
 		SDL_DisplayMode display;

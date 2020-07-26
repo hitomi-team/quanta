@@ -5,8 +5,10 @@
 #include <string>
 #include <vector>
 
-#include "defs.h"
-#include "../runtime.h"
+#define SDL_MAIN_HANDLED
+#include <SDL2/SDL.h>
+
+#include "../defs.h"
 #include "../gpuresource.h"
 #include "../indexbuffer.h"
 #include "../inputlayout.h"

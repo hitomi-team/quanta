@@ -2,12 +2,19 @@
 #include <stdio.h>
 
 #include "renderer/subsystems/opengl/glrenderer.h"
-#include "renderer/subsystems/rhi.h"
+#include "renderer/runtime.h"
+#include "graph/game.h"
 
 int main()
 {
-	Renderer::RHI *rhi = new Renderer::GLRenderer;
+	// Setup render service
+	Renderer::GLRenderer *glrenderer = new Renderer::GLRenderer;
+	Renderer::Runtime renderer;
+	renderer.SetRenderer(glrenderer);
 
-	rhi->SetGraphicsMode(WINDOW_DEFAULT_WIDTH, WINDOW_DEFAULT_HEIGHT, true, false, false, false, 0);
-	SDL_Delay(1000);
+	Graph::Game game;
+	game.registerService(&renderer);
+	game.Run();
+
+	delete glrenderer;
 }
