@@ -1,15 +1,18 @@
-#ifndef GRAPHICS_RENDERER_H
-#define GRAPHICS_RENDERER_H
+#ifndef RENDERER_RUNTIME_H
+#define RENDERER_RUNTIME_H
+
+#define SDL_MAIN_HANDLED
+#include <SDL2/SDL.h>
 
 #include "../graph/node.h"
 
-namespace Graphics {
+namespace Renderer {
 
 	// TODO: Write interface to use D3D and OpenGL renderer subsystems
 
-	class Renderer : public Node {
+	class Runtime : public Graph::Node {
 	public:
-		Renderer() {  }
+		Runtime() : Node("RendererService") {  }
 	};
 
 }
