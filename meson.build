@@ -11,6 +11,7 @@ else
 endif
 
 # get source files
+subdir('tools')
 subdir('src')
 src = layer1_src
 
