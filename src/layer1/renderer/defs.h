@@ -176,7 +176,7 @@ namespace Renderer {
 	enum ShaderType
 	{
 		VS = 0,
-		PS,
+		FS,
 		GS
 	};
 

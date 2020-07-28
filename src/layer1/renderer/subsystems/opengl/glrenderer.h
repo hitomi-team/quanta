@@ -20,10 +20,10 @@ namespace Renderer {
 
 // TO BE IMPLEMENTED
 
-//		bool BeginFrame() { return true; };
-//		void EndFrame() { };
+		bool BeginFrame(); // true = continue rendering, false = dont render
+		void EndFrame();
 
-//		bool IsInitialized() { return true; }
+		bool IsInitialized();
 
 
 //		glm::vec2 GetRenderTargetDimensions() const { return glm::vec2(0, 0); }
@@ -42,7 +42,7 @@ namespace Renderer {
 
 //		void ResetCache() { };
 
-//		bool IsDeviceLost() const { return false; } //Always false on Direct3D
+		bool IsDeviceLost();
 
 
 //		VertexBuffer* CreateVertexBuffer() { return 0; }
@@ -50,7 +50,7 @@ namespace Renderer {
 //		InputLayout* CreateInputLayout(Shader* vertexShader, VertexBuffer** buffers, unsigned* elementMasks) { return 0; }
 
 		
-//		void SetShaders(std::string vs, std::string fs) { };
+		void SetShaders(Shader shader);
 //		void SetShaderParameter(unsigned param, const float* data, unsigned count) { }
 //		void SetShaderParameter(unsigned param, float value) { };
 //		void SetShaderParameter(unsigned param, bool value) { };
@@ -71,7 +71,7 @@ namespace Renderer {
 		void SetCullMode(CullMode mode);
 		void SetDepthBias(float constantBias, float slopeScaledBias);
 		void SetDepthTest(CompareMode mode);
-//		void SetDepthWrite(bool enable) { };
+		void SetDepthWrite(bool enable);
 		void SetFillMode(FillMode mode);
 //		void SetScissorTest(bool enable, const glm::vec2& rect) { };
 //		void SetStencilTest(bool enable, CompareMode mode = CMP_ALWAYS, StencilOp pass = OP_KEEP, StencilOp fail = OP_KEEP, StencilOp zFail = OP_KEEP, unsigned stencilRef = 0, unsigned compareMask = UINT32_MAX, unsigned writeMask = UINT32_MAX) { };	
@@ -98,7 +98,7 @@ namespace Renderer {
 		SDL_Window *window;
 		SDL_DisplayMode display;
 		SDL_GLContext context;
-		
+		bool isInitialized;
 	};
 
 }

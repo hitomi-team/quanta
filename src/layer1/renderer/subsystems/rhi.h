@@ -20,7 +20,7 @@ namespace Renderer {
 		virtual void EndFrame() { };
 		virtual void Clear(unsigned flags, const glm::vec4& color = glm::vec4(0.0f, 0.0f, 0.0f, 0.0f), float depth = 1.0f, unsigned stencil = 0) { };
 
-		virtual bool IsInitialized() { return true; }
+		virtual bool IsInitialized() { return isInitialized; }
 
 
 		virtual glm::vec2 GetRenderTargetDimensions() const { return glm::vec2(0, 0); }
@@ -91,6 +91,9 @@ namespace Renderer {
 		virtual void CleanupShaderPrograms(Shader* variation) { };
 
 		virtual SDL_Window *GetWindow() { return nullptr; }
+
+	protected:
+		bool isInitialized;
 	};
 
 }

@@ -9,8 +9,6 @@
 
 namespace Renderer {
 
-	// TODO: Write interface to use D3D and OpenGL renderer subsystems
-
 	class Runtime : public Graph::Service {
 	public:
 		Runtime();

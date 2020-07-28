@@ -167,6 +167,8 @@ namespace Renderer {
 		Clear(CLEAR_COLOR);
 		SDL_GL_SwapWindow(window);
 
+		isInitialized = true;
+
 		return true;
 	}
 
@@ -189,6 +191,27 @@ namespace Renderer {
 		glClear(glFlags);
 	}
 
+	bool GLRenderer::BeginFrame()
+	{
+		if (SDL_GetWindowFlags(window) & SDL_WINDOW_MINIMIZED)
+			return false;
+
+		SetColorWrite(true);
+		SetDepthWrite(true);
+
+		return true;
+	}
+
+	void GLRenderer::EndFrame()
+	{
+		SDL_GL_SwapWindow(window);
+	}
+
+	bool GLRenderer::IsInitialized()
+	{
+		return isInitialized;
+	}
+
 	void GLRenderer::Close()
 	{
 		if (!window)
@@ -204,6 +227,24 @@ namespace Renderer {
 		window = nullptr;
 
 		SDL_Quit();
+
+		isInitialized = false;
+	}
+
+	bool GLRenderer::IsDeviceLost()
+	{
+		return context == 0;
+	}
+
+	void SetShaders(Shader shader)
+	{
+		GLuint shaderprogram = *(GLuint *)shader.GetProgram();
+
+		if (!glIsProgram(shaderprogram)) {
+			return;
+		} else {
+			glUseProgram(shaderprogram);
+		}
 	}
 
 	void GLRenderer::SetBlendMode(BlendMode mode)
@@ -250,6 +291,11 @@ namespace Renderer {
 	void GLRenderer::SetDepthTest(CompareMode mode)
 	{
 		glDepthFunc(glCmpFunc[mode]);
+	}
+
+	void GLRenderer::SetDepthWrite(bool enable)
+	{
+		glDepthMask(enable ? GL_TRUE : GL_FALSE);
 	}
 
 	void GLRenderer::SetFillMode(FillMode mode)

@@ -13,7 +13,7 @@ int main()
 	Filesystem::Runtime filesystem;
 
 	// Setup render service
-	Renderer::GLRenderer *glrenderer = new Renderer::GLRenderer;
+	Renderer::GLRenderer glrenderer;
 	Renderer::Runtime renderer;
 	renderer.SetRenderer(glrenderer);
 
@@ -21,6 +21,4 @@ int main()
 	game.registerService(&filesystem);
 	game.registerService(&renderer);
 	game.Run();
-
-	delete glrenderer;
 }

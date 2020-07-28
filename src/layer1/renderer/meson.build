@@ -1,5 +1,6 @@
 subdir('subsystems')
 
 renderer_src = files([
-	'runtime.cpp'
+	'runtime.cpp',
+	'shader.cpp'
 ]) + subsystem_src
