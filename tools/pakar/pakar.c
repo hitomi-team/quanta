@@ -503,7 +503,7 @@ int pakar_op_create(const char *path, int argc, char **argv)
 	char stream_buf[512], holder[4096];
 	FILE *index_fp, *chunk_fp, *entry_fp;
 	struct file_info *fi;
-	uint64_t offset, size;
+	uint64_t offset;
 	int retcode;
 
 	struct file_entry *fe_head, *fe_tmp;
@@ -601,7 +601,6 @@ int pakar_op_create(const char *path, int argc, char **argv)
 			serialize_stream_seek(&stream, 0, SERIALIZE_STREAM_SEEK_BEGIN);
 			fflush(chunk_fp);
 
-			size = 0;
 			offset = 0;
 		}
 
@@ -611,14 +610,13 @@ int pakar_op_create(const char *path, int argc, char **argv)
 		if ((entry_fp = fopen(fe_tmp->path, "rb")) == NULL)
 			continue;
 
-		size += fe_tmp->entry.size > sizeof(holder) ? fe_tmp->entry.size : sizeof(holder);
 		fe_tmp->entry.offset = offset;
-		offset = size;
 
 		do {
 			memset(holder, 0, sizeof(holder));
 			fread(holder, 1, sizeof(holder), entry_fp);
 			fwrite(holder, 1, sizeof(holder), chunk_fp);
+			offset += sizeof(holder);
 		} while (feof(entry_fp) == 0 && ferror(entry_fp) == 0);
 
 		fclose(entry_fp);
