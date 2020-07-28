@@ -50,7 +50,7 @@ struct pakar_index_entry {
 	uint8_t type;
 
 	/* path */
-	uint8_t path[260];
+	char path[260];
 };
 
 enum {

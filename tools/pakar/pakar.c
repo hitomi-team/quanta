@@ -106,7 +106,7 @@ static inline void conv_filetime_to_u64_ms(const FILETIME *ft, uint64_t *out)
 	tmp = (int64_t)ft->dwHighDateTime << 32;
 	tmp |= ft->dwLowDateTime;
 	tmp -= 116444736000000000LL;
-	tmp /= 10000LL;
+	tmp /= 10000000LL;
 
 	(*out) = tmp;
 }
@@ -525,7 +525,7 @@ int pakar_op_create(const char *path, int argc, char **argv)
 
 	index_header.begin = 0x3F212A7C;
 	index_header.version = PAKAR_VERSION;
-	index_header.num_files = num_fi;
+	index_header.num_files = num_fi - 1;
 	index_header.num_chunks = 1;
 	index_header.size = fi_total_size;
 	memset(index_header.sha256, 0, sizeof(index_header.sha256));
