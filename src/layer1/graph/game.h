@@ -27,6 +27,8 @@ namespace Graph {
 		bool shouldClose;
 	};
 
+	extern bool _game_shouldClose; // Global var used externally by other services to close the game
+
 }
 
 #endif

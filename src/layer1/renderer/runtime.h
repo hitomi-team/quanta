@@ -4,7 +4,7 @@
 #define SDL_MAIN_HANDLED
 #include <SDL2/SDL.h>
 
-#include "../graph/service.h"
+#include "../graph/game.h"
 #include "subsystems/rhi.h"
 
 namespace Renderer {

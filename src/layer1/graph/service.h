@@ -8,6 +8,7 @@ namespace Graph {
 	class Service : public Node {
 	public:
 		Service(std::string name) : Node(name) { Initialized = false; }
+		virtual ~Service() {  }
 
 		virtual bool Setup() { Initialized = true; return true; }   // True = success, False = failed
 		virtual bool Update() { return true; }  // True = success, False = failed

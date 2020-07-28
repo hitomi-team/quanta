@@ -59,7 +59,7 @@ namespace Graph {
 	{
 		setupServices();
 
-		while (!shouldClose)
+		while (!shouldClose && !_game_shouldClose)
 			runServices();
 		
 		for (auto &i : this->Services)
@@ -70,5 +70,7 @@ namespace Graph {
 	{
 		shouldClose = true;
 	}
+
+	bool _game_shouldClose;
 
 }
