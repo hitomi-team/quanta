@@ -128,7 +128,7 @@ int change_dir(const char *str)
 
 static inline void conv_timespec_to_u64_ms(const struct timespec *ts, uint64_t *out)
 {
-	(*out) = (uint64_t)ts->tv_sec*1000ULL + (uint64_t)ts->tv_nsec/1000000ULL;
+	(*out) = (uint64_t)ts->tv_sec + (uint64_t)ts->tv_nsec/1000000000ULL;
 }
 
 #define change_dir chdir
@@ -504,7 +504,7 @@ int pakar_op_create(const char *path, int argc, char **argv)
 	FILE *index_fp, *chunk_fp, *entry_fp;
 	struct file_info *fi;
 	uint64_t offset, size;
-	int retcode, topmost;
+	int retcode;
 
 	struct file_entry *fe_head, *fe_tmp;
 
@@ -525,7 +525,7 @@ int pakar_op_create(const char *path, int argc, char **argv)
 
 	index_header.begin = 0x3F212A7C;
 	index_header.version = PAKAR_VERSION;
-	index_header.num_files = num_fi - 1;
+	index_header.num_files = num_fi;
 	index_header.num_chunks = 1;
 	index_header.size = fi_total_size;
 	memset(index_header.sha256, 0, sizeof(index_header.sha256));
@@ -549,14 +549,9 @@ int pakar_op_create(const char *path, int argc, char **argv)
 	}
 
 	/* directory processing */
-	for (topmost = 0, fi = fi_head; fi != NULL; fi = fi->next) {
+	for (fi = fi_head; fi != NULL; fi = fi->next) {
 		if (fi->type != FILE_INFO_DIR)
 			continue;
-
-		if (strcmp(fi->path, path) == 0 && topmost == 0) {
-			topmost = 1;
-			continue;
-		}
 
 		fe_tmp = malloc(sizeof(struct file_entry));
 		fe_tmp->entry.crc32 = 0xDEADBEEF;
@@ -564,8 +559,16 @@ int pakar_op_create(const char *path, int argc, char **argv)
 		fe_tmp->entry.size = 0;
 		fe_tmp->entry.offset = 0xFFFFFFFFFFFFFFFF;
 		fe_tmp->entry.type = fi->type;
-		fe_tmp->path = fi->path;
-		strncpy((char *)fe_tmp->entry.path, fi->path + strlen(path), sizeof(fe_tmp->entry.path));
+
+		// hardcode root path for the pak
+		if (strcmp(fi->path, path) == 0) {
+			fe_tmp->path = NULL;
+			strcpy(fe_tmp->entry.path, "/");
+		} else {
+			fe_tmp->path = fi->path;
+			strncpy((char *)fe_tmp->entry.path, fi->path + strlen(path), sizeof(fe_tmp->entry.path));
+		}
+
 
 		fe_tmp->next = fe_head;
 		fe_head = fe_tmp;
@@ -602,6 +605,9 @@ int pakar_op_create(const char *path, int argc, char **argv)
 			offset = 0;
 		}
 
+		if (fe_tmp->path == NULL)
+			continue;
+
 		if ((entry_fp = fopen(fe_tmp->path, "rb")) == NULL)
 			continue;
 
@@ -628,7 +634,6 @@ int pakar_op_create(const char *path, int argc, char **argv)
 	serialize_stream_seek(&stream, 0, SERIALIZE_STREAM_SEEK_BEGIN);
 
 	for (fe_tmp = fe_head; fe_tmp != NULL; fe_tmp = fe_tmp->next) {
-		printf("%s\n", fe_tmp->path);
 		serialize_stream_write_pakar_index_entry(&stream, &fe_tmp->entry);
 		fwrite(stream.data, 1, stream.offset, index_fp);
 		serialize_stream_seek(&stream, 0, SERIALIZE_STREAM_SEEK_BEGIN);
