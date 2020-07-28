@@ -5,8 +5,8 @@
 #include <stdint.h>
 
 struct serialize_stream {
-	uint64_t offset;
-	uint64_t size;
+	size_t offset;
+	size_t size;
 	uint8_t *data;
 };
 
@@ -16,10 +16,10 @@ enum {
 	SERIALIZE_STREAM_SEEK_CURRENT
 };
 
-void serialize_stream_init(struct serialize_stream *stream, void *ptr, uint64_t size);
+void serialize_stream_init(struct serialize_stream *stream, void *ptr, size_t size);
 void serialize_stream_reset(struct serialize_stream *stream);
 
-void serialize_stream_seek(struct serialize_stream *stream, uint64_t offset, int whence);
+void serialize_stream_seek(struct serialize_stream *stream, size_t offset, int whence);
 
 void serialize_stream_read_u8(struct serialize_stream *stream, uint8_t *p);
 void serialize_stream_read_u32(struct serialize_stream *stream, uint32_t *p);
