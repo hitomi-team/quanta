@@ -4,6 +4,7 @@
 #define SDL_MAIN_HANDLED
 #include <SDL2/SDL.h>
 
+#include "imgui/imgui_impl_sdl.h"
 #include "../graph/game.h"
 #include "subsystems/rhi.h"
 
@@ -20,6 +21,8 @@ namespace Renderer {
 
 		void SetRenderer(RHI *rhi);
 	
+		void __debug_menu();
+
 	private:
 		RHI *rhi;
 	};

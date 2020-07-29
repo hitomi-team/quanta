@@ -1,3 +1,4 @@
+#include <cstdio>
 #include "input.h"
 
 namespace Renderer {
@@ -23,6 +24,7 @@ namespace Renderer {
 	{
 		SDL_Event event;
 		while(SDL_PollEvent(&event)) {
+			ImGui_ImplSDL2_ProcessEvent(&event);
 			switch(event.type) {
 			case SDL_KEYDOWN:
 				keys[event.key.keysym.scancode] = 1;

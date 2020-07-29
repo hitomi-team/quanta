@@ -92,6 +92,9 @@ namespace Renderer {
 
 		virtual SDL_Window *GetWindow() { return nullptr; }
 
+		virtual void ImGuiNewFrame() { }; // Called before ImGui commands
+		virtual void ImGuiEndFrame() { }; // Called after ImGui commands
+
 	protected:
 		bool isInitialized;
 	};

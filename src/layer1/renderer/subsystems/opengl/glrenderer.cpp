@@ -109,7 +109,6 @@ namespace Renderer {
 
 	bool GLRenderer::SetGraphicsMode(int width, int height, bool fullscreen, bool borderless, bool resizable, bool vsync, int multisample)
 	{
-		SDL_GL_SetSwapInterval(vsync ? 1 : 0);
 		SDL_GL_SetAttribute(SDL_GL_DOUBLEBUFFER,1);
 		SDL_GL_SetAttribute(SDL_GL_RED_SIZE, 8);
 		SDL_GL_SetAttribute(SDL_GL_GREEN_SIZE, 8);
@@ -166,6 +165,18 @@ namespace Renderer {
 
 		Clear(CLEAR_COLOR);
 		SDL_GL_SwapWindow(window);
+		SDL_GL_SetSwapInterval(vsync ? 1 : 0);
+
+		// Setup ImGui
+		IMGUI_CHECKVERSION();
+		ImGui::CreateContext();
+		ImGui::GetIO().DisplaySize.x = WINDOW_DEFAULT_WIDTH;
+		ImGui::GetIO().DisplaySize.y = WINDOW_DEFAULT_HEIGHT;
+		ImGui::GetIO().Fonts->AddFontDefault();
+		ImGui::GetIO().Fonts->Build();
+		ImGui::StyleColorsDark();
+		ImGui_ImplSDL2_InitForOpenGL(window, context);
+		ImGui_ImplOpenGL3_Init("#version 130");
 
 		isInitialized = true;
 
@@ -216,6 +227,10 @@ namespace Renderer {
 	{
 		if (!window)
 			return;
+		
+		ImGui_ImplOpenGL3_Shutdown();
+		ImGui_ImplSDL2_Shutdown();
+		ImGui::DestroyContext();
 		
 		if (context)  {
 			SDL_GL_DeleteContext(context);
@@ -319,5 +334,20 @@ namespace Renderer {
 		GetPrimitiveType(vertexCount, type, &primitiveCount, &glPrimitiveType);
 		glDrawArrays(glPrimitiveType, vertexStart, vertexCount);
 	}
+
+	void GLRenderer::ImGuiNewFrame()
+	{
+		ImGui_ImplOpenGL3_NewFrame();
+		ImGui_ImplSDL2_NewFrame(window);
+		ImGui::NewFrame();
+	}
+
+	void GLRenderer::ImGuiEndFrame()
+	{
+		ImGui::End();
+		ImGui::Render();
+		ImGui_ImplOpenGL3_RenderDrawData(ImGui::GetDrawData());
+	}
+
 
 }

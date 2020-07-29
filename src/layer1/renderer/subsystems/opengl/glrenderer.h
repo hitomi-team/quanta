@@ -8,6 +8,9 @@
 #include <glm/glm.hpp>
 #include <glm/gtc/type_ptr.hpp>
 
+#include "../../imgui/imgui_impl_sdl.h"
+#include "imgui_impl_opengl3.h"
+
 namespace Renderer {
 
 	class GLRenderer : public RHI {
@@ -93,6 +96,9 @@ namespace Renderer {
 //		void CleanupShaderPrograms(Shader* variation) { };
 
 		SDL_Window *GetWindow() { return window; }
+		
+		void ImGuiNewFrame();
+		void ImGuiEndFrame();
 
 	private:
 		SDL_Window *window;
