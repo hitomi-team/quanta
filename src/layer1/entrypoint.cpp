@@ -27,7 +27,7 @@ int main()
 	Renderer::Input input;
 
 	Graph::Game game;
-//	game.registerService(&filesystem);
+	game.registerService(&filesystem);
 	game.registerService(&renderer);
 	game.registerService(&input);
 	game.setupServices();
