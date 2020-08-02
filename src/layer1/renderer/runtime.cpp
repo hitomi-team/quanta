@@ -10,7 +10,7 @@ namespace Renderer {
 
 	bool Runtime::Setup()
 	{
-		if (rhi->SetGraphicsMode(WINDOW_DEFAULT_WIDTH, WINDOW_DEFAULT_HEIGHT, false, false, false, true, 4) != false)
+		if (rhi->SetGraphicsMode(WINDOW_DEFAULT_WIDTH, WINDOW_DEFAULT_HEIGHT, false, false, false, false, 4) != false)
 			Initialized = true;
 
 		return Initialized;

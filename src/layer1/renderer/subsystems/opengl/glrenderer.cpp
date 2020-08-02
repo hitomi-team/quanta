@@ -251,6 +251,36 @@ namespace Renderer {
 		return context == 0;
 	}
 
+	VertexBuffer *GLRenderer::CreateVertexBuffer(Vertex *vertices, unsigned count)
+	{
+		if (!vertices)
+			return nullptr;
+
+		GLVertexBuffer *vertexbuffer = new GLVertexBuffer;
+
+		if (!vertexbuffer->SetData(vertices, count)) {
+			delete vertexbuffer;
+			vertexbuffer = nullptr;
+		}
+
+		return vertexbuffer;
+	}
+
+	IndexBuffer* GLRenderer::CreateIndexBuffer(unsigned *indices, unsigned count)
+	{
+		if (!indices)
+			return nullptr;
+
+		GLIndexBuffer *indexbuffer = new GLIndexBuffer;
+
+		if (!indexbuffer->SetData(indices, count)) {
+			delete indexbuffer;
+			indexbuffer = nullptr;
+		}
+
+		return indexbuffer;		
+	}
+
 	void SetShaders(Shader shader)
 	{
 		GLuint shaderprogram = *(GLuint *)shader.GetProgram();

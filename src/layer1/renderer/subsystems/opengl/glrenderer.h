@@ -11,6 +11,10 @@
 #include "../../imgui/imgui_impl_sdl.h"
 #include "imgui_impl_opengl3.h"
 
+#include "glshader.h"
+#include "glvertexbuffer.h"
+#include "glindexbuffer.h"
+
 namespace Renderer {
 
 	class GLRenderer : public RHI {
@@ -48,8 +52,8 @@ namespace Renderer {
 		bool IsDeviceLost();
 
 
-//		VertexBuffer* CreateVertexBuffer() { return 0; }
-//		IndexBuffer* CreateIndexBuffer() { return 0; }
+		VertexBuffer* CreateVertexBuffer(Vertex *vertices, unsigned count);
+		IndexBuffer* CreateIndexBuffer(unsigned *indices, unsigned count);
 //		InputLayout* CreateInputLayout(Shader* vertexShader, VertexBuffer** buffers, unsigned* elementMasks) { return 0; }
 
 		
@@ -63,7 +67,7 @@ namespace Renderer {
 //		void SetShaderParameter(unsigned param, const glm::mat4& matrix) { };
 //		void SetShaderParameter(unsigned param, const glm::vec4& vector) { };
 
-//		void SetVertexBuffer(VertexBuffer* buffer) { };
+//		void SetVertexBuffer(VertexBuffer* buffer);
 //		void SetIndexBuffer(IndexBuffer* buffer) { };
 //		bool SetVertexBuffers(const std::vector<VertexBuffer*>& buffers, const std::vector<unsigned>& elementMasks, unsigned instanceOffset = 0) { return true; };
 
