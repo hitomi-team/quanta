@@ -35,11 +35,8 @@ namespace Filesystem {
 		MeasureStream measure;
 		ReadStream stream;
 
-		// FIXME
 		if (this->Initialized)
 			return true;
-
-		this->Initialized = true;
 
 		stream.data = reinterpret_cast< std::uint8_t * >(stream_buf);
 		file.open("data_index.pak", std::ios::binary);
@@ -103,6 +100,8 @@ namespace Filesystem {
 
 			m_offsets.push_back(0);
 		}
+
+		this->Initialized = true;
 
 		return true;
 	}
