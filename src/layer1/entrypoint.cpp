@@ -5,6 +5,7 @@
 #include "renderer/runtime.h"
 #include "renderer/input.h"
 #include "graph/game.h"
+#include "log.h"
 
 #include "filesystem/runtime.h"
 
@@ -24,5 +25,6 @@ int main()
 	game.registerService(&filesystem);
 	game.registerService(&renderer);
 	game.registerService(&input);
+	game.setupServices();
 	game.Run();
 }

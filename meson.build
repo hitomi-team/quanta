@@ -1,13 +1,13 @@
 project('quanta', ['c', 'cpp'], version : 'v0.01', meson_version : '>= 0.47')
 
-compiler_flags = '-std=c++14'
+add_global_arguments('-std=c++14', language : 'cpp')
 compiler       = meson.get_compiler('cpp')
 inc_directory  = include_directories('./inc')
 
-if get_option('debug') == true
-	compiler_additional_flags = '-D=__DEBUG -ggdb -O2'
+if get_option('enable_debug') == true
+	add_global_arguments('-D=__DEBUG -ggdb -O2', language : 'cpp')
 else
-	compiler_additional_flags = '-O2'
+	add_global_arguments('-D=__RELEASE -O2', language : 'cpp')
 endif
 
 # get source files

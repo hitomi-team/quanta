@@ -1,6 +1,7 @@
 #ifndef FILESYSTEM_FS_H
 #define FILESYSTEM_FS_H
 
+#include "../log.h"
 #include "../graph/service.h"
 
 #include "pakar_struct.h"

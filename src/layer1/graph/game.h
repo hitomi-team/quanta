@@ -1,6 +1,8 @@
 #ifndef GRAPH_SCENE_H
 #define GRAPH_SCENE_H
 
+#include "../log.h"
+
 #include "node.h"
 #include "service.h"
 
@@ -21,6 +23,7 @@ namespace Graph {
 
 		void Run(); // Game loop
 		void Destroy(); // sends destroy signal to game loop
+		void Abort(); // Emergency abort
 
 	protected:
 		std::vector<Service *> Services;

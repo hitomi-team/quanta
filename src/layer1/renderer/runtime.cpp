@@ -10,10 +10,10 @@ namespace Renderer {
 
 	bool Runtime::Setup()
 	{
-		if (rhi->SetGraphicsMode(WINDOW_DEFAULT_WIDTH, WINDOW_DEFAULT_HEIGHT, false, false, false, false, 4) != false)
-			Initialized = true;
+		if (rhi->SetGraphicsMode(WINDOW_DEFAULT_WIDTH, WINDOW_DEFAULT_HEIGHT, false, false, false, false, 4) != true)
+			return false;
 
-		return Initialized;
+		return true;
 	}
 
 	bool Runtime::Update()
@@ -59,6 +59,13 @@ namespace Renderer {
 
 		if (ImGui::CollapsingHeader("App Information")) {
 			ImGui::Text("Build Date: %s @ %s", __DATE__, __TIME__);
+#if defined(__RELEASE)
+			ImGui::Text("Build Type: Release");
+#elif defined(__DEBUG)
+			ImGui::Text("Build Type: Debug");
+#else
+#error __RELEASE or __DEBUG must be defined!
+#endif
 		}
 
 		if (ImGui::CollapsingHeader("Performance")) {

@@ -15,9 +15,12 @@ namespace Graph {
 		for (auto &service : this->Services) {
 			if (!service->isInitialized()) {
 				if (!service->Setup()) {
-					// Handle error!
-					return;
+					global_log.Error("Failed to initialize service: " + service->getName());
+					Abort();
 				}
+
+				service->setInitialized();
+				global_log.Info("Service initialized: " + service->getName());
 			}
 		}		
 	}
@@ -25,12 +28,19 @@ namespace Graph {
 	void Game::runServices()
 	{
 		for (auto &service : this->Services) {
-			if (!service->isInitialized()) { // This is really unsafe! Issue severe warning!
-				service->Setup();
+			if (!service->isInitialized()) {
+				global_log.Warn("Service was not initialized before calling runServices(): "  + service->getName());
+				
+				if (!service->Setup()) {
+					global_log.Error("Failed to initialize service: " + service->getName());
+					Abort();
+				}
+
+				service->setInitialized();
 			}
 			
 			if (!service->Update()) {
-				// Handle error! Maybe a popup window or something?
+				global_log.Error("Service failed to run properly: " + service->getName());
 				return;
 			}
 		}
@@ -64,11 +74,19 @@ namespace Graph {
 		
 		for (auto &i : this->Services)
 			i->Release();
+
+		global_log.Info("Game Quit");
 	}
 
 	void Game::Destroy()
 	{
 		shouldClose = true;
+	}
+
+	void Game::Abort()
+	{
+		global_log.Info("Game Aborted");
+		std::abort();
 	}
 
 	bool _game_shouldClose;
