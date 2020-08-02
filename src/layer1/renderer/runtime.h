@@ -8,6 +8,14 @@
 #include "../graph/game.h"
 #include "subsystems/rhi.h"
 
+#if defined(__OPENGL)
+#include "subsystems/opengl/glrenderer.h"
+#elif defined(__D3D11)
+#include "subsystems/d3d11/d3d11renderer.h"
+#else
+#error A renderer must be defined
+#endif
+
 namespace Renderer {
 
 	class Runtime : public Graph::Service {

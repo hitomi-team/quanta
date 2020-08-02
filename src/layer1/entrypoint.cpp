@@ -1,7 +1,7 @@
 #include <string>
 #include <stdio.h>
 
-#include "renderer/subsystems/opengl/glrenderer.h"
+
 #include "renderer/runtime.h"
 #include "renderer/input.h"
 #include "graph/game.h"
@@ -15,14 +15,19 @@ int main()
 	Filesystem::Runtime filesystem;
 
 	// Setup render service
-	Renderer::GLRenderer glrenderer;
+#if defined(__OPENGL)
+	Renderer::GLRenderer renderer_api;
+#elif defined(__D3D11)
+	Renderer::D3D11Renderer renderer_api;
+#endif
+
 	Renderer::Runtime renderer;
-	renderer.SetRenderer(&glrenderer);
+	renderer.SetRenderer(&renderer_api);
 
 	Renderer::Input input;
 
 	Graph::Game game;
-	game.registerService(&filesystem);
+//	game.registerService(&filesystem);
 	game.registerService(&renderer);
 	game.registerService(&input);
 	game.setupServices();
