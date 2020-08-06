@@ -1,12 +1,16 @@
 #ifndef RENDERER_RUNTIME_H
 #define RENDERER_RUNTIME_H
 
+#include <vector>
+
 #define SDL_MAIN_HANDLED
 #include <SDL2/SDL.h>
 
-#include "imgui/imgui_impl_sdl.h"
 #include "../graph/game.h"
+#include "../log.h"
+#include "imgui/imgui_impl_sdl.h"
 #include "subsystems/rhi.h"
+#include "material.h"
 
 #if defined(__OPENGL)
 #include "subsystems/opengl/glrenderer.h"
@@ -33,6 +37,8 @@ namespace Renderer {
 
 	private:
 		RHI *rhi;
+
+		std::vector<Material> materials;
 	};
 
 }

@@ -1,1 +1,0 @@
-subsystem_null_src = files(['nullrenderer.cpp'])

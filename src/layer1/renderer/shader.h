@@ -10,7 +10,7 @@ namespace Renderer {
 		Shader() {  }
 		virtual ~Shader() {  }
 
-		// true on success, false on failure. it will print compilation log
+		// true on success, false on failure.
 		virtual bool Build(unsigned char *vs_bytecode, unsigned int vs_size,
 				   unsigned char *fs_bytecode, unsigned int fs_size) { return true; }
 		virtual void Release() {  }
@@ -18,8 +18,8 @@ namespace Renderer {
 		virtual void *GetObject(ShaderType type);
 
 	protected:
-		void *program; // used for GL
-		void *objects[3]; // linked into program for GL, used for setting shader in D3D11
+		void *program; // I guess this can be the pipeline object?
+		void *objects[2]; // put into pipeline in Vulkan, used for setting shader in D3D11
 	};
 
 }
