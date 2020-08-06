@@ -27,13 +27,7 @@ namespace Renderer {
 		virtual void CreateRendererCapabilities() { };
 		virtual std::vector<int> GetMultiSampleLevels() const { std::vector<int> a; return a; };
 
-
 		virtual void Close() { };
-		virtual void AdjustWindow(int& newWidth, int& newHeight, bool& newFullscreen, bool& newBorderless) { };
-		virtual bool OpenWindow(int width, int height, bool resizable, bool borderless) { return true; };
-		virtual void Maximize() { };
-		virtual void SetWindowPos(const glm::vec2& pos) { };
-		virtual void SetWindowTitle(const std::string& string) { };
 
 		virtual void AddGpuResource(GPUResource* object) { };
 		virtual void RemoveGpuResource(GPUResource* object) { };

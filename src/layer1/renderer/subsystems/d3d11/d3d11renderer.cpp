@@ -202,6 +202,24 @@ namespace Renderer {
 		swapchain->Present(vsync_ ? 1 : 0, 0);
 	}
 	
+	void D3D11Renderer::Close()
+	{
+		ImGui_ImplDX11_Shutdown();
+		
+		D3D_SAFE_RELEASE(defaultRenderTargetView);
+		D3D_SAFE_RELEASE(defaultDepthTexture);
+		D3D_SAFE_RELEASE(defaultDepthStencilView);
+		D3D_SAFE_RELEASE(swapchain);
+		D3D_SAFE_RELEASE(context);
+		D3D_SAFE_RELEASE(device);
+
+		ResetCache();
+
+		SDL_ShowCursor(SDL_TRUE);
+		SDL_DestroyWindow(window);
+		SDL_Quit();		
+	}
+
 	void D3D11Renderer::ResetCache()
 	{
 		for (int i = 0; i < MAX_RENDERTARGETS; ++i) {

@@ -9,6 +9,6 @@
 #include <dxgi.h>
 
 #define D3D_FAILED(x) (x != S_OK)
-#define D3D_SAFE_RELEASE(p) if (p) { ((IUnknown*)p)->Release();  p = 0; }
+#define D3D_SAFE_RELEASE(p) if (p != nullptr) { ((IUnknown*)p)->Release();  p = nullptr; }
 
 #endif

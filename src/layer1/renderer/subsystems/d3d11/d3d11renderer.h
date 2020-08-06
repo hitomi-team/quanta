@@ -33,18 +33,14 @@ namespace Renderer {
 //		std::vector<int> GetMultiSampleLevels() const { std::vector<int> a; return a; };
 
 
-//		void Close();
-//		void AdjustWindow(int& newWidth, int& newHeight, bool& newFullscreen, bool& newBorderless) { };
-//		bool OpenWindow(int width, int height, bool resizable, bool borderless) { return true; };
-//		void Maximize() { };
-//		void SetWindowTitle(const std::string& string) { };
+		void Close();
 
 //		void AddGpuResource(GPUResource* object) { };
 //		void RemoveGpuResource(GPUResource* object) { };
 
 		void ResetCache();
 
-//		bool IsDeviceLost();
+		bool IsDeviceLost();
 
 
 //		VertexBuffer* CreateVertexBuffer(Vertex *vertices, unsigned count);
