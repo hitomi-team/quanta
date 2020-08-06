@@ -10,7 +10,7 @@ namespace Filesystem {
 		, m_chunk_paks{}
 		, m_entries{}
 		, m_offsets{}
-		, m_chunk_begin_pos{}
+		, m_chunk_begin_size{}
 		, m_mtx{}
 		, m_seekmtx{}
 	{
@@ -64,7 +64,7 @@ namespace Filesystem {
 
 		measure.ResetPosition();
 		chunk_header.Deserialize(measure);
-		m_chunk_begin_pos = measure.pos;
+		m_chunk_begin_size = measure.pos;
 
 		// FIXME: implement multi-chunk
 		m_chunk_paks.resize(1);
@@ -153,7 +153,7 @@ namespace Filesystem {
 			else
 				to_read = sizeof(buf);
 
-			m_chunk_paks[0].seekg(m_entries[handle].offset + m_offsets[handle], std::ios_base::beg);
+			m_chunk_paks[0].seekg(m_chunk_begin_size + m_entries[handle].offset + m_offsets[handle], std::ios_base::beg);
 			m_chunk_paks[0].read(buf, to_read);
 
 			n_read = m_chunk_paks[0].gcount();

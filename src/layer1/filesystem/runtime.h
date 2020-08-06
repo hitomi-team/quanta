@@ -42,7 +42,7 @@ namespace Filesystem {
 		std::vector< std::ifstream > m_chunk_paks;
 		std::vector< PakarIndexEntry > m_entries;
 		std::vector< std::uint64_t > m_offsets;
-		std::size_t m_chunk_begin_pos;
+		std::size_t m_chunk_begin_size;
 
 		std::mutex m_mtx;
 		std::mutex m_seekmtx;
