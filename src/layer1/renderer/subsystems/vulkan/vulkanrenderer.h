@@ -1,24 +1,24 @@
-#ifndef RENDERER_D3D11RENDERER_H
-#define RENDERER_D3D11RENDERER_H
+#ifndef RENDERER_VULKANRENDERER_H
+#define RENDERER_VULKANRENDERER_H
 
 #include "../required.h"
-#include "d3d11required.h"
+#include "vulkanrequired.h"
 
 #include <glm/glm.hpp>
 #include <glm/gtc/type_ptr.hpp>
 
 #include "../../imgui/imgui_impl_sdl.h"
-#include "imgui_impl_d3d11.h"
+#include "imgui_impl_vulkan.h"
 
 namespace Renderer {
 
-	class D3D11Renderer : public RHI {
+	class VulkanRenderer : public RHI {
 	public:
-		D3D11Renderer();
-		virtual ~D3D11Renderer() {}
+		VulkanRenderer();
+		virtual ~VulkanRenderer() {}
 		
 		bool SetGraphicsMode(int width = WINDOW_DEFAULT_WIDTH, int height = WINDOW_DEFAULT_HEIGHT, bool fullscreen = false, bool borderless = false, bool resizable = false, bool vsync = true, int multisample = 0);
-		void Clear(unsigned flags, const glm::vec4& color = glm::vec4(0.0f, 0.0f, 0.0f, 0.0f), float depth = 1.0f, unsigned stencil = 0);
+//		void Clear(unsigned flags, const glm::vec4& color = glm::vec4(0.0f, 0.0f, 0.0f, 0.0f), float depth = 1.0f, unsigned stencil = 0);
 
 // TO BE IMPLEMENTED
 
@@ -32,7 +32,6 @@ namespace Renderer {
 //		void CreateRendererCapabilities() { };
 //		std::vector<int> GetMultiSampleLevels() const { std::vector<int> a; return a; };
 
-
 		void Close();
 
 //		void AddGpuResource(GPUResource* object) { };
@@ -41,7 +40,6 @@ namespace Renderer {
 		void ResetCache();
 
 		bool IsDeviceLost();
-
 
 //		VertexBuffer* CreateVertexBuffer(Vertex *vertices, unsigned count);
 //		IndexBuffer* CreateIndexBuffer(unsigned *indices, unsigned count);
@@ -65,11 +63,11 @@ namespace Renderer {
 //		bool NeedParameterUpdate(ShaderParameterGroup group, const void* source) { return true; };
 //		void SetFlushGPU(bool flushGpu) { };
 //		void SetBlendMode(BlendMode mode);
-		void SetColorWrite(bool enable);
+//		void SetColorWrite(bool enable);
 //		void SetCullMode(CullMode mode);
 //		void SetDepthBias(float constantBias, float slopeScaledBias);
 //		void SetDepthTest(CompareMode mode);
-		void SetDepthWrite(bool enable);
+//		void SetDepthWrite(bool enable);
 //		void SetFillMode(FillMode mode);
 //		void SetScissorTest(bool enable, const glm::vec2& rect) { };
 //		void SetStencilTest(bool enable, CompareMode mode = CMP_ALWAYS, StencilOp pass = OP_KEEP, StencilOp fail = OP_KEEP, StencilOp zFail = OP_KEEP, unsigned stencilRef = 0, unsigned compareMask = UINT32_MAX, unsigned writeMask = UINT32_MAX) { };	
@@ -79,7 +77,7 @@ namespace Renderer {
 //		void SetRenderTarget(unsigned index, RenderTarget* renderTarget) { };
 //		void SetDepthStencil(RenderTarget* depthStencil) { };
 
-		void SetViewport(const glm::vec4& rect);
+//		void SetViewport(const glm::vec4& rect);
 
 //		void Draw(PrimitiveType type, unsigned vertexStart, unsigned vertexCount);
 //		void Draw(PrimitiveType type, unsigned indexStart, unsigned indexCount, unsigned minVertex, unsigned vertexCount);
@@ -92,30 +90,13 @@ namespace Renderer {
 
 		SDL_Window *GetWindow() { return window; }
 		
-		void ImGuiNewFrame();
-		void ImGuiEndFrame();
+//		void ImGuiNewFrame();
+//		void ImGuiEndFrame();
 
 	private:
 		SDL_Window *window;
 		SDL_DisplayMode display;
 		bool isInitialized;
-	
-		ID3D11Device *device;
-		ID3D11DeviceContext *context;
-		IDXGISwapChain *swapchain;
-
-
-		// internal cache
-		ID3D11RenderTargetView *defaultRenderTargetView;
-		ID3D11Texture2D *defaultDepthTexture;
-		ID3D11DepthStencilView *defaultDepthStencilView;
-		ID3D11RenderTargetView *renderTargetViews[MAX_RENDERTARGETS];
-		ID3D11DepthStencilView *depthStencilView;
-
-		// states
-		bool vsync_;
-		bool renderTargetsDirty_;
-		bool rasterizerStateDirty;
 
 		// internal functions
 		bool UpdateSwapchain(int width, int height, int multisample);

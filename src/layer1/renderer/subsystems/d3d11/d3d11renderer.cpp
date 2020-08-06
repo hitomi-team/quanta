@@ -3,6 +3,135 @@
 
 namespace Renderer {
 
+	static const char* addressModeNames[] =
+	{
+		"wrap",
+		"mirror",
+		"clamp",
+		"border",
+		0
+	};
+
+	static const char* filterModeNames[] =
+	{
+		"nearest",
+		"bilinear",
+		"trilinear",
+		"anisotropic",
+		"default",
+		0
+	};
+
+	static const D3D11_FILTER d3dFilterMode[] =
+	{
+		D3D11_FILTER_MIN_MAG_MIP_POINT,
+		D3D11_FILTER_MIN_MAG_LINEAR_MIP_POINT,
+		D3D11_FILTER_MIN_MAG_MIP_LINEAR,
+		D3D11_FILTER_ANISOTROPIC,
+		D3D11_FILTER_COMPARISON_MIN_MAG_MIP_POINT,
+		D3D11_FILTER_COMPARISON_MIN_MAG_LINEAR_MIP_POINT,
+		D3D11_FILTER_COMPARISON_MIN_MAG_MIP_LINEAR,
+		D3D11_FILTER_COMPARISON_ANISOTROPIC
+	};
+
+	static const D3D11_TEXTURE_ADDRESS_MODE d3dAddressMode[] =
+	{
+		D3D11_TEXTURE_ADDRESS_WRAP,
+		D3D11_TEXTURE_ADDRESS_MIRROR,
+		D3D11_TEXTURE_ADDRESS_CLAMP,
+		D3D11_TEXTURE_ADDRESS_BORDER
+	};
+
+	static const D3D11_COMPARISON_FUNC d3dCmpFunc[] =
+	{
+		D3D11_COMPARISON_ALWAYS,
+		D3D11_COMPARISON_EQUAL,
+		D3D11_COMPARISON_NOT_EQUAL,
+		D3D11_COMPARISON_LESS,
+		D3D11_COMPARISON_LESS_EQUAL,
+		D3D11_COMPARISON_GREATER,
+		D3D11_COMPARISON_GREATER_EQUAL
+	};
+
+	static const DWORD d3dBlendEnable[] =
+	{
+		FALSE,
+		TRUE,
+		TRUE,
+		TRUE,
+		TRUE,
+		TRUE,
+		TRUE,
+		TRUE,
+		TRUE,
+		TRUE
+	};
+
+	static const D3D11_BLEND d3dSrcBlend[] =
+	{
+		D3D11_BLEND_ONE,
+		D3D11_BLEND_ONE,
+		D3D11_BLEND_DEST_COLOR,
+		D3D11_BLEND_SRC_ALPHA,
+		D3D11_BLEND_SRC_ALPHA,
+		D3D11_BLEND_ONE,
+		D3D11_BLEND_INV_DEST_ALPHA,
+		D3D11_BLEND_ONE,
+		D3D11_BLEND_SRC_ALPHA,
+		D3D11_BLEND_ONE
+	};
+
+	static const D3D11_BLEND d3dDestBlend[] =
+	{
+		D3D11_BLEND_ZERO,
+		D3D11_BLEND_ONE,
+		D3D11_BLEND_ZERO,
+		D3D11_BLEND_INV_SRC_ALPHA,
+		D3D11_BLEND_ONE,
+		D3D11_BLEND_INV_SRC_ALPHA,
+		D3D11_BLEND_DEST_ALPHA,
+		D3D11_BLEND_ONE,
+		D3D11_BLEND_ONE,
+		D3D11_BLEND_ONE
+	};
+
+	static const D3D11_BLEND_OP d3dBlendOp[] =
+	{
+		D3D11_BLEND_OP_ADD,
+		D3D11_BLEND_OP_ADD,
+		D3D11_BLEND_OP_ADD,
+		D3D11_BLEND_OP_ADD,
+		D3D11_BLEND_OP_ADD,
+		D3D11_BLEND_OP_ADD,
+		D3D11_BLEND_OP_ADD,
+		D3D11_BLEND_OP_REV_SUBTRACT,
+		D3D11_BLEND_OP_REV_SUBTRACT,
+		D3D11_BLEND_OP_MAX
+	};
+
+	static const D3D11_STENCIL_OP d3dStencilOp[] =
+	{
+		D3D11_STENCIL_OP_KEEP,
+		D3D11_STENCIL_OP_ZERO,
+		D3D11_STENCIL_OP_REPLACE,
+		D3D11_STENCIL_OP_INCR,
+		D3D11_STENCIL_OP_DECR
+	};
+
+	static const D3D11_CULL_MODE d3dCullMode[] =
+	{
+		D3D11_CULL_NONE,
+		D3D11_CULL_BACK,
+		D3D11_CULL_FRONT
+	};
+
+	static const D3D11_FILL_MODE d3dFillMode[] =
+	{
+		D3D11_FILL_SOLID,
+		D3D11_FILL_WIREFRAME,
+		D3D11_FILL_WIREFRAME // Point fill mode not supported
+	};
+
 	D3D11Renderer::D3D11Renderer()
 	{
 		SDL_Init(SDL_INIT_VIDEO);
@@ -11,6 +140,9 @@ namespace Renderer {
 
 	bool D3D11Renderer::SetGraphicsMode(int width, int height, bool fullscreen, bool borderless, bool resizable, bool vsync, int multisample)
 	{
+		if (SDL_WasInit(SDL_INIT_VIDEO) != SDL_INIT_VIDEO)
+			SDL_Init(SDL_INIT_VIDEO);
+		
 		int x = fullscreen ? 0 : SDL_WINDOWPOS_CENTERED;
 		int y = fullscreen ? 0 : SDL_WINDOWPOS_CENTERED;
 
@@ -126,7 +258,7 @@ namespace Renderer {
 		depthStencilView = nullptr;
 		for (int i = 0; i < MAX_RENDERTARGETS; ++i)
 			renderTargetViews[i] = nullptr;
-		rendertargetsdirty_ = true;
+		renderTargetsDirty_ = true;
 
 		swapchain->ResizeBuffers(1,(UINT)width,(UINT)height,DXGI_FORMAT_UNKNOWN,DXGI_SWAP_CHAIN_FLAG_ALLOW_MODE_SWITCH);
 
@@ -179,11 +311,11 @@ namespace Renderer {
 
 	void D3D11Renderer::PreDraw()
 	{
-		if (rendertargetsdirty_) {
+		if (renderTargetsDirty_) {
 			depthStencilView = defaultDepthStencilView;
 			renderTargetViews[0] = defaultRenderTargetView;
 			context->OMSetRenderTargets(MAX_RENDERTARGETS, &renderTargetViews[0], nullptr);
-			rendertargetsdirty_ = false;
+			renderTargetsDirty_ = false;
 		}
 	}
 
@@ -205,7 +337,7 @@ namespace Renderer {
 	void D3D11Renderer::Close()
 	{
 		ImGui_ImplDX11_Shutdown();
-		
+
 		D3D_SAFE_RELEASE(defaultRenderTargetView);
 		D3D_SAFE_RELEASE(defaultDepthTexture);
 		D3D_SAFE_RELEASE(defaultDepthStencilView);
@@ -231,7 +363,7 @@ namespace Renderer {
 		defaultDepthStencilView = nullptr;
 
 		vsync_ = false;
-		rendertargetsdirty_ = false;
+		renderTargetsDirty_ = false;
 	}
 
 	void D3D11Renderer::Clear(unsigned flags, const glm::vec4& color, float depth, unsigned stencil)
