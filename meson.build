@@ -35,7 +35,7 @@ else # linux
 	lib_vulkan	= compiler.find_library('vulkan')
 
 	add_global_arguments('-D=__VULKAN', language : 'cpp')
-	binary = executable('quanta', src, dependencies : [lib_sdl2, lib_sdl2main])
+	binary = executable('quanta', src, dependencies : [lib_sdl2, lib_sdl2main, lib_vulkan])
 endif
 
 subdir('tools')
