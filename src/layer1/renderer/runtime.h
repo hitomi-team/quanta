@@ -10,12 +10,14 @@
 #include "../log.h"
 #include "imgui/imgui_impl_sdl.h"
 #include "subsystems/rhi.h"
+#include "renderable.h"
 #include "material.h"
 
 #if defined(__VULKAN)
 #include "subsystems/vulkan/vulkanrenderer.h"
 #elif defined(__D3D11)
 #include "subsystems/d3d11/d3d11renderer.h"
+#include "subsystems/vulkan/vulkanrenderer.h"
 #else
 #error A renderer must be defined
 #endif
@@ -38,6 +40,7 @@ namespace Renderer {
 	private:
 		RHI *rhi;
 
+		std::vector<Renderable> renderables;
 		std::vector<Material> materials;
 	};
 

@@ -10,6 +10,10 @@
 #include "../../imgui/imgui_impl_sdl.h"
 #include "imgui_impl_vulkan.h"
 
+#include "vk_instance.h"
+#include "vk_device.h"
+#include "vk_surface.h"
+
 namespace Renderer {
 
 	class VulkanRenderer : public RHI {
@@ -90,13 +94,18 @@ namespace Renderer {
 
 		SDL_Window *GetWindow() { return window; }
 		
-//		void ImGuiNewFrame();
-//		void ImGuiEndFrame();
+		void ImGuiNewFrame();
+		void ImGuiEndFrame();
 
 	private:
 		SDL_Window *window;
 		SDL_DisplayMode display;
 		bool isInitialized;
+
+		// Internal cache
+		VulkanInstance instance;
+		VulkanDevice device;
+		VulkanSurface surface;
 
 		// internal functions
 		bool UpdateSwapchain(int width, int height, int multisample);

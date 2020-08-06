@@ -11,8 +11,8 @@ namespace Renderer {
 		Material() {}
 		virtual ~Material() {}
 
-		void SetShader();
-		void SetTexture();
+	protected:
+		
 	};
 
 }

@@ -38,6 +38,21 @@ namespace Renderer {
 		}
 
 		// init device and other stuff
+		if (!instance.Load(window))
+			return false;
+		
+		device = QueryDevice(instance);
+		surface.Load(window, instance, device, APP_TITLE, width, height);
+
+		// init imgui
+		IMGUI_CHECKVERSION();
+		ImGui::CreateContext();
+		ImGui::GetIO().DisplaySize.x = width;
+		ImGui::GetIO().DisplaySize.y = height;
+		ImGui::GetIO().Fonts->AddFontDefault();
+		ImGui::GetIO().Fonts->Build();
+		ImGui::StyleColorsDark();
+		ImGui_ImplSDL2_InitForVulkan(window);
 
 		return true;
 	}
@@ -54,14 +69,18 @@ namespace Renderer {
 
 	void VulkanRenderer::EndFrame()
 	{
+		surface.Present();
 		// present swapchain
 	}
 
 	void VulkanRenderer::Close()
 	{
-		// ImGui_ImplVulkan_Shutdown()
+//		ImGui_ImplVulkan_Shutdown()
 
 		// vulkan object releasing stuff
+		surface.Release(instance);
+		device.Release();
+		instance.Release();
 
 		ResetCache(); // just in case we want to initialize this renderer again
 
@@ -73,6 +92,20 @@ namespace Renderer {
 	void VulkanRenderer::ResetCache()
 	{
 
+	}
+
+	void VulkanRenderer::ImGuiNewFrame()
+	{
+//		ImGui_ImplVulkan_NewFrame();
+		ImGui_ImplSDL2_NewFrame(window);
+		ImGui::NewFrame();
+	}
+
+	void VulkanRenderer::ImGuiEndFrame()
+	{
+		ImGui::End();
+		ImGui::Render();
+//		ImGui_ImplVulkan_RenderDrawData(ImGui::GetDrawData());
 	}
 
 }
