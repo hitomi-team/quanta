@@ -15,14 +15,11 @@ int main()
 	Filesystem::Runtime filesystem;
 
 	// Setup render service
-#if defined(__OPENGL)
-	Renderer::GLRenderer renderer_api;
-#elif defined(__D3D11)
-	Renderer::D3D11Renderer renderer_api;
-#endif
-
+	// TODO: Add option to switch between supported renderers
+	// Also TODO: Add command arguments to do this which is a lot better
+	Renderer::D3D11Renderer d3d11renderer_api;
 	Renderer::Runtime renderer;
-	renderer.SetRenderer(&renderer_api);
+	renderer.SetRenderer(&d3d11renderer_api);
 
 	Renderer::Input input;
 
