@@ -72,8 +72,8 @@ namespace Renderer {
 #endif
 #if defined(__D3D11)
 			ImGui::Text("Rendering API: D3D11");
-#elif defined(__OPENGL)
-			ImGui::Text("Rendering API: OpenGL");
+#elif defined(__VULKAN)
+			ImGui::Text("Rendering API: Vulkan");
 #endif
 		}
 

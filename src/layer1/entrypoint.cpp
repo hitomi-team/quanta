@@ -17,9 +17,14 @@ int main()
 	// Setup render service
 	// TODO: Add option to switch between supported renderers
 	// Also TODO: Add command arguments to do this which is a lot better
-	Renderer::D3D11Renderer d3d11renderer_api;
+#if defined(_WIN32)
+	Renderer::D3D11Renderer renderer_api;
+#else	// use vulkan on lunix
+	Renderer::VulkanRenderer renderer_api;
+#endif
 	Renderer::Runtime renderer;
-	renderer.SetRenderer(&d3d11renderer_api);
+	renderer.SetRenderer(&renderer_api);
+	
 
 	Renderer::Input input;
 

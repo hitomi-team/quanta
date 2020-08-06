@@ -12,8 +12,8 @@
 #include "subsystems/rhi.h"
 #include "material.h"
 
-#if defined(__OPENGL)
-#include "subsystems/opengl/glrenderer.h"
+#if defined(__VULKAN)
+#include "subsystems/vulkan/vulkanrenderer.h"
 #elif defined(__D3D11)
 #include "subsystems/d3d11/d3d11renderer.h"
 #else
