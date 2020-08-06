@@ -67,8 +67,6 @@ namespace Graph {
 
 	void Game::Run()
 	{
-		setupServices();
-
 		while (!shouldClose && !_game_shouldClose)
 			runServices();
 		

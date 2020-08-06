@@ -41,7 +41,11 @@ namespace Renderer {
 		if (!rhi)
 			return;
 		
+		if (this->rhi)
+			this->rhi->Close();
+
 		this->rhi = rhi;
+		Setup();
 	}
 
 	void Runtime::__debug_menu()
