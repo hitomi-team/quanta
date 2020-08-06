@@ -1,3 +1,1 @@
 option('enable_debug', type : 'boolean', value : false, description : 'Enables debugging features.')
-option('opengl', type : 'boolean', value : true, description : 'Enables OpenGL renderer backend.')
-option('d3d11', type : 'boolean', value : false, description : 'Enables D3D11 renderer backend.')
