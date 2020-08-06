@@ -208,4 +208,15 @@ namespace Filesystem {
 		return m_offsets[handle];
 	}
 
+	std::uint64_t Runtime::GetFileSize(int handle)
+	{
+		if (handle == -1)
+			return UINT64_MAX;
+
+		if (m_entries[handle].type == 0)
+			return UINT64_MAX;
+
+		return m_entries[handle].size;
+	}
+
 }

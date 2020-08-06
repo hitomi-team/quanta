@@ -36,6 +36,8 @@ namespace Filesystem {
 		bool SeekFile(int handle, uint64_t offset, int seek_dir);
 		std::uint64_t TellFile(int handle);
 
+		std::uint64_t GetFileSize(int handle);
+
 	private:
 		std::vector< std::ifstream > m_chunk_paks;
 		std::vector< PakarIndexEntry > m_entries;
