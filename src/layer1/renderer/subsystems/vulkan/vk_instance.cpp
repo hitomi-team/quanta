@@ -56,7 +56,7 @@ namespace Renderer {
 			return false;
 		}
 
-		extensions.reserve(extensionCount);
+		extensions.resize(extensionCount);
 
 		if (!SDL_Vulkan_GetInstanceExtensions(window, &extensionCount, extensions.data())) {
 			FATAL("Cannot get Vulkan Extensions!");

@@ -76,6 +76,14 @@ namespace Renderer {
 		// present swapchain
 	}
 
+	void VulkanRenderer::Clear(unsigned flags, const glm::vec4& color, float depth, unsigned stencil)
+	{
+		(void)flags;
+		(void)color;
+		(void)depth;
+		(void)stencil;
+	}
+
 	void VulkanRenderer::Close()
 	{
 //		ImGui_ImplVulkan_Shutdown()
