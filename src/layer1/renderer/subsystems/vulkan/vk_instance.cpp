@@ -96,7 +96,7 @@ namespace Renderer {
 		instInfo.pNext = (VkDebugUtilsMessengerCreateInfoEXT *) &createinfo;
 
 		extensionCount++;
-		RequiredExtensions.push_back(VK_EXT_DEBUG_UTILS_EXTENSION_NAME);
+		extensions.push_back(VK_EXT_DEBUG_UTILS_EXTENSION_NAME);
 #endif
 
 		instInfo.enabledExtensionCount = extensionCount;
