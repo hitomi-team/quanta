@@ -40,7 +40,7 @@ namespace Renderer {
 	
 		inline void WaitIdle() { vkDeviceWaitIdle(device); }
 
-		void operator= (const VulkanDevice &devb);
+		VulkanDevice &operator= (const VulkanDevice &devb);
 	protected:
 		VkPhysicalDevice PhysicalDevice;
 		VkPhysicalDeviceProperties PhysicalDeviceProps;

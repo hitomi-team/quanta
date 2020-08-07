@@ -178,7 +178,8 @@ namespace Renderer {
 
 	void VulkanDevice::Release()
 	{
-		if (!freed) {
+		if (!this->freed) {
+			this->freed = true;
 			vkDestroyCommandPool(device, TransferPool, nullptr);
 			vkDestroyCommandPool(device, GraphicsPool, nullptr);
 			vkDestroyCommandPool(device, ComputePool, nullptr);
@@ -186,19 +187,23 @@ namespace Renderer {
 		}
 	}
 
-	void VulkanDevice::operator= (const VulkanDevice &devb)
+	VulkanDevice &VulkanDevice::operator= (const VulkanDevice &devb)
 	{
-		this->PhysicalDevice = devb.PhysicalDevice;
-		this->PhysicalDeviceProps = devb.PhysicalDeviceProps;
-		this->device = devb.device;
-		this->GraphicsQueue = devb.GraphicsQueue;
-		this->TransferQueue = devb.TransferQueue;
-		this->TransferPool = devb.TransferPool;
-		this->GraphicsPool = devb.GraphicsPool;
-		this->ComputePool = devb.ComputePool;
-		this->QueueFamilyIndices[0] = devb.QueueFamilyIndices[0];
-		this->QueueFamilyIndices[1] = devb.QueueFamilyIndices[1];
-		this->freed = true;
+		if (&devb != this) {
+			this->PhysicalDevice = devb.PhysicalDevice;
+			this->PhysicalDeviceProps = devb.PhysicalDeviceProps;
+			this->device = devb.device;
+			this->GraphicsQueue = devb.GraphicsQueue;
+			this->TransferQueue = devb.TransferQueue;
+			this->TransferPool = devb.TransferPool;
+			this->GraphicsPool = devb.GraphicsPool;
+			this->ComputePool = devb.ComputePool;
+			this->QueueFamilyIndices[0] = devb.QueueFamilyIndices[0];
+			this->QueueFamilyIndices[1] = devb.QueueFamilyIndices[1];
+			this->freed = devb.freed;
+		}
+
+		return *this;
 	}
 
 	std::vector<VulkanDevice> QueryAllDevices(VulkanInstance vkinstance)
