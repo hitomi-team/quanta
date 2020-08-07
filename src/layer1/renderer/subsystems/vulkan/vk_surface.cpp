@@ -85,7 +85,7 @@ namespace Renderer {
 		uint32_t formatcount;
 		std::vector<VkSurfaceFormatKHR> formats;
 		vkGetPhysicalDeviceSurfaceFormatsKHR(this->dev.getPhysicalDev(), surface, &formatcount, nullptr);
-		formats.reserve(formatcount);
+		formats.resize(formatcount);
 		vkGetPhysicalDeviceSurfaceFormatsKHR(this->dev.getPhysicalDev(), surface, &formatcount, formats.data());
 
 		surfaceFormat = {};
@@ -105,7 +105,7 @@ namespace Renderer {
 		uint32_t presentmodecount;
 		std::vector<VkPresentModeKHR> presentmodes;
 		vkGetPhysicalDeviceSurfacePresentModesKHR(this->dev.getPhysicalDev(), surface, &presentmodecount, nullptr);
-		presentmodes.reserve(presentmodecount);
+		presentmodes.resize(presentmodecount);
 		vkGetPhysicalDeviceSurfacePresentModesKHR(this->dev.getPhysicalDev(), surface, &presentmodecount, presentmodes.data());
 
 		presentMode = (VkPresentModeKHR)0xFF; // some garbage value that isnt used, this is for checking.
@@ -171,9 +171,9 @@ namespace Renderer {
 
 		/* Setup synchronization primitives */
 
-		available.reserve(images);
-		finished.reserve(images);
-		inflight.reserve(images);
+		available.resize(images);
+		finished.resize(images);
+		inflight.resize(images);
 		imagesinflight.resize(images, VK_NULL_HANDLE);
 
 		VkSemaphoreCreateInfo semaphoreinfo{};
@@ -195,7 +195,7 @@ namespace Renderer {
 		commandbufferinfo.commandPool = this->dev.getGraphicsCommandPool();
 		commandbufferinfo.commandBufferCount = images;
 
-		presentcommandbuffers.reserve(images);
+		presentcommandbuffers.resize(images);
 
 		VK_ASSERT(vkAllocateCommandBuffers(this->dev.get(), &commandbufferinfo, presentcommandbuffers.data()), "Failed to allocate command buffers for the presenter")
 
@@ -205,6 +205,8 @@ namespace Renderer {
 	void VulkanSurface::Release(VulkanInstance instance)
 	{
 		dev.WaitIdle();
+
+		vkFreeCommandBuffers(dev.get(), this->dev.getGraphicsCommandPool(), presentcommandbuffers.size(), presentcommandbuffers.data());
 
 		for (uint32_t i = 0; i < swapchainimageViews.size(); i++) {
 			vkDestroySemaphore(dev.get(), available[i], nullptr);
