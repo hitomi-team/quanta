@@ -24,7 +24,6 @@ int main()
 #endif
 	Renderer::Runtime renderer;
 	renderer.SetRenderer(&renderer_api);
-	
 
 	Renderer::Input input;
 

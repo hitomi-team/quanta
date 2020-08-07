@@ -32,7 +32,7 @@ namespace Renderer {
 
 		VkCommandBuffer getPresentCommandBuffer();
 		void Present();
-		void __Debug_Clear();
+		void Clear(float r, float g, float b, float a);
 
 	protected:
 		VulkanDevice dev;

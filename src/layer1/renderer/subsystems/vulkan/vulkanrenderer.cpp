@@ -43,6 +43,8 @@ namespace Renderer {
 		
 		device = QueryDevice(instance);
 		surface.Load(window, instance, device, APP_TITLE, width, height);
+		surface.Clear(0.0, 0.0, 0.0, 0.0);
+		surface.Present();
 
 		// init imgui
 		IMGUI_CHECKVERSION();
@@ -63,6 +65,7 @@ namespace Renderer {
 			return false;
 		
 		// do prerender stuff here
+		surface.Clear(0.0, 0.0, 0.0, 0.0);
 
 		return true;
 	}

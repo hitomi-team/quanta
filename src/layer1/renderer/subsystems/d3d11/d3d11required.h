@@ -11,4 +11,10 @@
 #define D3D_FAILED(x) (x != S_OK)
 #define D3D_SAFE_RELEASE(p) if (p != nullptr) { ((IUnknown*)p)->Release();  p = nullptr; }
 
+namespace Renderer {
+
+	extern ID3D11Device *d3d11_global_device;
+
+}
+
 #endif

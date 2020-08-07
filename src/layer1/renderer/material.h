@@ -2,7 +2,7 @@
 #define RENDERER_MATERIAL_H
 
 #include "shader.h"
-#include "texture.h"
+#include "texture2d.h"
 
 namespace Renderer {
 

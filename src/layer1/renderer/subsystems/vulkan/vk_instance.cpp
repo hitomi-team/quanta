@@ -34,7 +34,7 @@ namespace Renderer {
 
 	void VulkanInstance::Release()
 	{
-#ifdef _DEBUG
+#ifdef __DEBUG
 		__DestroyDebugUtilsMessengerEXT(instance, debugMessenger, nullptr);
 #endif
 		vkDestroyInstance(instance, nullptr);
@@ -77,7 +77,7 @@ namespace Renderer {
 		instInfo.pNext = nullptr;
 		instInfo.flags = 0;
 		instInfo.pApplicationInfo = &appInfo;		
-#ifndef _DEBUG
+#ifndef __DEBUG
 		instInfo.enabledLayerCount = 0;
 		instInfo.ppEnabledLayerNames = nullptr;
 #else
@@ -103,7 +103,7 @@ namespace Renderer {
 		instInfo.ppEnabledExtensionNames = extensions.data();
 		VK_ASSERT(vkCreateInstance(&instInfo, nullptr, &instance), "Failed to create instance")
 
-#ifdef _DEBUG
+#ifdef __DEBUG
 		// setup debug messenger
 		VK_ASSERT(__CreateDebugUtilsMessengerEXT(instance, &createinfo, nullptr, &debugMessenger), "Failed to create debugger messenger callback")
 #endif

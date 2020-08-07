@@ -3,8 +3,6 @@
 
 namespace Renderer {
 
-	// for d3d
-
 	class GPUResource {
 	public:
 		GPUResource() {}

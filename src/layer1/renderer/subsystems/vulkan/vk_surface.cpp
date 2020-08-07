@@ -4,7 +4,7 @@
 
 namespace Renderer {
 
-#ifdef _DEBUG
+#ifdef __DEBUG
 	void __Debug_Print_VkSurfaceCapabilitiesKHR(VkSurfaceCapabilitiesKHR _c)
 	{
 		fprintf(stdout, 
@@ -76,7 +76,7 @@ namespace Renderer {
 
 		VkSurfaceCapabilitiesKHR capabilities;
 		vkGetPhysicalDeviceSurfaceCapabilitiesKHR(this->dev.getPhysicalDev(), surface, &capabilities);
-#ifdef _DEBUG
+#ifdef __DEBUG
 		__Debug_Print_VkSurfaceCapabilitiesKHR(capabilities);
 #endif
 
@@ -91,7 +91,7 @@ namespace Renderer {
 		surfaceFormat = {};
 
 		for (uint32_t i = 0; i < formatcount; i++) {
-#ifdef _DEBUG
+#ifdef __DEBUG
 			__Debug_Print_VkSurfaceFormatKHR(formats[i], i);
 #endif
 			if ((formats[i].format == VK_SURFACE_FORMAT) && (formats[i].colorSpace == VK_SURFACE_COLORSPACE)) {
@@ -111,7 +111,7 @@ namespace Renderer {
 		presentMode = (VkPresentModeKHR)0xFF; // some garbage value that isnt used, this is for checking.
 
 		for (uint32_t i = 0; i < presentmodecount; i++) {
-#ifdef _DEBUG
+#ifdef __DEBUG
 			__Debug_Print_VkPresentModeKHR(presentmodes[i], i);
 #endif
 			if (presentmodes[i] == VK_PRESENT_MODE) {
@@ -265,7 +265,7 @@ namespace Renderer {
 		current_image = (current_image + 1) % swapchainimages.size();
 	}
 
-	void VulkanSurface::__Debug_Clear()
+	void VulkanSurface::Clear(float r, float g, float b, float a)
 	{
 		uint32_t queuefamily = dev.getQueueFamilyIndices()[0];
 
@@ -277,7 +277,7 @@ namespace Renderer {
 		subResourceRange.layerCount = 1;
 
 		VkClearColorValue clearColor = {
-			{ 1.0f, 0.5f, 0.5f, 1.0f } // R, G, B, A
+			{ r, g, b, a } // R, G, B, A
 		};
 
 		VkImageMemoryBarrier presentToClearBarrier = {};

@@ -180,6 +180,8 @@ namespace Renderer {
 			return false;
 		}
 
+		d3d11_global_device = device;
+
 		DXGI_SWAP_CHAIN_DESC swapchain_desc = {};
 		swapchain_desc.BufferCount = 1;
 		swapchain_desc.BufferDesc.Width = (unsigned int)width;
@@ -364,6 +366,8 @@ namespace Renderer {
 
 		vsync_ = false;
 		renderTargetsDirty_ = false;
+
+		d3d11_global_device = nullptr;
 	}
 
 	void D3D11Renderer::Clear(unsigned flags, const glm::vec4& color, float depth, unsigned stencil)
@@ -421,5 +425,7 @@ namespace Renderer {
 		ImGui::Render();
 		ImGui_ImplDX11_RenderDrawData(ImGui::GetDrawData());
 	}
+
+	ID3D11Device *d3d11_global_device;
 
 }

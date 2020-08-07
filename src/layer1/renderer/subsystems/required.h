@@ -15,7 +15,7 @@
 #include "../inputlayout.h"
 #include "../rendertarget.h"
 #include "../shader.h"
-#include "../texture.h"
+#include "../texture2d.h"
 #include "../vertexbuffer.h"
 #include "../../config.h"
 #include "rhi.h"
