@@ -10,6 +10,12 @@
 #include "../../imgui/imgui_impl_sdl.h"
 #include "imgui_impl_d3d11.h"
 
+#include "d3d11inputlayout.h"
+#include "d3d11indexbuffer.h"
+#include "d3d11vertexbuffer.h"
+#include "d3d11texture2d.h"
+#include "d3d11shader.h"
+
 namespace Renderer {
 
 	class D3D11Renderer : public RHI {
@@ -43,12 +49,14 @@ namespace Renderer {
 		bool IsDeviceLost();
 
 
-//		VertexBuffer* CreateVertexBuffer(Vertex *vertices, unsigned count);
-//		IndexBuffer* CreateIndexBuffer(unsigned *indices, unsigned count);
-//		InputLayout* CreateInputLayout(Shader* vertexShader, VertexBuffer** buffers, unsigned* elementMasks) { return 0; }
-
+		VertexBuffer* CreateVertexBuffer(Vertex *vertices, unsigned count);
+		IndexBuffer* CreateIndexBuffer(unsigned *indices, unsigned count);
+		InputLayout* CreateInputLayout(unsigned char *vsbytecode, unsigned vsbytecodelen);
+		Shader *CreateShader(unsigned char *vs_bytecode, unsigned int vs_size,
+				     unsigned char *fs_bytecode, unsigned int fs_size);
+		Texture2D *CreateTexture2D(unsigned char *data, unsigned width, unsigned height, SamplerStateDesc samplerstatedesc);
 		
-//		void SetShaders(Shader shader);
+		void SetShaders(Shader *shader);
 //		void SetShaderParameter(unsigned param, const float* data, unsigned count) { }
 //		void SetShaderParameter(unsigned param, float value) { };
 //		void SetShaderParameter(unsigned param, bool value) { };
@@ -58,8 +66,8 @@ namespace Renderer {
 //		void SetShaderParameter(unsigned param, const glm::mat4& matrix) { };
 //		void SetShaderParameter(unsigned param, const glm::vec4& vector) { };
 
-//		void SetVertexBuffer(VertexBuffer* buffer);
-//		void SetIndexBuffer(IndexBuffer* buffer) { };
+		void SetVertexBuffer(VertexBuffer* buffer);
+		void SetIndexBuffer(IndexBuffer* buffer);
 //		bool SetVertexBuffers(const std::vector<VertexBuffer*>& buffers, const std::vector<unsigned>& elementMasks, unsigned instanceOffset = 0) { return true; };
 
 //		bool NeedParameterUpdate(ShaderParameterGroup group, const void* source) { return true; };
@@ -74,21 +82,21 @@ namespace Renderer {
 //		void SetScissorTest(bool enable, const glm::vec2& rect) { };
 //		void SetStencilTest(bool enable, CompareMode mode = CMP_ALWAYS, StencilOp pass = OP_KEEP, StencilOp fail = OP_KEEP, StencilOp zFail = OP_KEEP, unsigned stencilRef = 0, unsigned compareMask = UINT32_MAX, unsigned writeMask = UINT32_MAX) { };	
 
-//		void SetTexture(unsigned index, Texture* texture) { };
+		void SetTexture(unsigned index, Texture2D *texture);
 
 //		void SetRenderTarget(unsigned index, RenderTarget* renderTarget) { };
 //		void SetDepthStencil(RenderTarget* depthStencil) { };
 
 		void SetViewport(const glm::vec4& rect);
 
-//		void Draw(PrimitiveType type, unsigned vertexStart, unsigned vertexCount);
-//		void Draw(PrimitiveType type, unsigned indexStart, unsigned indexCount, unsigned minVertex, unsigned vertexCount);
-//		void DrawInstanced(PrimitiveType type, unsigned indexStart, unsigned indexCount, unsigned minVertex, unsigned vertexCount, unsigned instanceCount);
+		void Draw(PrimitiveType type, unsigned vertexStart, unsigned vertexCount);
+		void DrawIndexed(PrimitiveType type, unsigned indexStart, unsigned indexCount);
+		void DrawInstanced(PrimitiveType type, unsigned indexStart, unsigned indexCount, unsigned instanceCount);
 
 //		void ClearParameterSource(ShaderParameterGroup group) { };
 //		void ClearParameterSources() { };
 //		void ClearTransformSources() { };
-//		void CleanupShaderPrograms(Shader* variation) { };
+//		void CleanupShaderPrograms(Shader *variation) { };
 
 		SDL_Window *GetWindow() { return window; }
 		
@@ -107,15 +115,23 @@ namespace Renderer {
 
 		// internal cache
 		ID3D11RenderTargetView *defaultRenderTargetView;
-		ID3D11Texture2D *defaultDepthTexture;
+		ID3D11Texture2D        *defaultDepthTexture;
 		ID3D11DepthStencilView *defaultDepthStencilView;
 		ID3D11RenderTargetView *renderTargetViews[MAX_RENDERTARGETS];
 		ID3D11DepthStencilView *depthStencilView;
+		ID3D11ShaderResourceView *textureViews_[MAX_TEXTURE_UNITS];
+		ID3D11SamplerState *samplerStates_[MAX_TEXTURE_UNITS];
+		D3D_PRIMITIVE_TOPOLOGY primitiveType_;
+		Shader *shaderProgram_;
+		ID3D11Buffer *vertexBuffer_;
+		ID3D11Buffer *indexBuffer_;
 
 		// states
 		bool vsync_;
 		bool renderTargetsDirty_;
-		bool rasterizerStateDirty;
+		bool textureViewsDirty_;
+		bool rasterizerStateDirty_;
+		
 
 		// internal functions
 		bool UpdateSwapchain(int width, int height, int multisample);

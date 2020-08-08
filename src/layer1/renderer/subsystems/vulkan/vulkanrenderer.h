@@ -76,7 +76,7 @@ namespace Renderer {
 //		void SetScissorTest(bool enable, const glm::vec2& rect) { };
 //		void SetStencilTest(bool enable, CompareMode mode = CMP_ALWAYS, StencilOp pass = OP_KEEP, StencilOp fail = OP_KEEP, StencilOp zFail = OP_KEEP, unsigned stencilRef = 0, unsigned compareMask = UINT32_MAX, unsigned writeMask = UINT32_MAX) { };	
 
-//		void SetTexture(unsigned index, Texture* texture) { };
+//		void SetTexture(unsigned index, Texture2D* texture) { };
 
 //		void SetRenderTarget(unsigned index, RenderTarget* renderTarget) { };
 //		void SetDepthStencil(RenderTarget* depthStencil) { };

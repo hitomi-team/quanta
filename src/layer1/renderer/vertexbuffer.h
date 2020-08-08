@@ -7,6 +7,7 @@
 namespace Renderer {
 
 	struct Vertex {
+		Vertex(glm::vec3 pos, glm::vec3 norm, glm::vec2 tex) { this->pos = pos; this->norm = norm; this->tex = tex; }
 		glm::vec3 pos;
 		glm::vec3 norm;
 		glm::vec2 tex;
@@ -20,6 +21,7 @@ namespace Renderer {
 		virtual bool SetData(Vertex *vertices, unsigned count) { (void)vertices; this->count = count; return true; }
 		virtual void Release() {}
 
+		inline void *GetBuffer() { return buffer; }
 		inline unsigned GetCount() { return count; }
 
 	protected:

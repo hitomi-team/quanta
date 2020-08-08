@@ -2,6 +2,7 @@
 #define RENDERER_D3D11SHADER_H
 
 #include "d3d11required.h"
+#include "d3d11inputlayout.h"
 #include "../../shader.h"
 
 namespace Renderer {
@@ -16,6 +17,7 @@ namespace Renderer {
 
 		void *GetProgram() { return nullptr; } // dont use this for d3d11!
 		void *GetObject(ShaderType type);
+		
 	};
 
 }

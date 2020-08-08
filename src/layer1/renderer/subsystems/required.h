@@ -18,8 +18,9 @@
 #include "../texture2d.h"
 #include "../vertexbuffer.h"
 #include "../../config.h"
+#include "../../log.h"
 #include "rhi.h"
 
-#define FATAL(x) SDL_ShowSimpleMessageBox(SDL_MESSAGEBOX_ERROR, "Fatal Engine Error", x, nullptr);
+#define FATAL(x) SDL_ShowSimpleMessageBox(SDL_MESSAGEBOX_ERROR, "Fatal Engine Error", x, nullptr); global_log.Error(std::string("Renderer: ") + std::string(x));
 
 #endif

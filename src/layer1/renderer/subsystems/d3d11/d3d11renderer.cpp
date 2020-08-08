@@ -3,56 +3,6 @@
 
 namespace Renderer {
 
-	static const char* addressModeNames[] =
-	{
-		"wrap",
-		"mirror",
-		"clamp",
-		"border",
-		0
-	};
-
-	static const char* filterModeNames[] =
-	{
-		"nearest",
-		"bilinear",
-		"trilinear",
-		"anisotropic",
-		"default",
-		0
-	};
-
-	static const D3D11_FILTER d3dFilterMode[] =
-	{
-		D3D11_FILTER_MIN_MAG_MIP_POINT,
-		D3D11_FILTER_MIN_MAG_LINEAR_MIP_POINT,
-		D3D11_FILTER_MIN_MAG_MIP_LINEAR,
-		D3D11_FILTER_ANISOTROPIC,
-		D3D11_FILTER_COMPARISON_MIN_MAG_MIP_POINT,
-		D3D11_FILTER_COMPARISON_MIN_MAG_LINEAR_MIP_POINT,
-		D3D11_FILTER_COMPARISON_MIN_MAG_MIP_LINEAR,
-		D3D11_FILTER_COMPARISON_ANISOTROPIC
-	};
-
-	static const D3D11_TEXTURE_ADDRESS_MODE d3dAddressMode[] =
-	{
-		D3D11_TEXTURE_ADDRESS_WRAP,
-		D3D11_TEXTURE_ADDRESS_MIRROR,
-		D3D11_TEXTURE_ADDRESS_CLAMP,
-		D3D11_TEXTURE_ADDRESS_BORDER
-	};
-
-	static const D3D11_COMPARISON_FUNC d3dCmpFunc[] =
-	{
-		D3D11_COMPARISON_ALWAYS,
-		D3D11_COMPARISON_EQUAL,
-		D3D11_COMPARISON_NOT_EQUAL,
-		D3D11_COMPARISON_LESS,
-		D3D11_COMPARISON_LESS_EQUAL,
-		D3D11_COMPARISON_GREATER,
-		D3D11_COMPARISON_GREATER_EQUAL
-	};
-
 	static const DWORD d3dBlendEnable[] =
 	{
 		FALSE,
@@ -132,6 +82,24 @@ namespace Renderer {
 		D3D11_FILL_WIREFRAME // Point fill mode not supported
 	};
 
+	inline void GetD3D11PrimitiveType(PrimitiveType type, D3D_PRIMITIVE_TOPOLOGY *d3dtype, unsigned elementcount, unsigned *primitivecount)
+	{
+		switch (type) {
+		case TRIANGLE_LIST:
+			*primitivecount = elementcount / 3;
+			*d3dtype = D3D_PRIMITIVE_TOPOLOGY_TRIANGLELIST;
+			return;
+		case POINT_LIST:
+			*primitivecount = elementcount / 2;
+			*d3dtype = D3D_PRIMITIVE_TOPOLOGY_POINTLIST;
+			return;
+		default:
+			*d3dtype = D3D_PRIMITIVE_TOPOLOGY_UNDEFINED;
+			FATAL("Unhandled Primitive Type!")
+			return;
+		}
+	}
+
 	D3D11Renderer::D3D11Renderer()
 	{
 		SDL_Init(SDL_INIT_VIDEO);
@@ -181,6 +149,7 @@ namespace Renderer {
 		}
 
 		d3d11_global_device = device;
+		d3d11_global_context = context;
 
 		DXGI_SWAP_CHAIN_DESC swapchain_desc = {};
 		swapchain_desc.BufferCount = 1;
@@ -319,6 +288,13 @@ namespace Renderer {
 			context->OMSetRenderTargets(MAX_RENDERTARGETS, &renderTargetViews[0], nullptr);
 			renderTargetsDirty_ = false;
 		}
+	
+		// Bind Shader Resource Views to Pixel Shader
+		if (textureViewsDirty_) {
+			context->PSSetSamplers(0, MAX_TEXTURE_UNITS, &samplerStates_[0]);
+			context->PSSetShaderResources(0, MAX_TEXTURE_UNITS, &textureViews_[0]);
+			textureViewsDirty_ = false;
+		}
 	}
 
 	bool D3D11Renderer::BeginFrame() // true = continue rendering, false = dont render
@@ -334,6 +310,11 @@ namespace Renderer {
 	void D3D11Renderer::EndFrame()
 	{
 		swapchain->Present(vsync_ ? 1 : 0, 0);
+		
+		primitiveCount = 0;
+		drawCount = 0;
+		drawIndexedCount = 0;
+		drawInstancedCount = 0;
 	}
 	
 	void D3D11Renderer::Close()
@@ -360,14 +341,25 @@ namespace Renderer {
 			renderTargetViews[i] = nullptr;
 		}
 
+		for (int i = 0; i < MAX_TEXTURE_UNITS; i++) {
+			samplerStates_[i] = nullptr;
+			textureViews_[i] = nullptr;
+		}
+
 		defaultRenderTargetView = nullptr;
 		defaultDepthTexture = nullptr;
 		defaultDepthStencilView = nullptr;
+		primitiveType_ = D3D_PRIMITIVE_TOPOLOGY_UNDEFINED;
+		shaderProgram_ = nullptr;
+		vertexBuffer_ = nullptr;
 
 		vsync_ = false;
 		renderTargetsDirty_ = false;
+		textureViewsDirty_ = false;
+		rasterizerStateDirty_ = false;
 
 		d3d11_global_device = nullptr;
+		d3d11_global_context = nullptr;
 	}
 
 	void D3D11Renderer::Clear(unsigned flags, const glm::vec4& color, float depth, unsigned stencil)
@@ -390,6 +382,141 @@ namespace Renderer {
 		}
 	}
 
+	VertexBuffer* D3D11Renderer::CreateVertexBuffer(Vertex *vertices, unsigned count)
+	{
+		if (!vertices || !count)
+			return nullptr;
+		
+		D3D11VertexBuffer *vertbuf = new D3D11VertexBuffer;
+
+		if (!vertbuf->SetData(vertices, count)) {
+			delete vertbuf;
+			return nullptr;
+		}
+
+		return vertbuf;
+	}
+
+	IndexBuffer* D3D11Renderer::CreateIndexBuffer(unsigned *indices, unsigned count)
+	{
+		if (!indices || !count)
+			return nullptr;
+		
+		D3D11IndexBuffer *indexbuf = new D3D11IndexBuffer;
+
+		if (!indexbuf->SetData(indices, count)) {
+			delete indexbuf;
+			return nullptr;
+		}
+
+		return indexbuf;
+	}
+
+	InputLayout* D3D11Renderer::CreateInputLayout(unsigned char *vsbytecode, unsigned vsbytecodelen)
+	{
+		if (!vsbytecode || !vsbytecodelen)
+			return nullptr;
+		
+		D3D11InputLayout *inputlayout = new D3D11InputLayout;
+
+		if (!inputlayout->Setup(vsbytecode, vsbytecodelen)) {
+			delete inputlayout;
+			return nullptr;
+		}
+
+		return inputlayout;
+	}
+
+	Shader *D3D11Renderer::CreateShader(unsigned char *vs_bytecode, unsigned int vs_size,
+					    unsigned char *fs_bytecode, unsigned int fs_size)
+	{
+		if ((!vs_bytecode || !vs_size) || (!fs_bytecode || !fs_size))
+			return nullptr;
+		
+		D3D11Shader *shader = new D3D11Shader;
+
+		if (!shader->Build(vs_bytecode, vs_size, fs_bytecode, fs_size)) {
+			delete shader;
+			return nullptr;
+		}
+
+		return shader;
+	}
+
+	Texture2D *D3D11Renderer::CreateTexture2D(unsigned char *data, unsigned width, unsigned height, SamplerStateDesc samplerstatedesc)
+	{
+		if (!data || !width || !height)
+			return nullptr;
+		
+		D3D11Texture2D *texture2d = new D3D11Texture2D;
+
+		if (!texture2d->SetData(data, width, height, samplerstatedesc)) {
+			delete texture2d;
+			return nullptr;
+		}
+
+		return texture2d;
+	}
+
+	void D3D11Renderer::SetShaders(Shader *shader)
+	{
+		// Assume the shaders are already compiled (Which they should be)
+		if (!shader)
+			return;
+		
+		if (shaderProgram_ == shader)
+			return;
+
+		ID3D11VertexShader *vs = (ID3D11VertexShader *)shader->GetObject(VS);
+		ID3D11PixelShader *ps = (ID3D11PixelShader *)shader->GetObject(FS);
+		ID3D11InputLayout *il = (ID3D11InputLayout *)shader->GetInputLayout();
+
+		if (!vs || !ps || !il)
+			return;
+		
+		context->IASetInputLayout(il);
+		context->VSSetShader(vs, nullptr, 0);
+		context->PSSetShader(ps, nullptr, 0);
+
+		shaderProgram_ = shader;
+	}
+
+	void D3D11Renderer::SetVertexBuffer(VertexBuffer* buffer)
+	{
+		unsigned stride = 0;
+		unsigned offset = 0;
+
+		if (!buffer) {
+			context->IASetVertexBuffers(0, 1, nullptr, &stride, &offset);
+			vertexBuffer_ = nullptr;
+
+			return;
+		}
+		
+		
+		ID3D11Buffer *vbuf = (ID3D11Buffer *)buffer->GetBuffer();
+		if (vbuf != vertexBuffer_) {
+			stride = sizeof(Vertex);
+			context->IASetVertexBuffers(0, 1, &vbuf, &stride, &offset);
+			vertexBuffer_ = vbuf;
+		}
+	}
+
+	void D3D11Renderer::SetIndexBuffer(IndexBuffer* buffer)
+	{
+		if (!buffer) {
+			context->IASetIndexBuffer(nullptr, DXGI_FORMAT_UNKNOWN, 0);
+
+			return;
+		}
+		
+		ID3D11Buffer *ibuf = (ID3D11Buffer *)buffer->GetBuffer();
+		if (ibuf != indexBuffer_) {
+			context->IASetIndexBuffer(ibuf, DXGI_FORMAT_R32_UINT, 0);
+			indexBuffer_ = ibuf;
+		}
+	}
+
 	void D3D11Renderer::SetColorWrite(bool enable)
 	{
 
@@ -397,6 +524,18 @@ namespace Renderer {
 
 	void D3D11Renderer::SetDepthWrite(bool enable)
 	{
+	}
+
+	void D3D11Renderer::SetTexture(unsigned index, Texture2D* texture)
+	{
+		if ((index >= MAX_TEXTURE_UNITS) || !texture)
+			return;
+	
+		if ((ID3D11ShaderResourceView *)texture->GetView() != textureViews_[index]) {
+			samplerStates_[index] = (ID3D11SamplerState *)texture->GetSampler();
+			textureViews_[index] = (ID3D11ShaderResourceView *)texture->GetView();
+			textureViewsDirty_ = true;
+		}
 	}
 
 	void D3D11Renderer::SetViewport(const glm::vec4& rect)
@@ -410,6 +549,67 @@ namespace Renderer {
 		d3dviewport.MaxDepth = 1.0f;
 
 		context->RSSetViewports(1, &d3dviewport);
+	}
+
+	void D3D11Renderer::Draw(PrimitiveType type, unsigned vertexStart, unsigned vertexCount)
+	{
+		if (!shaderProgram_ || !vertexCount)
+			return;
+		
+		PreDraw();
+
+		unsigned primitive = 0;
+		D3D_PRIMITIVE_TOPOLOGY d3dtype;
+		GetD3D11PrimitiveType(type, &d3dtype, vertexCount, &primitive);
+		if (d3dtype != primitiveType_) {
+			context->IASetPrimitiveTopology(d3dtype);
+			primitiveType_ = d3dtype;
+		}
+
+		context->Draw(vertexCount, vertexStart);
+
+		primitiveCount += primitive;
+		++drawCount;
+	}
+
+	void D3D11Renderer::DrawIndexed(PrimitiveType type, unsigned indexStart, unsigned indexCount)
+	{
+		if (!shaderProgram_ || !indexCount)
+			return;
+		
+		unsigned primitive = 0;
+		D3D_PRIMITIVE_TOPOLOGY d3dtype;
+		GetD3D11PrimitiveType(type, &d3dtype, indexCount, &primitive);
+		if (d3dtype != primitiveType_) {
+			context->IASetPrimitiveTopology(d3dtype);
+			primitiveType_ = d3dtype;
+		}
+
+		context->DrawIndexed(indexCount, indexStart, 0);
+
+		primitiveCount += primitive;
+		++drawIndexedCount;
+	}
+
+	void D3D11Renderer::DrawInstanced(PrimitiveType type, unsigned indexStart, unsigned indexCount, unsigned instanceCount)
+	{
+		if (!shaderProgram_ || !indexCount || !instanceCount)
+			return;
+		
+		PreDraw();
+
+		unsigned primitive = 0;
+		D3D_PRIMITIVE_TOPOLOGY d3dtype;
+		GetD3D11PrimitiveType(type, &d3dtype, indexCount, &primitive);
+		if (d3dtype != primitiveType_) {
+			context->IASetPrimitiveTopology(d3dtype);
+			primitiveType_ = d3dtype;
+		}
+
+		context->DrawIndexedInstanced(indexCount, instanceCount, indexStart, 0, 0);
+
+		primitiveCount += instanceCount * primitive;
+		++drawInstancedCount;
 	}
 
 	void D3D11Renderer::ImGuiNewFrame()
@@ -427,5 +627,6 @@ namespace Renderer {
 	}
 
 	ID3D11Device *d3d11_global_device;
+	ID3D11DeviceContext *d3d11_global_context;
 
 }

@@ -2,12 +2,18 @@
 #include <stdio.h>
 
 
+#include "renderer/stb_image.h"
 #include "renderer/runtime.h"
 #include "renderer/input.h"
 #include "graph/game.h"
 #include "log.h"
 
+#include "renderer/material.h"
+#include "renderer/mesh.h"
+
 #include "filesystem/runtime.h"
+
+using namespace Renderer;
 
 int main()
 {
@@ -32,5 +38,78 @@ int main()
 	game.registerService(&renderer);
 	game.registerService(&input);
 	game.setupServices();
+
+	Vertex vertices[] = {
+		Vertex(glm::vec3(-1.0f,  1.0f, 0.0f), glm::vec3(1.0f, 0.0f, 0.0f), glm::vec2(0.0f, 0.0f)),
+		Vertex(glm::vec3( 1.0f,  1.0f, 0.0f), glm::vec3(0.0f, 1.0f, 0.0f), glm::vec2(1.0f, 0.0f)),
+		Vertex(glm::vec3( 1.0f, -1.0f, 0.0f), glm::vec3(0.0f, 0.0f, 1.0f), glm::vec2(1.0f, 1.0f)),
+		Vertex(glm::vec3(-1.0f, -1.0f, 0.0f), glm::vec3(1.0f, 0.0f, 0.0f), glm::vec2(0.0f, 1.0f))
+	};
+
+	unsigned indices[] = {
+		0, 1, 2,
+		2, 3, 0
+	};
+
+	// Shader Setup
+
+	auto h = filesystem.FindFile("/shaders/tri_vs.dxbc");
+	size_t vs_size = filesystem.GetFileSize(h);
+	char *vs_bytecode = new char[vs_size + 1];
+	filesystem.ReadFile(h, vs_bytecode, vs_size);
+	h = filesystem.FindFile("/shaders/tri_fs.dxbc");
+	size_t fs_size = filesystem.GetFileSize(h);
+	char *fs_bytecode = new char[fs_size + 1];
+	filesystem.ReadFile(h, fs_bytecode, fs_size);
+
+	Shader *shader = renderer_api.CreateShader((unsigned char *)vs_bytecode, vs_size, (unsigned char *)fs_bytecode, fs_size);
+
+	delete vs_bytecode;
+	delete fs_bytecode;
+
+	// Texture Setup
+
+	int x, y, channels;
+	h = filesystem.FindFile("/textures/pfp.png");
+	size_t len = filesystem.GetFileSize(h);
+	char *tex_buf = new char[len];
+	filesystem.ReadFile(h, tex_buf, len);
+	unsigned char *pix_data = stbi_load_from_memory((unsigned char *)tex_buf, (int)len, &x, &y, &channels, 4);
+	
+	SamplerStateDesc desc = {};
+	desc.Filter = FILTER_NEAREST;
+	desc.AddressModeU = ADDRESS_MIRROR;
+	desc.AddressModeV = ADDRESS_MIRROR;
+	desc.AddressModeW = ADDRESS_MIRROR;
+	desc.ComparisonFunc = TCF_LESSEQUAL;
+	desc.MipLODBias = 0;
+	desc.MaxLOD = 0;
+	desc.MinLOD = 0;
+	desc.MaxAniso = 0;
+
+	Texture2D *tex = renderer_api.CreateTexture2D(pix_data, x, y, desc);
+	
+	stbi_image_free(pix_data);
+	delete tex_buf;
+
+	// Actual Renderer Usage
+
+	Material newmat;
+	newmat.Setup(shader, tex);
+
+	Mesh newmesh;
+	newmesh.Setup(renderer.GetRenderer(), vertices, 4, indices, 6, MESH_2D);
+
+	renderer.RegisterMesh(&newmesh);
+	renderer.RegisterMaterial(&newmat);
+
+	Prop *newprop = renderer.AllocateProp(0, 0);
+
+	// Finally we can run the game
+
 	game.Run();
+
+	newprop->Release();
+	newmat.Release();
+	newmesh.Release();
 }

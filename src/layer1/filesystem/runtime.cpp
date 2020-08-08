@@ -127,7 +127,7 @@ namespace Filesystem {
 
 	std::size_t Runtime::ReadFile(int handle, char *block, std::size_t n)
 	{
-		char buf[4096];
+		char *buf;
 		std::size_t n_read, to_read, total_read = 0;
 		std::uint64_t actual_size;
 
@@ -141,17 +141,17 @@ namespace Filesystem {
 
 		// TODO: implement multi-chunk
 		actual_size = m_entries[handle].size;
+		
+		buf = new char[actual_size];
 
 		if (m_offsets[handle] >= actual_size)
 			return 0;
 
 		while (n != 0 && actual_size != 0) {
-			if (sizeof(buf) > actual_size || sizeof(buf) < n)
-				to_read = static_cast< size_t >(actual_size);
-			else if (sizeof(buf) > n)
+			if (actual_size > n)
 				to_read = n;
 			else
-				to_read = sizeof(buf);
+				to_read = actual_size;
 
 			m_chunk_paks[0].seekg(m_chunk_begin_size + m_entries[handle].offset + m_offsets[handle], std::ios_base::beg);
 			m_chunk_paks[0].read(buf, to_read);

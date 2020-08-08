@@ -12,6 +12,7 @@ namespace Renderer {
 		virtual void Release() {}
 
 		inline unsigned GetCount() { return count; }
+		inline void *GetBuffer() { return buffer; }
 
 	protected:
 		void *buffer;

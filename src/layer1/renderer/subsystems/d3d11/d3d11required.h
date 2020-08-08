@@ -14,6 +14,7 @@
 namespace Renderer {
 
 	extern ID3D11Device *d3d11_global_device;
+	extern ID3D11DeviceContext *d3d11_global_context;
 
 }
 

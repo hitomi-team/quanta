@@ -37,12 +37,14 @@ namespace Renderer {
 		virtual bool IsDeviceLost() const { return false; } //Always false on Direct3D
 
 
-		virtual VertexBuffer* CreateVertexBuffer() { return 0; }
-		virtual IndexBuffer* CreateIndexBuffer() { return 0; }
-		virtual InputLayout* CreateInputLayout(Shader* vertexShader, VertexBuffer** buffers, unsigned* elementMasks) { return 0; }
-
+		virtual VertexBuffer* CreateVertexBuffer(Vertex *vertices, unsigned count) { return 0; }
+		virtual IndexBuffer* CreateIndexBuffer(unsigned *indices, unsigned count) { return 0; }
+		virtual InputLayout* CreateInputLayout(unsigned char *vsbytecode, unsigned vsbytecodelen) { return 0; }
+		virtual Shader *CreateShader(unsigned char *vs_bytecode, unsigned int vs_size,
+					     unsigned char *fs_bytecode, unsigned int fs_size) { return 0; }
+		Texture2D *CreateTexture2D(unsigned char *data, unsigned width, unsigned height, SamplerStateDesc samplerstatedesc) { return 0; }
 		
-		virtual void SetShaders(std::string vs, std::string fs) { };
+		virtual void SetShaders(Shader *shader) { };
 		virtual void SetShaderParameter(unsigned param, const float* data, unsigned count) { }
 		virtual void SetShaderParameter(unsigned param, float value) { };
 		virtual void SetShaderParameter(unsigned param, bool value) { };
@@ -68,7 +70,7 @@ namespace Renderer {
 		virtual void SetScissorTest(bool enable, const glm::vec2& rect) { };
 		virtual void SetStencilTest(bool enable, CompareMode mode = CMP_ALWAYS, StencilOp pass = OP_KEEP, StencilOp fail = OP_KEEP, StencilOp zFail = OP_KEEP, unsigned stencilRef = 0, unsigned compareMask = UINT32_MAX, unsigned writeMask = UINT32_MAX) { };	
 
-		virtual void SetTexture(unsigned index, Texture* texture) { };
+		virtual void SetTexture(unsigned index, Texture2D* texture) { };
 
 		virtual void SetRenderTarget(unsigned index, RenderTarget* renderTarget) { };
 		virtual void SetDepthStencil(RenderTarget* depthStencil) { };
@@ -76,8 +78,8 @@ namespace Renderer {
 		virtual void SetViewport(const glm::vec4& rect) { };
 
 		virtual void Draw(PrimitiveType type, unsigned vertexStart, unsigned vertexCount) { };
-		virtual void Draw(PrimitiveType type, unsigned indexStart, unsigned indexCount, unsigned minVertex, unsigned vertexCount) { };
-		virtual void DrawInstanced(PrimitiveType type, unsigned indexStart, unsigned indexCount, unsigned minVertex, unsigned vertexCount, unsigned instanceCount) { };
+		virtual void DrawIndexed(PrimitiveType type, unsigned indexStart, unsigned indexCount) { };
+		virtual void DrawInstanced(PrimitiveType type, unsigned indexStart, unsigned indexCount, unsigned instanceCount) { };
 
 		virtual void ClearParameterSource(ShaderParameterGroup group) { };
 		virtual void ClearParameterSources() { };
@@ -89,7 +91,20 @@ namespace Renderer {
 		virtual void ImGuiNewFrame() { }; // Called before ImGui commands
 		virtual void ImGuiEndFrame() { }; // Called after ImGui commands
 
+		// For Profiler
+		unsigned getPrimitiveCount() { return primitiveCount; } // Reset to 0 every frame.
+		unsigned getDrawCount() { return drawCount; }
+		unsigned getDrawIndexedCount() { return drawIndexedCount; }
+		unsigned getDrawInstancedCount() { return drawInstancedCount; }
+		unsigned getTotalDrawCallCount() { return drawCount + drawIndexedCount + drawInstancedCount; }
+
 	protected:
+		// For Profiler
+		unsigned primitiveCount;
+		unsigned drawCount;
+		unsigned drawIndexedCount;
+		unsigned drawInstancedCount;
+
 		bool isInitialized;
 	};
 

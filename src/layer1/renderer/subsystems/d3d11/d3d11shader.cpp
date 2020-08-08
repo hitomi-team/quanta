@@ -26,6 +26,13 @@ namespace Renderer {
 			return false;
 		}
 
+		inputlayout = new D3D11InputLayout;
+
+		if (!inputlayout->Setup(vs_bytecode, vs_size)) {
+			Release();
+			return false;
+		}
+
 		return true;
 	}
 
@@ -33,6 +40,12 @@ namespace Renderer {
 	{
 		for (unsigned i = 0; i < 2; i++)
 			D3D_SAFE_RELEASE(objects[i]);
+		
+		if (inputlayout) {
+			inputlayout->Release();
+			delete inputlayout;
+			inputlayout = nullptr;
+		}
 	}
 
 	void *D3D11Shader::GetObject(ShaderType type)

@@ -257,26 +257,9 @@ namespace Renderer {
 		std::string ClearColor;
 	};
 
-	enum TextureFilterModes
+	enum TextureComparisonFunction
 	{
-		TFM_Nearest = 0,
-		TFM_Bilinear,
-		TFM_Trilinear,
-		TFM_Aniso,
-		TFM_Default
-	};
-
-	enum TextureAddressModes
-	{
-		TAM_Wrap = 0,
-		TAM_Mirror,
-		TAM_Clamp,
-		TAM_Border
-	};
-
-	enum TextureComparisonFunctions
-	{
-		TCF_NEVER,
+		TCF_NEVER = 0,
 		TCF_EQUAL,
 		TCF_NOTEQUAL,
 		TCF_LESS,
@@ -288,22 +271,19 @@ namespace Renderer {
 
 	struct SamplerStateDesc
 	{
-		TextureFilterModes Filter;
-		TextureAddressModes AddressModeU;
-		TextureAddressModes AddressModeV;
-		TextureAddressModes AddressModeW;
+		TextureFilterMode Filter;
+		TextureAddressMode AddressModeU;
+		TextureAddressMode AddressModeV;
+		TextureAddressMode AddressModeW;
 
-		TextureComparisonFunctions ComparisonFunc;
+		TextureComparisonFunction ComparisonFunc;
 
+		float MipLODBias;
 		float MaxLOD;
+		float MinLOD;
 		unsigned MaxAniso;
 
-		std::string Name;
-
 		float BorderColor[4];
-
-		unsigned Register;
-		ShaderType Type;
 	};
 
 	enum MiscRenderingFlags
