@@ -65,7 +65,6 @@ namespace Renderer {
 			return false;
 		
 		// do prerender stuff here
-		surface.Clear(0.0, 0.0, 0.0, 0.0);
 
 		return true;
 	}
@@ -79,9 +78,10 @@ namespace Renderer {
 	void VulkanRenderer::Clear(unsigned flags, const glm::vec4& color, float depth, unsigned stencil)
 	{
 		(void)flags;
-		(void)color;
 		(void)depth;
 		(void)stencil;
+
+		surface.Clear(color.r, color.g, color.b, color.a);
 	}
 
 	void VulkanRenderer::Close()
