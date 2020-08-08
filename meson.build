@@ -24,18 +24,16 @@ if target_machine.system() == 'windows'
 	lib_d3d11	= compiler.find_library('d3d11', dirs : lib_path)
 	lib_dxgi	= compiler.find_library('dxgi', dirs : lib_path)
 	lib_d3dcomp	= compiler.find_library('d3dcompiler', dirs : lib_path)
-	lib_vulkan	= compiler.find_library('vulkan-1', dirs : lib_path)
 	add_global_arguments('-D=__D3D11 -D=__VULKAN', language : 'cpp')
 
-	binary = executable('quanta', src, dependencies : [lib_sdl2, lib_sdl2main, lib_d3d11, lib_dxgi, lib_d3dcomp, lib_vulkan], include_directories : [inc_directory])
+	binary = executable('quanta', src, dependencies : [lib_sdl2, lib_sdl2main, lib_d3d11, lib_dxgi, lib_d3dcomp], include_directories : [inc_directory])
 
 else # linux
 	lib_sdl2	= compiler.find_library('SDL2')
 	lib_sdl2main	= compiler.find_library('SDL2main')
-	lib_vulkan	= compiler.find_library('vulkan')
 
 	add_global_arguments('-D=__VULKAN', language : 'cpp')
-	binary = executable('quanta', src, dependencies : [lib_sdl2, lib_sdl2main, lib_vulkan])
+	binary = executable('quanta', src, dependencies : [lib_sdl2, lib_sdl2main])
 endif
 
 subdir('tools')

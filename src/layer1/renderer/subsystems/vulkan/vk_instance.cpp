@@ -6,25 +6,6 @@
 
 namespace Renderer {
 
-	VkResult __CreateDebugUtilsMessengerEXT(VkInstance instance, const VkDebugUtilsMessengerCreateInfoEXT *pCreateInfo, const VkAllocationCallbacks *pAllocator, VkDebugUtilsMessengerEXT *pDebugMessenger)
-	{
-		auto func = (PFN_vkCreateDebugUtilsMessengerEXT) vkGetInstanceProcAddr(instance, "vkCreateDebugUtilsMessengerEXT");
-
-		if (!func)
-			return VK_ERROR_EXTENSION_NOT_PRESENT;
-		
-		return func(instance, pCreateInfo, pAllocator, pDebugMessenger);
-	}
-
-	void __DestroyDebugUtilsMessengerEXT(VkInstance instance, VkDebugUtilsMessengerEXT debugMessenger, const VkAllocationCallbacks *pAllocator)
-	{
-		auto func = (PFN_vkDestroyDebugUtilsMessengerEXT) vkGetInstanceProcAddr(instance, "vkDestroyDebugUtilsMessengerEXT");
-
-		if (func)
-			func(instance, debugMessenger, pAllocator);
-	}
-
-
 	VKAPI_ATTR VkBool32 VKAPI_CALL debugCallback(VkDebugUtilsMessageSeverityFlagBitsEXT severity, VkDebugUtilsMessageTypeFlagsEXT type, const VkDebugUtilsMessengerCallbackDataEXT *data, void *userdata)
 	{
 		std::cerr << data->pMessage << std::endl;
@@ -35,7 +16,7 @@ namespace Renderer {
 	void VulkanInstance::Release()
 	{
 #ifdef __DEBUG
-		__DestroyDebugUtilsMessengerEXT(instance, debugMessenger, nullptr);
+		vkDestroyDebugUtilsMessengerEXT(instance, debugMessenger, nullptr);
 #endif
 		vkDestroyInstance(instance, nullptr);
 	}
@@ -62,6 +43,8 @@ namespace Renderer {
 			FATAL("Cannot get Vulkan Extensions!");
 			return false;
 		}
+
+		volkInitializeCustom(reinterpret_cast< PFN_vkGetInstanceProcAddr >(SDL_Vulkan_GetVkGetInstanceProcAddr()));
 
 		VkApplicationInfo appInfo = {};
 		appInfo.sType = VK_STRUCTURE_TYPE_APPLICATION_INFO;
@@ -103,9 +86,11 @@ namespace Renderer {
 		instInfo.ppEnabledExtensionNames = extensions.data();
 		VK_ASSERT(vkCreateInstance(&instInfo, nullptr, &instance), "Failed to create instance")
 
+		volkLoadInstance(instance);
+
 #ifdef __DEBUG
 		// setup debug messenger
-		VK_ASSERT(__CreateDebugUtilsMessengerEXT(instance, &createinfo, nullptr, &debugMessenger), "Failed to create debugger messenger callback")
+		VK_ASSERT(vkCreateDebugUtilsMessengerEXT(instance, &createinfo, nullptr, &debugMessenger), "Failed to create debugger messenger callback")
 #endif
 
 		return true;
