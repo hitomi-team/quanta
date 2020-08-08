@@ -1,4 +1,6 @@
 subsystem_src = files([
+	'volk.c',
+
 	'vulkanrenderer.cpp',
 	'imgui_impl_vulkan.cpp',
 

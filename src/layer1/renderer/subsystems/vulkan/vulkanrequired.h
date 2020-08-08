@@ -1,7 +1,7 @@
 #ifndef RENDERER_VULKANREQUIRED_H
 #define RENDERER_VULKANREQUIRED_H
 
-#include <vulkan/vulkan.h>
+#include "volk.h"
 #include <SDL2/SDL_vulkan.h>
 
 #define VK_ASSERT(X, STR) if (X != VK_SUCCESS) { fprintf(stderr, "vk error (%d): %s\n", X, STR); abort(); }
