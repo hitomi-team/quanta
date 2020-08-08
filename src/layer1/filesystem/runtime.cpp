@@ -142,10 +142,10 @@ namespace Filesystem {
 		// TODO: implement multi-chunk
 		actual_size = m_entries[handle].size;
 		
-		buf = new char[actual_size];
-
 		if (m_offsets[handle] >= actual_size)
 			return 0;
+
+		buf = new char[actual_size];
 
 		while (n != 0 && actual_size != 0) {
 			if (actual_size > n)
@@ -166,6 +166,8 @@ namespace Filesystem {
 
 			m_offsets[handle] += n_read;
 		}
+
+		delete[] buf;
 
 		return total_read;
 	}
