@@ -1,6 +1,12 @@
-project('quanta', ['c', 'cpp'], version : 'v0.01', meson_version : '>= 0.47')
+project('quanta', ['c', 'cpp'], version : 'v0.01', meson_version : '>= 0.47', default_options : [
+	'buildtype=debugoptimized',
+	'b_ndebug=if-release',
+	'c_std=c99',
+	'cpp_std=c++14',
+	'warning_level=3',
+	'werror=true'
+])
 
-add_global_arguments('-std=c++14', language : 'cpp')
 compiler       = meson.get_compiler('cpp')
 inc_directory  = include_directories('./inc')
 

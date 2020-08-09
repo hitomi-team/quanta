@@ -9,8 +9,8 @@ namespace Renderer {
 	// The angle is in degrees
 	class Transform {
 	public:
-		Transform() {}
-		Transform(glm::vec3 pos, glm::vec3 rot, glm::vec3 scale, float angle) { Setup(pos, rot, scale, angle); }
+		inline Transform() {}
+		inline Transform(glm::vec3 pos, glm::vec3 rot, glm::vec3 scale, float angle) { Setup(pos, rot, scale, angle); }
 
 		void Setup(glm::vec3 pos, glm::vec3 rot, glm::vec3 scale, float angle);
 		

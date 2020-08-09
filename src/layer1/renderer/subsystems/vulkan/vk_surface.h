@@ -26,8 +26,8 @@ namespace Renderer {
 	class VulkanSurface {
 	public:
 		VulkanSurface() {}
-		VulkanSurface(SDL_Window *window, VulkanInstance &instance, const VulkanDevice &dev, std::string title, int w, int h) { Load(window, instance, dev, title, w, h); }
-		void Load(SDL_Window *window, VulkanInstance &instance, const VulkanDevice &dev, std::string title, int w, int h);
+		VulkanSurface(SDL_Window *window, VulkanInstance &instance, const VulkanDevice &dev) { Load(window, instance, dev); }
+		void Load(SDL_Window *window, VulkanInstance &instance, const VulkanDevice &dev);
 		void Release(VulkanInstance instance);
 
 		VkCommandBuffer getPresentCommandBuffer();

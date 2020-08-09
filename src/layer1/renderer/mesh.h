@@ -16,7 +16,7 @@ namespace Renderer {
 
 	class Mesh {
 	public:
-		Mesh() { type = MESH_UNDEFINED; ibuffer = nullptr; vbuffer = nullptr; indexDraw = false; }
+		inline Mesh() { type = MESH_UNDEFINED; ibuffer = nullptr; vbuffer = nullptr; indexDraw = false; }
 
 		bool Setup(RHI *rhi, Vertex *vertices, unsigned count, MeshType type);
 		bool Setup(RHI *rhi, Vertex *vertices, unsigned vcount, unsigned *indices, unsigned icount, MeshType type);

@@ -1,4 +1,5 @@
 #include "d3d11shader.h"
+#include "../../../log.h"
 
 namespace Renderer {
 
@@ -60,6 +61,11 @@ namespace Renderer {
 		}
 
 		return nullptr;		
+	}
+
+	void *D3D11Shader::GetInputLayout()
+	{
+		return nullptr;
 	}
 
 }

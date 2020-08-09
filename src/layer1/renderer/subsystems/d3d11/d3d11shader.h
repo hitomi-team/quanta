@@ -17,7 +17,8 @@ namespace Renderer {
 
 		void *GetProgram() { return nullptr; } // dont use this for d3d11!
 		void *GetObject(ShaderType type);
-		
+		void *GetInputLayout();
+
 	};
 
 }

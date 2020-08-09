@@ -5,11 +5,11 @@ namespace Renderer {
 
 	class IndexBuffer {
 	public:
-		IndexBuffer() {}
-		virtual ~IndexBuffer() {}
+		inline IndexBuffer() {}
+		inline virtual ~IndexBuffer() {}
 	
-		virtual bool SetData(unsigned *indices, unsigned count) { (void)indices; this->count = count; return true; }
-		virtual void Release() {}
+		virtual bool SetData(unsigned *indices, unsigned count) = 0;
+		virtual void Release() = 0;
 
 		inline unsigned GetCount() { return count; }
 		inline void *GetBuffer() { return buffer; }

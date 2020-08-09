@@ -4,6 +4,8 @@ namespace Renderer {
 
 	bool Mesh::Setup(RHI *rhi, Vertex *vertices, unsigned count, MeshType type)
 	{
+		(void)type;
+
 		if (!rhi || !vertices || !count)
 			return false;
 		
@@ -17,6 +19,8 @@ namespace Renderer {
 
 	bool Mesh::Setup(RHI *rhi, Vertex *vertices, unsigned vcount, unsigned *indices, unsigned icount, MeshType type)
 	{
+		(void)type;
+
 		if (!rhi || !vertices || !vcount || !indices || !icount)
 			return false;
 		
@@ -56,11 +60,17 @@ namespace Renderer {
 
 	void Mesh::Draw(RHI *rhi)
 	{
-//		if (indexDraw) {
+		if (indexDraw) {
+			if (ibuffer == nullptr)
+				return;
+
 			rhi->DrawIndexed(TRIANGLE_LIST, 0, getIndexCount());
-//		} else {
-//			rhi->Draw(TRIANGLE_LIST, 0, getVertexCount());
-//		}
+		} else {
+			if (vbuffer == nullptr)
+				return;
+
+			rhi->Draw(TRIANGLE_LIST, 0, getVertexCount());
+		}
 	}
 
 	void Mesh::DrawInstanced(RHI *rhi, unsigned instances)

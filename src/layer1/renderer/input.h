@@ -7,7 +7,7 @@ namespace Renderer {
 
 	class Input : public Graph::Service {
 	public:
-		Input() : Service("InputService") {  }
+		inline Input() : Service("InputService") {  }
 
 		bool Setup();
 		bool Update();

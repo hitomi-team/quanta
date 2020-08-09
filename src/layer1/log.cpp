@@ -7,17 +7,17 @@ static const char *Prefixes[] = {
 	"warn : "
 };
 
-Log::Log(std::string filename)
+Log::Log(const std::string &filename)
 {
 	Load(filename);
 }
 
-void Log::Load(std::string filename)
+void Log::Load(const std::string &filename)
 {
 	fstream = std::ofstream(filename);
 }
 
-void Log::Print(LogLevel level, std::string msg)
+void Log::Print(LogLevel level, const std::string &msg)
 {
 	buffer.push_back(std::string(Prefixes[static_cast<int>(level)]) + msg + '\n');
 

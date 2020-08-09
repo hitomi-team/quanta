@@ -8,6 +8,10 @@ namespace Renderer {
 
 	VKAPI_ATTR VkBool32 VKAPI_CALL debugCallback(VkDebugUtilsMessageSeverityFlagBitsEXT severity, VkDebugUtilsMessageTypeFlagsEXT type, const VkDebugUtilsMessengerCallbackDataEXT *data, void *userdata)
 	{
+		(void)severity;
+		(void)type;
+		(void)userdata;
+
 		std::cerr << data->pMessage << std::endl;
 
 		return VK_FALSE;

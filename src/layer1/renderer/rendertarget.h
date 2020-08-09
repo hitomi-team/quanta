@@ -5,7 +5,7 @@ namespace Renderer {
 
 	class RenderTarget {
 	public:
-		RenderTarget() {}
+		inline RenderTarget() {}
 	};
 
 }

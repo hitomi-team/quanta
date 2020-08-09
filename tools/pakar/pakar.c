@@ -542,7 +542,7 @@ int pakar_op_create(const char *path, int argc, char **argv)
 		fe_tmp->entry.offset = 0;
 		fe_tmp->entry.type = fi->type;
 		fe_tmp->path = fi->path;
-		strncpy((char *)fe_tmp->entry.path, fi->path + strlen(path), sizeof(fe_tmp->entry.path));
+		memcpy((char *)fe_tmp->entry.path, fi->path + strlen(path), sizeof(fe_tmp->entry.path));
 
 		fe_tmp->next = fe_head;
 		fe_head = fe_tmp;
@@ -566,7 +566,7 @@ int pakar_op_create(const char *path, int argc, char **argv)
 			strcpy(fe_tmp->entry.path, "/");
 		} else {
 			fe_tmp->path = fi->path;
-			strncpy((char *)fe_tmp->entry.path, fi->path + strlen(path), sizeof(fe_tmp->entry.path));
+			memcpy((char *)fe_tmp->entry.path, fi->path + strlen(path), sizeof(fe_tmp->entry.path));
 		}
 
 

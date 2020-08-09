@@ -9,11 +9,11 @@ namespace Renderer {
 	// All textures will have to be in RGBA format.
 	class Texture2D {
 	public:
-		Texture2D() { buffer = nullptr; sampler = nullptr; }
-		virtual ~Texture2D() {}
+		inline Texture2D() { buffer = nullptr; sampler = nullptr; }
+		inline virtual ~Texture2D() {}
 
-		virtual bool SetData(unsigned char *data, unsigned width, unsigned height, SamplerStateDesc samplerstatedesc) { return false; }
-		virtual void Release() {}
+		virtual bool SetData(unsigned char *data, unsigned width, unsigned height, SamplerStateDesc samplerstatedesc) = 0;
+		virtual void Release() = 0;
 
 		inline void *GetView() { return buffer; }
 		inline void *GetSampler() { return sampler; }

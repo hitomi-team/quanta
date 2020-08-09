@@ -64,8 +64,8 @@ int main()
 
 	Shader *shader = renderer_api.CreateShader((unsigned char *)vs_bytecode, vs_size, (unsigned char *)fs_bytecode, fs_size);
 
-	delete vs_bytecode;
-	delete fs_bytecode;
+	delete[] vs_bytecode;
+	delete[] fs_bytecode;
 
 	// Texture Setup
 
@@ -90,7 +90,7 @@ int main()
 	Texture2D *tex = renderer_api.CreateTexture2D(pix_data, x, y, desc);
 	
 	stbi_image_free(pix_data);
-	delete tex_buf;
+	delete[] tex_buf;
 
 	// Actual Renderer Usage
 

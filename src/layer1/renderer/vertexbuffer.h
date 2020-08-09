@@ -15,11 +15,11 @@ namespace Renderer {
 
 	class VertexBuffer {
 	public:
-		VertexBuffer() {}
-		virtual ~VertexBuffer() {}
+		inline VertexBuffer() {}
+		inline virtual ~VertexBuffer() {}
 	
-		virtual bool SetData(Vertex *vertices, unsigned count) { (void)vertices; this->count = count; return true; }
-		virtual void Release() {}
+		virtual bool SetData(Vertex *vertices, unsigned count) = 0;
+		virtual void Release() = 0;
 
 		inline void *GetBuffer() { return buffer; }
 		inline unsigned GetCount() { return count; }

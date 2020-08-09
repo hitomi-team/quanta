@@ -1,4 +1,4 @@
-subsystem_src = files([
+subsystem_vulkan_src = files([
 	'volk.c',
 
 	'vulkanrenderer.cpp',

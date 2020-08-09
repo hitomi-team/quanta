@@ -110,7 +110,7 @@ namespace Renderer {
 	{
 		if (SDL_WasInit(SDL_INIT_VIDEO) != SDL_INIT_VIDEO)
 			SDL_Init(SDL_INIT_VIDEO);
-		
+
 		int x = fullscreen ? 0 : SDL_WINDOWPOS_CENTERED;
 		int y = fullscreen ? 0 : SDL_WINDOWPOS_CENTERED;
 
@@ -183,7 +183,7 @@ namespace Renderer {
 			D3D_SAFE_RELEASE(device);
 			D3D_SAFE_RELEASE(context);
 			FATAL("Failed to create D3D11 swapchain");
-			return false;			
+			return false;
 		}
 
 		if (!UpdateSwapchain(width, height, multisample))
@@ -235,7 +235,7 @@ namespace Renderer {
 
 		ID3D11Texture2D *backbuffertex;
 		HRESULT hr = swapchain->GetBuffer(0, IID_ID3D11Texture2D, (void **)&backbuffertex);
-		
+
 		if (D3D_FAILED(hr)) {
 			D3D_SAFE_RELEASE(backbuffertex);
 			FATAL("Failed to get backbuffer texture.");
@@ -243,7 +243,7 @@ namespace Renderer {
 		} else {
 			hr = device->CreateRenderTargetView(backbuffertex, 0, &defaultRenderTargetView);
 			backbuffertex->Release();
-			
+
 			if (D3D_FAILED(hr)) {
 				D3D_SAFE_RELEASE(defaultRenderTargetView);
 				FATAL("Failed to create backbuffer rendertarget view.");
@@ -261,7 +261,7 @@ namespace Renderer {
 		depthdesc.SampleDesc.Quality = multisample > 1 ? 0xFFFFFFFF : 0;
 		depthdesc.Usage = D3D11_USAGE_DEFAULT;
 		depthdesc.BindFlags = D3D11_BIND_DEPTH_STENCIL;
-		
+
 		hr = device->CreateTexture2D(&depthdesc, 0, &defaultDepthTexture);
 
 		if (D3D_FAILED(hr)) {
@@ -288,7 +288,7 @@ namespace Renderer {
 			context->OMSetRenderTargets(MAX_RENDERTARGETS, &renderTargetViews[0], nullptr);
 			renderTargetsDirty_ = false;
 		}
-	
+
 		// Bind Shader Resource Views to Pixel Shader
 		if (textureViewsDirty_) {
 			context->PSSetSamplers(0, MAX_TEXTURE_UNITS, &samplerStates_[0]);
@@ -301,22 +301,39 @@ namespace Renderer {
 	{
 		if (SDL_GetWindowFlags(window) & SDL_WINDOW_MINIMIZED)
 			return false;
-		
+
 		PreDraw();
-		
+
 		return true;
 	}
-	
+
 	void D3D11Renderer::EndFrame()
 	{
 		swapchain->Present(vsync_ ? 1 : 0, 0);
-		
+
 		primitiveCount = 0;
 		drawCount = 0;
 		drawIndexedCount = 0;
 		drawInstancedCount = 0;
 	}
-	
+
+
+	glm::vec2 D3D11Renderer::GetRenderTargetDimensions()
+	{
+		return glm::vec2(0, 0);
+	}
+
+	void D3D11Renderer::CreateRendererCapabilities()
+	{
+	}
+
+	std::vector<int> D3D11Renderer::GetMultiSampleLevels()
+	{
+		std::vector< int > a;
+		return a;
+	}
+
+
 	void D3D11Renderer::Close()
 	{
 		ImGui_ImplDX11_Shutdown();
@@ -332,7 +349,17 @@ namespace Renderer {
 
 		SDL_ShowCursor(SDL_TRUE);
 		SDL_DestroyWindow(window);
-		SDL_Quit();		
+		SDL_Quit();
+	}
+
+	void D3D11Renderer::AddGpuResource(GPUResource* object)
+	{
+		(void)object;
+	}
+
+	void D3D11Renderer::RemoveGpuResource(GPUResource* object)
+	{
+		(void)object;
 	}
 
 	void D3D11Renderer::ResetCache()
@@ -362,6 +389,11 @@ namespace Renderer {
 		d3d11_global_context = nullptr;
 	}
 
+	bool D3D11Renderer::IsDeviceLost()
+	{
+		return false;
+	}
+
 	void D3D11Renderer::Clear(unsigned flags, const glm::vec4& color, float depth, unsigned stencil)
 	{
 		if ((flags & CLEAR_COLOR) && renderTargetViews[0]) {
@@ -377,7 +409,7 @@ namespace Renderer {
 				depthClearFlags |= D3D11_CLEAR_DEPTH;
 			if (flags & CLEAR_STENCIL)
 				depthClearFlags |= D3D11_CLEAR_STENCIL;
-			
+
 			context->ClearDepthStencilView(depthStencilView, depthClearFlags, depth, (UINT8)stencil);
 		}
 	}
@@ -386,7 +418,7 @@ namespace Renderer {
 	{
 		if (!vertices || !count)
 			return nullptr;
-		
+
 		D3D11VertexBuffer *vertbuf = new D3D11VertexBuffer;
 
 		if (!vertbuf->SetData(vertices, count)) {
@@ -401,7 +433,7 @@ namespace Renderer {
 	{
 		if (!indices || !count)
 			return nullptr;
-		
+
 		D3D11IndexBuffer *indexbuf = new D3D11IndexBuffer;
 
 		if (!indexbuf->SetData(indices, count)) {
@@ -416,7 +448,7 @@ namespace Renderer {
 	{
 		if (!vsbytecode || !vsbytecodelen)
 			return nullptr;
-		
+
 		D3D11InputLayout *inputlayout = new D3D11InputLayout;
 
 		if (!inputlayout->Setup(vsbytecode, vsbytecodelen)) {
@@ -432,7 +464,7 @@ namespace Renderer {
 	{
 		if ((!vs_bytecode || !vs_size) || (!fs_bytecode || !fs_size))
 			return nullptr;
-		
+
 		D3D11Shader *shader = new D3D11Shader;
 
 		if (!shader->Build(vs_bytecode, vs_size, fs_bytecode, fs_size)) {
@@ -447,7 +479,7 @@ namespace Renderer {
 	{
 		if (!data || !width || !height)
 			return nullptr;
-		
+
 		D3D11Texture2D *texture2d = new D3D11Texture2D;
 
 		if (!texture2d->SetData(data, width, height, samplerstatedesc)) {
@@ -463,7 +495,7 @@ namespace Renderer {
 		// Assume the shaders are already compiled (Which they should be)
 		if (!shader)
 			return;
-		
+
 		if (shaderProgram_ == shader)
 			return;
 
@@ -473,13 +505,63 @@ namespace Renderer {
 
 		if (!vs || !ps || !il)
 			return;
-		
+
 		context->IASetInputLayout(il);
 		context->VSSetShader(vs, nullptr, 0);
 		context->PSSetShader(ps, nullptr, 0);
 
 		shaderProgram_ = shader;
 	}
+
+	void D3D11Renderer::SetShaderParameter(unsigned param, const float* data, unsigned count)
+	{
+		(void)param;
+		(void)data;
+		(void)count;
+	}
+
+	void D3D11Renderer::SetShaderParameter(unsigned param, float value)
+	{
+		(void)param;
+		(void)value;
+	}
+
+	void D3D11Renderer::SetShaderParameter(unsigned param, bool value)
+	{
+		(void)param;
+		(void)value;
+	}
+
+	void D3D11Renderer::SetShaderParameter(unsigned param, const glm::vec2& vector)
+	{
+		(void)param;
+		(void)vector;
+	}
+
+	void D3D11Renderer::SetShaderParameter(unsigned param, const glm::mat3& matrix)
+	{
+		(void)param;
+		(void)matrix;
+	}
+
+	void D3D11Renderer::SetShaderParameter(unsigned param, const glm::vec3& vector)
+	{
+		(void)param;
+		(void)vector;
+	}
+
+	void D3D11Renderer::SetShaderParameter(unsigned param, const glm::mat4& matrix)
+	{
+		(void)param;
+		(void)matrix;
+	}
+
+	void D3D11Renderer::SetShaderParameter(unsigned param, const glm::vec4& vector)
+	{
+		(void)param;
+		(void)vector;
+	}
+
 
 	void D3D11Renderer::SetVertexBuffer(VertexBuffer* buffer)
 	{
@@ -492,8 +574,8 @@ namespace Renderer {
 
 			return;
 		}
-		
-		
+
+
 		ID3D11Buffer *vbuf = (ID3D11Buffer *)buffer->GetBuffer();
 		if (vbuf != vertexBuffer_) {
 			stride = sizeof(Vertex);
@@ -509,7 +591,7 @@ namespace Renderer {
 
 			return;
 		}
-		
+
 		ID3D11Buffer *ibuf = (ID3D11Buffer *)buffer->GetBuffer();
 		if (ibuf != indexBuffer_) {
 			context->IASetIndexBuffer(ibuf, DXGI_FORMAT_R32_UINT, 0);
@@ -517,25 +599,103 @@ namespace Renderer {
 		}
 	}
 
+	bool D3D11Renderer::SetVertexBuffers(const std::vector<VertexBuffer*>& buffers, const std::vector<unsigned>& elementMasks, unsigned instanceOffset)
+	{
+		(void)buffers;
+		(void)elementMasks;
+		(void)instanceOffset;
+		return true;
+	}
+
+
+	bool D3D11Renderer::NeedParameterUpdate(ShaderParameterGroup group, const void* source)
+	{
+		(void)group;
+		(void)source;
+		return false;
+	}
+
+	void D3D11Renderer::SetFlushGPU(bool flushGpu)
+	{
+		(void)flushGpu;
+	}
+
+	void D3D11Renderer::SetBlendMode(BlendMode mode)
+	{
+		(void)mode;
+	}
+
 	void D3D11Renderer::SetColorWrite(bool enable)
 	{
+		(void)enable;
+	}
 
+	void D3D11Renderer::SetCullMode(CullMode mode)
+	{
+		(void)mode;
+	}
+
+	void D3D11Renderer::SetDepthBias(float constantBias, float slopeScaledBias)
+	{
+		(void)constantBias;
+		(void)slopeScaledBias;
+	}
+
+	void D3D11Renderer::SetDepthTest(CompareMode mode)
+	{
+		(void)mode;
 	}
 
 	void D3D11Renderer::SetDepthWrite(bool enable)
 	{
+		(void)enable;
 	}
+
+	void D3D11Renderer::SetFillMode(FillMode mode)
+	{
+		(void)mode;
+	}
+
+	void D3D11Renderer::SetScissorTest(bool enable, const glm::vec2& rect)
+	{
+		(void)enable;
+		(void)rect;
+	}
+
+	void D3D11Renderer::SetStencilTest(bool enable, CompareMode mode, StencilOp pass, StencilOp fail, StencilOp zFail, unsigned stencilRef, unsigned compareMask, unsigned writeMask)
+	{
+		(void)enable;
+		(void)mode;
+		(void)pass;
+		(void)fail;
+		(void)zFail;
+		(void)stencilRef;
+		(void)compareMask;
+		(void)writeMask;
+	}
+
 
 	void D3D11Renderer::SetTexture(unsigned index, Texture2D* texture)
 	{
 		if ((index >= MAX_TEXTURE_UNITS) || !texture)
 			return;
-	
+
 		if ((ID3D11ShaderResourceView *)texture->GetView() != textureViews_[index]) {
 			samplerStates_[index] = (ID3D11SamplerState *)texture->GetSampler();
 			textureViews_[index] = (ID3D11ShaderResourceView *)texture->GetView();
 			textureViewsDirty_ = true;
 		}
+	}
+
+	void D3D11Renderer::SetRenderTarget(unsigned index, RenderTarget* renderTarget)
+	{
+		(void)index;
+		(void)renderTarget;
+	}
+
+	void D3D11Renderer::SetDepthStencil(RenderTarget* depthStencil)
+	{
+		(void)depthStencil;
 	}
 
 	void D3D11Renderer::SetViewport(const glm::vec4& rect)
@@ -555,7 +715,7 @@ namespace Renderer {
 	{
 		if (!shaderProgram_ || !vertexCount)
 			return;
-		
+
 		PreDraw();
 
 		unsigned primitive = 0;
@@ -576,7 +736,7 @@ namespace Renderer {
 	{
 		if (!shaderProgram_ || !indexCount)
 			return;
-		
+
 		unsigned primitive = 0;
 		D3D_PRIMITIVE_TOPOLOGY d3dtype;
 		GetD3D11PrimitiveType(type, &d3dtype, indexCount, &primitive);
@@ -595,7 +755,7 @@ namespace Renderer {
 	{
 		if (!shaderProgram_ || !indexCount || !instanceCount)
 			return;
-		
+
 		PreDraw();
 
 		unsigned primitive = 0;
@@ -611,6 +771,26 @@ namespace Renderer {
 		primitiveCount += instanceCount * primitive;
 		++drawInstancedCount;
 	}
+
+
+	void D3D11Renderer::ClearParameterSource(ShaderParameterGroup group)
+	{
+		(void)group;
+	}
+
+	void D3D11Renderer::ClearParameterSources()
+	{
+	}
+
+	void D3D11Renderer::ClearTransformSources()
+	{
+	}
+
+	void D3D11Renderer::CleanupShaderPrograms(Shader* variation)
+	{
+		(void)variation;
+	}
+
 
 	void D3D11Renderer::ImGuiNewFrame()
 	{

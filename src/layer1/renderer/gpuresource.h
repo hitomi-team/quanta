@@ -5,11 +5,11 @@ namespace Renderer {
 
 	class GPUResource {
 	public:
-		GPUResource() {}
-		virtual ~GPUResource() {}
+		inline GPUResource() {}
+		inline virtual ~GPUResource() {}
 
-		virtual void Release() {}
-		virtual void ClearData() {}
+		virtual void Release() = 0;
+		virtual void ClearData() = 0;
 		virtual bool isDataLost() const = 0;
 		virtual bool HasPendingData() const = 0;
 	};

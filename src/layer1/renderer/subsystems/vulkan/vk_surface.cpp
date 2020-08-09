@@ -61,7 +61,7 @@ namespace Renderer {
 	}
 #endif
 
-	void VulkanSurface::Load(SDL_Window *window, VulkanInstance &instance, const VulkanDevice &dev, std::string title, int w, int h)
+	void VulkanSurface::Load(SDL_Window *window, VulkanInstance &instance, const VulkanDevice &dev)
 	{
 		this->dev = dev;
 

@@ -10,7 +10,7 @@ namespace Renderer {
 
 	class Prop : public Transform, public Graph::Node {
 	public:
-		Prop() : Node("Prop") { mesh = nullptr; material = nullptr; }
+		inline Prop() : Node("Prop") { mesh = nullptr; material = nullptr; }
 
 		void Setup(Mesh *mesh, Material *material);
 		void Release();

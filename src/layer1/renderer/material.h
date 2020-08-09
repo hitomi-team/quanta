@@ -10,8 +10,8 @@ namespace Renderer {
 	// todo: multi-texture handling
 	class Material {
 	public:
-		Material() { shader = nullptr; texture = nullptr; }
-		virtual ~Material() {}
+		inline Material() { shader = nullptr; texture = nullptr; }
+		inline virtual ~Material() {}
 
 		bool Setup(Shader *shader, Texture2D *texture);
 		void Release();
