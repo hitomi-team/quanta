@@ -18,7 +18,7 @@ namespace Renderer {
 	class D3D11Renderer : public RHI {
 	public:
 		D3D11Renderer();
-		virtual ~D3D11Renderer() {}
+		inline virtual ~D3D11Renderer() {}
 
 		bool SetGraphicsMode(int width = WINDOW_DEFAULT_WIDTH, int height = WINDOW_DEFAULT_HEIGHT, bool fullscreen = false, bool borderless = false, bool resizable = false, bool vsync = true, int multisample = 0);
 		void Clear(unsigned flags, const glm::vec4& color = glm::vec4(0.0f, 0.0f, 0.0f, 0.0f), float depth = 1.0f, unsigned stencil = 0);
@@ -27,8 +27,6 @@ namespace Renderer {
 
 		bool BeginFrame(); // true = continue rendering, false = dont render
 		void EndFrame();
-
-		bool IsInitialized() { return isInitialized; }
 
 
 		glm::vec2 GetRenderTargetDimensions();
