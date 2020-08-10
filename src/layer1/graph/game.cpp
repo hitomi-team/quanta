@@ -1,3 +1,6 @@
+#include "pch/pch.h"
+
+#include "../log.h"
 #include "game.h"
 
 namespace Graph {
@@ -6,7 +9,7 @@ namespace Graph {
 	{
 		if (!service)
 			return;
-		
+
 		Services.push_back(service);
 	}
 
@@ -22,7 +25,7 @@ namespace Graph {
 				service->setInitialized();
 				global_log.Info("Service initialized: " + service->getName());
 			}
-		}		
+		}
 	}
 
 	void Game::runServices()
@@ -30,7 +33,7 @@ namespace Graph {
 		for (auto &service : this->Services) {
 			if (!service->isInitialized()) {
 				global_log.Warn("Service was not initialized before calling runServices(): "  + service->getName());
-				
+
 				if (!service->Setup()) {
 					global_log.Error("Failed to initialize service: " + service->getName());
 					Abort();
@@ -38,7 +41,7 @@ namespace Graph {
 
 				service->setInitialized();
 			}
-			
+
 			if (!service->Update()) {
 				global_log.Error("Service failed to run properly: " + service->getName());
 				return;
@@ -50,7 +53,7 @@ namespace Graph {
 	{
 		if (!service)
 			return;
-		
+
 		Services.erase(std::remove(Services.begin(), Services.end(), service), Services.end());
 		service->Release();
 	}
@@ -69,7 +72,7 @@ namespace Graph {
 	{
 		while (!shouldClose && !_game_shouldClose)
 			runServices();
-		
+
 		for (auto &i : this->Services)
 			i->Release();
 

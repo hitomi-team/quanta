@@ -1,3 +1,5 @@
+#include "pch/pch.h"
+
 #include "nullrenderer.h"
 
 namespace Renderer {

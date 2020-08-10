@@ -1,4 +1,5 @@
-#include <iostream>
+#include "pch/pch.h"
+
 #include "d3d11renderer.h"
 
 namespace Renderer {
@@ -152,7 +153,7 @@ namespace Renderer {
 		d3d11_global_context = context;
 
 		DXGI_SWAP_CHAIN_DESC swapchain_desc = {};
-		swapchain_desc.BufferCount = 1;
+		swapchain_desc.BufferCount = 2;
 		swapchain_desc.BufferDesc.Width = (unsigned int)width;
 		swapchain_desc.BufferDesc.Height = (unsigned int)height;
 		swapchain_desc.BufferDesc.Format = DXGI_FORMAT_R8G8B8A8_UNORM;
@@ -499,8 +500,8 @@ namespace Renderer {
 		if (shaderProgram_ == shader)
 			return;
 
-		ID3D11VertexShader *vs = (ID3D11VertexShader *)shader->GetObject(VS);
-		ID3D11PixelShader *ps = (ID3D11PixelShader *)shader->GetObject(FS);
+		ID3D11VertexShader *vs = (ID3D11VertexShader *)shader->GetShaderObject(VS);
+		ID3D11PixelShader *ps = (ID3D11PixelShader *)shader->GetShaderObject(FS);
 		ID3D11InputLayout *il = (ID3D11InputLayout *)shader->GetInputLayout();
 
 		if (!vs || !ps || !il)

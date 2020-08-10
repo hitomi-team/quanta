@@ -1,5 +1,4 @@
-#include "d3d11texture2d.h"
-
+#include "pch/pch.h"
 
 #include "d3d11texture2d.h"
 
@@ -28,7 +27,7 @@ namespace Renderer {
 	{
 		if (!data || !width || !height)
 			return false;
-		
+
 		D3D11_TEXTURE2D_DESC desc = {};
 		desc.Width = width;
 		desc.Height = height;
@@ -96,7 +95,7 @@ namespace Renderer {
 		sampler_desc.MipLODBias = samplerstatedesc.MipLODBias;
 		sampler_desc.MaxAnisotropy = samplerstatedesc.MaxAniso;
 		sampler_desc.ComparisonFunc = d3dComparisonFunc[samplerstatedesc.ComparisonFunc];
-		
+
 		for (int i = 0; i < 4; i++)
 			sampler_desc.BorderColor[i] = samplerstatedesc.BorderColor[i];
 

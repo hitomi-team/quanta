@@ -1,3 +1,5 @@
+#include "pch/pch.h"
+
 #include "node.h"
 
 namespace Graph {
@@ -16,7 +18,7 @@ namespace Graph {
 	{
 		if (!child)
 			return;
-		
+
 		Children.push_back(child);
 	}
 
@@ -32,7 +34,7 @@ namespace Graph {
 	{
 		if (!child)
 			return;
-		
+
 		removeChild(child);
 		free(child);
 	}
@@ -46,7 +48,7 @@ namespace Graph {
 	void Node::__debug_printChildren()
 	{
 		for (auto &i : this->Children) {
-			std::cout << Name << "/" << i->getName() << std::endl; 
+			std::cout << Name << "/" << i->getName() << std::endl;
 		}
 	}
 

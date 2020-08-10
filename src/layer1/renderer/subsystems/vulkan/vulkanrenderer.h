@@ -1,10 +1,10 @@
 #ifndef RENDERER_VULKANRENDERER_H
 #define RENDERER_VULKANRENDERER_H
 
-#include "../required.h"
+#include "layer1/renderer/subsystems/required.h"
 #include "vulkanrequired.h"
 
-#include "../../imgui/imgui_impl_sdl.h"
+#include "layer1/renderer/imgui/imgui_impl_sdl.h"
 #include "imgui_impl_vulkan.h"
 
 #include "vk_instance.h"
@@ -17,7 +17,7 @@ namespace Renderer {
 	public:
 		VulkanRenderer();
 		virtual ~VulkanRenderer() {}
-		
+
 		bool SetGraphicsMode(int width = WINDOW_DEFAULT_WIDTH, int height = WINDOW_DEFAULT_HEIGHT, bool fullscreen = false, bool borderless = false, bool resizable = false, bool vsync = true, int multisample = 0);
 		void Clear(unsigned flags, const glm::vec4& color = glm::vec4(0.0f, 0.0f, 0.0f, 0.0f), float depth = 1.0f, unsigned stencil = 0);
 
@@ -92,7 +92,7 @@ namespace Renderer {
 		void CleanupShaderPrograms(Shader* variation);
 
 		SDL_Window *GetWindow() { return window; }
-		
+
 		void ImGuiNewFrame();
 		void ImGuiEndFrame();
 

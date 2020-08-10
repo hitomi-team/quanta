@@ -7,8 +7,6 @@
 
 #define READ_STREAM(type, data, n) (static_cast< type >(data[n]) << (8*n))
 
-#include <cstdint>
-
 #if defined(__hppa__) || \
 	defined(__m68k__) || defined(mc68000) || defined(_M_M68K) || \
 	(defined(__MIPS__) && defined(__MIPSEB__)) || \

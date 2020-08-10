@@ -1,3 +1,5 @@
+#include "pch/pch.h"
+
 #include "vk_device.h"
 
 namespace Renderer {
@@ -32,13 +34,13 @@ namespace Renderer {
 	std::vector<VkPhysicalDevice> QueryPhysicalDevices(VkInstance instance)
 	{
 		std::vector<VkPhysicalDevice> PhysicalDevices;
-	
+
 		uint32_t count;
 		VK_ASSERT(vkEnumeratePhysicalDevices(instance, &count, nullptr), "Failed to query amount of physical devices")
 
 		PhysicalDevices.resize(count);
 		VK_ASSERT(vkEnumeratePhysicalDevices(instance, &count, PhysicalDevices.data()), "Failed to query physical devices")
-		
+
 		return PhysicalDevices;
 	}
 
@@ -94,7 +96,7 @@ namespace Renderer {
 		uint32_t graphicsQueueCount, transferQueueCount;
 		this->QueueFamilyIndices[0] = GetQueueFamily(0, PhysicalDevice, VK_QUEUE_GRAPHICS_BIT, &graphicsQueueCount);
 		this->QueueFamilyIndices[1] = GetQueueFamily(QueueFamilyIndices[0] + 1, PhysicalDevice, ~VK_QUEUE_GRAPHICS_BIT & VK_QUEUE_TRANSFER_BIT, &transferQueueCount);
-	
+
 		// Create Logical VulkanDevice
 		float GraphQueuePriorities = 1.0f;
 		VkDeviceQueueCreateInfo GraphQueueCreateInfo = {};
@@ -134,7 +136,7 @@ namespace Renderer {
 		DevCreateInfo.enabledExtensionCount = deviceExtensions.size();
 		DevCreateInfo.ppEnabledExtensionNames = deviceExtensions.data();
 		DevCreateInfo.pEnabledFeatures = &PhysDevFeatures;
-	
+
 		VK_ASSERT(vkCreateDevice(PhysicalDevice, &DevCreateInfo, nullptr, &device), "Failed to create device")
 
 		vkGetDeviceQueue(device, QueueFamilyIndices[0], 0, &GraphicsQueue);
@@ -165,7 +167,7 @@ namespace Renderer {
 	uint32_t VulkanDevice::MemoryType(uint32_t Type, VkMemoryPropertyFlags Props)
 	{
 		VkPhysicalDeviceMemoryProperties MemProps;
-		
+
 		vkGetPhysicalDeviceMemoryProperties(this->PhysicalDevice, &MemProps);
 
 		for (uint32_t i = 0; i < MemProps.memoryTypeCount; ++i) {
@@ -209,10 +211,10 @@ namespace Renderer {
 	std::vector<VulkanDevice> QueryAllDevices(VulkanInstance vkinstance)
 	{
 		std::vector<Renderer::VulkanDevice> devices;
-	
+
 		if (!vkinstance.getLoaded())
 			return devices;
-			
+
 		std::vector<VkPhysicalDevice> physdevs = QueryPhysicalDevices(vkinstance.get());
 
 		for (uint32_t i = 0; i < physdevs.size(); i++) {

@@ -1,9 +1,6 @@
 #ifndef GRAPH_SCENE_H
 #define GRAPH_SCENE_H
 
-#include "../log.h"
-
-#include "node.h"
 #include "service.h"
 
 namespace Graph {

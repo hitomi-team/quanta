@@ -1,3 +1,5 @@
+#include "pch/pch.h"
+
 #include "log.h"
 
 static const char *Prefixes[] = {

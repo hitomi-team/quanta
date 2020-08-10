@@ -9,6 +9,7 @@ project('quanta', ['c', 'cpp'], version : 'v0.01', meson_version : '>= 0.47', de
 
 compiler       = meson.get_compiler('cpp')
 inc_directory  = include_directories('./inc')
+src_directory  = include_directories('./src')
 
 if get_option('enable_debug') == true
 	add_global_arguments('-D=__DEBUG -ggdb -O2', language : 'cpp')
@@ -32,14 +33,14 @@ if target_machine.system() == 'windows'
 	lib_d3dcomp	= compiler.find_library('d3dcompiler', dirs : lib_path)
 	add_global_arguments('-D=__D3D11 -D=__VULKAN', language : 'cpp')
 
-	binary = executable('quanta', src, dependencies : [lib_sdl2, lib_sdl2main, lib_d3d11, lib_dxgi, lib_d3dcomp], include_directories : [inc_directory])
+	binary = executable('quanta', src, dependencies : [lib_sdl2, lib_sdl2main, lib_d3d11, lib_dxgi, lib_d3dcomp], include_directories : [inc_directory, src_directory], cpp_pch : './src/pch/pch.h')
 
 else # linux
 	lib_sdl2	= compiler.find_library('SDL2')
 	lib_sdl2main	= compiler.find_library('SDL2main')
 
 	add_global_arguments('-D=__VULKAN', language : 'cpp')
-	binary = executable('quanta', src, dependencies : [lib_sdl2, lib_sdl2main])
+	binary = executable('quanta', src, dependencies : [lib_sdl2, lib_sdl2main], include_directories : [src_directory], cpp_pch : './src/pch/pch.h')
 endif
 
 subdir('tools')

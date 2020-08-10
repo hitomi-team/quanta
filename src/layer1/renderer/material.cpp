@@ -1,3 +1,5 @@
+#include "pch/pch.h"
+
 #include "material.h"
 
 namespace Renderer {
@@ -6,7 +8,7 @@ namespace Renderer {
 	{
 		if (!shader || !texture)
 			return false;
-		
+
 		this->shader = shader;
 		this->texture = texture;
 
@@ -17,7 +19,7 @@ namespace Renderer {
 	{
 		if (!shader || !texture)
 			return;
-		
+
 		shader->Release();
 		texture->Release();
 	}
@@ -26,7 +28,7 @@ namespace Renderer {
 	{
 		if (!rhi || !shader || !texture)
 			return;
-		
+
 		rhi->SetShaders(shader);
 		rhi->SetTexture(0, texture);
 	}

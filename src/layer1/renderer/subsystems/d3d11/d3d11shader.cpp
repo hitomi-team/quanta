@@ -1,5 +1,8 @@
+#include "pch/pch.h"
+
+#include "layer1/log.h"
+
 #include "d3d11shader.h"
-#include "../../../log.h"
 
 namespace Renderer {
 
@@ -8,13 +11,13 @@ namespace Renderer {
 	{
 		if (!d3d11_global_device)
 			return false;
-		
+
 		if ((!vs_bytecode || !vs_size) || (!fs_bytecode || !fs_size))
 			return false;
 
 		for (unsigned i = 0; i < 2; i++)
 			objects[i] = nullptr;
-		
+
 		HRESULT hr = d3d11_global_device->CreateVertexShader((const void *)vs_bytecode, vs_size, nullptr, (ID3D11VertexShader **)&objects[0]);
 		if (D3D_FAILED(hr)) {
 			D3D_SAFE_RELEASE(objects[0]);
@@ -41,7 +44,7 @@ namespace Renderer {
 	{
 		for (unsigned i = 0; i < 2; i++)
 			D3D_SAFE_RELEASE(objects[i]);
-		
+
 		if (inputlayout) {
 			inputlayout->Release();
 			delete inputlayout;
@@ -49,7 +52,7 @@ namespace Renderer {
 		}
 	}
 
-	void *D3D11Shader::GetObject(ShaderType type)
+	void *D3D11Shader::GetShaderObject(ShaderType type)
 	{
 		switch (type) {
 		case VS:
@@ -60,7 +63,7 @@ namespace Renderer {
 			break;
 		}
 
-		return nullptr;		
+		return nullptr;
 	}
 
 	void *D3D11Shader::GetInputLayout()

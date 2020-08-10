@@ -1,11 +1,6 @@
 #ifndef LOG_H
 #define LOG_H
 
-#include <string>
-#include <fstream>
-#include <iostream>
-#include <vector>
-
 enum class LogLevel : int {
 	Debug = 0,
 	Error = 1,

@@ -5,9 +5,6 @@
 
 #include "required.h"
 
-#include <glm/glm.hpp>
-#include <glm/gtc/type_ptr.hpp>
-
 namespace Renderer {
 
 	class RHI {

@@ -1,5 +1,14 @@
-#include <cstdio>
+#include "pch/pch.h"
+
+#include "layer1/graph/game.h"
+
 #include "input.h"
+
+namespace Graph {
+
+	extern bool _game_shouldClose;
+
+}
 
 namespace Renderer {
 
@@ -16,7 +25,7 @@ namespace Renderer {
 			mouse_buttons[i] = 0;
 			mouse_buttons_processed[i] = 0;
 		}
-		
+
 		return true;
 	}
 
@@ -59,10 +68,10 @@ namespace Renderer {
 	{
 		if (keycode > SDL_NUM_SCANCODES)
 			return false;
-		
+
 		return keycode == keys[keycode];
 	}
-	
+
 	bool Input::isKeyPressedOnce(int keycode)
 	{
 		if (isKeyPressed(keycode) && !keys_processed[keycode]) {
@@ -77,7 +86,7 @@ namespace Renderer {
 	{
 		if (button - 1 > 4)
 			return false;
-		
+
 		return mouse_buttons[button - 1];
 	}
 
@@ -95,7 +104,7 @@ namespace Renderer {
 	{
 		if (!x || !y)
 			return;
-		
+
 		*x = mouse_pos[0];
 		*y = mouse_pos[1];
 	}

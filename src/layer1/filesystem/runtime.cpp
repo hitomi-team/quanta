@@ -1,7 +1,8 @@
-#include "runtime.h"
+#include "pch/pch.h"
 
-// std::memcpy
-#include <cstring>
+#include "layer1/log.h"
+
+#include "runtime.h"
 
 namespace Filesystem {
 
@@ -141,7 +142,7 @@ namespace Filesystem {
 
 		// TODO: implement multi-chunk
 		actual_size = m_entries[handle].size;
-		
+
 		if (m_offsets[handle] >= actual_size)
 			return 0;
 

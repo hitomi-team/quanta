@@ -1,8 +1,10 @@
+#include "pch/pch.h"
+
 #include "shader.h"
 
 namespace Renderer {
 
-	void *Shader::GetObject(ShaderType type)
+	void *Shader::GetShaderObject(ShaderType type)
 	{
 		switch (type) {
 		case VS:

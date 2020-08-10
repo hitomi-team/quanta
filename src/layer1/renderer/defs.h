@@ -1,8 +1,6 @@
 #ifndef RENDERER_DEFS_H
 #define RENDERER_DEFS_H
 
-#include <string>
-
 namespace Renderer {
 
 	enum PrimitiveType
@@ -251,7 +249,7 @@ namespace Renderer {
 		unsigned Mips;
 
 		TextureUsage Usage;
-		
+
 
 		unsigned Type;
 		std::string ClearColor;
@@ -299,7 +297,7 @@ namespace Renderer {
 		float LPVFlux;
 		bool DebugView;
 	};
-	
+
 	static const int QUALITY_LOW = 0;
 	static const int QUALITY_MEDIUM = 1;
 	static const int QUALITY_HIGH = 2;

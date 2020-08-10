@@ -1,10 +1,10 @@
 #ifndef RENDERER_D3D11RENDERER_H
 #define RENDERER_D3D11RENDERER_H
 
-#include "../required.h"
+#include "layer1/renderer/subsystems/required.h"
 #include "d3d11required.h"
 
-#include "../../imgui/imgui_impl_sdl.h"
+#include "layer1/renderer/imgui/imgui_impl_sdl.h"
 #include "imgui_impl_d3d11.h"
 
 #include "d3d11inputlayout.h"

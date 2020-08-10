@@ -1,8 +1,6 @@
-#include "vk_instance.h"
+#include "pch/pch.h"
 
-#include <iostream>
-#include <string>
-#include <vector>
+#include "vk_instance.h"
 
 namespace Renderer {
 
@@ -31,8 +29,8 @@ namespace Renderer {
 			return true;
 		else
 			Loaded = true;
-		
-		
+
+
 		unsigned int extensionCount = 0;
 		std::vector<const char *> extensions;
 
@@ -63,7 +61,7 @@ namespace Renderer {
 		instInfo.sType = VK_STRUCTURE_TYPE_INSTANCE_CREATE_INFO;
 		instInfo.pNext = nullptr;
 		instInfo.flags = 0;
-		instInfo.pApplicationInfo = &appInfo;		
+		instInfo.pApplicationInfo = &appInfo;
 #ifndef __DEBUG
 		instInfo.enabledLayerCount = 0;
 		instInfo.ppEnabledLayerNames = nullptr;
@@ -71,7 +69,7 @@ namespace Renderer {
 		std::vector<const char *>layernames = {
 			"VK_LAYER_KHRONOS_validation" // depending on how your system's vulkan sdk is setup, you might wanna change this.
 		};
-		
+
 		VkDebugUtilsMessengerCreateInfoEXT createinfo = {};
 		createinfo.sType = VK_STRUCTURE_TYPE_DEBUG_UTILS_MESSENGER_CREATE_INFO_EXT;
 		createinfo.messageSeverity = VK_DEBUG_UTILS_MESSAGE_SEVERITY_VERBOSE_BIT_EXT | VK_DEBUG_UTILS_MESSAGE_SEVERITY_WARNING_BIT_EXT | VK_DEBUG_UTILS_MESSAGE_SEVERITY_ERROR_BIT_EXT;

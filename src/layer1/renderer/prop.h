@@ -1,7 +1,7 @@
 #ifndef RENDERER_PROP_H
 #define RENDERER_PROP_H
 
-#include "../graph/node.h"
+#include "layer1/graph/node.h"
 #include "mesh.h"
 #include "material.h"
 #include "transform.h"

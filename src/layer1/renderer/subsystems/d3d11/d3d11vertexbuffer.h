@@ -2,7 +2,8 @@
 #define RENDERER_D3D11VERTEXBUFFER_H
 
 #include "d3d11required.h"
-#include "../../vertexbuffer.h"
+
+#include "layer1/renderer/vertexbuffer.h"
 
 namespace Renderer {
 

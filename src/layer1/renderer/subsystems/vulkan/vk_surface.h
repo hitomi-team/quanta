@@ -4,9 +4,6 @@
 #include "vk_instance.h"
 #include "vk_device.h"
 
-#include <string>
-#include <cstdio>
-
 // these can be defined manually, but these are the defaults.
 
 #ifndef VK_SURFACE_FORMAT

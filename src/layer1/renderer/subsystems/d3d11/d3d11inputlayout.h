@@ -2,7 +2,7 @@
 #define RENDERER_D3D11INPUTLAYOUT_H
 
 #include "d3d11required.h"
-#include "../../inputlayout.h"
+#include "layer1/renderer/inputlayout.h"
 
 namespace Renderer {
 

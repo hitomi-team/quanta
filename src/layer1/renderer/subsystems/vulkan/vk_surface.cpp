@@ -1,4 +1,4 @@
-#include <cstdlib>
+#include "pch/pch.h"
 
 #include "vk_surface.h"
 
@@ -7,7 +7,7 @@ namespace Renderer {
 #ifdef __DEBUG
 	void __Debug_Print_VkSurfaceCapabilitiesKHR(VkSurfaceCapabilitiesKHR _c)
 	{
-		fprintf(stdout, 
+		fprintf(stdout,
 			"VkSurfaceCapabilitiesKHR:\n\tminImageCount:  %u\n\tmaxImageCount:  %u\n\tcurrentExtent:  %u %u\n\tminImageExtent: %u %u\n\tmaxImageExtent: %u %u\n\tmaxImageArrayLayers: %u\n",
 			_c.minImageCount,
 			_c.maxImageCount,
@@ -36,9 +36,9 @@ namespace Renderer {
 		const char *str;
 
 		fprintf(stdout,
-			"VkPresentModeKHR [%u]: ", 
+			"VkPresentModeKHR [%u]: ",
 			index);
-	
+
 		switch(_p) {
 		case VK_PRESENT_MODE_IMMEDIATE_KHR:
 			str = "VK_PRESENT_MODE_IMMEDIATE_KHR";
@@ -184,8 +184,8 @@ namespace Renderer {
 		fenceinfo.flags = VK_FENCE_CREATE_SIGNALED_BIT;
 
 		for (uint32_t i = 0; i < images; i++) {
-			VK_ASSERT(vkCreateSemaphore(this->dev.get(), &semaphoreinfo, nullptr, &available[i]) || 
-				  vkCreateSemaphore(this->dev.get(), &semaphoreinfo, nullptr, &finished[i])  || 
+			VK_ASSERT(vkCreateSemaphore(this->dev.get(), &semaphoreinfo, nullptr, &available[i]) ||
+				  vkCreateSemaphore(this->dev.get(), &semaphoreinfo, nullptr, &finished[i])  ||
 				  vkCreateFence(this->dev.get(), &fenceinfo, nullptr, &inflight[i]), "failed to create synchronization objects")
 		}
 
@@ -216,7 +216,7 @@ namespace Renderer {
 
 		for (auto i : swapchainimageViews)
 			vkDestroyImageView(dev.get(), i, nullptr);
-		
+
 		vkDestroySwapchainKHR(dev.get(), swapchain, nullptr);
 		vkDestroySurfaceKHR(instance.get(), surface, nullptr);
 	}
@@ -263,7 +263,7 @@ namespace Renderer {
 		presentinfo.pImageIndices = (const uint32_t *)&image_index;
 
 		VK_ASSERT(vkQueuePresentKHR(dev.getGraphicsQueue(), &presentinfo), "failed to present")
-	
+
 		current_image = (current_image + 1) % swapchainimages.size();
 	}
 

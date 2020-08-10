@@ -1,4 +1,5 @@
-#include <stdio.h>
+#include "pch/pch.h"
+
 #include "d3d11inputlayout.h"
 
 namespace Renderer {
@@ -7,7 +8,7 @@ namespace Renderer {
 	{
 		if (!vsbytecode || !vsbytecodelen)
 			return false;
-		
+
 		D3D11_INPUT_ELEMENT_DESC layout_descs[3];
 
 		layout_descs[0] = {};
@@ -34,11 +35,11 @@ namespace Renderer {
 		layout_descs[2].AlignedByteOffset = 24;
 		layout_descs[2].InputSlotClass = D3D11_INPUT_PER_VERTEX_DATA;
 		layout_descs[2].InstanceDataStepRate = 0;
-		
+
 		HRESULT hr = d3d11_global_device->CreateInputLayout(layout_descs, 3, vsbytecode, vsbytecodelen, (ID3D11InputLayout **)&inputlayout);
-		if (D3D_FAILED(hr)) { 
+		if (D3D_FAILED(hr)) {
 			D3D_SAFE_RELEASE(inputlayout);
-			
+
 			return false;
 		}
 

@@ -1,13 +1,8 @@
 #ifndef RENDERER_RUNTIME_H
 #define RENDERER_RUNTIME_H
 
-#include <vector>
-
-#define SDL_MAIN_HANDLED
-#include <SDL2/SDL.h>
-
-#include "../graph/game.h"
-#include "../log.h"
+#include "layer1/graph/service.h"
+#include "layer1/log.h"
 #include "imgui/imgui_impl_sdl.h"
 #include "subsystems/rhi.h"
 #include "mesh.h"
@@ -39,7 +34,7 @@ namespace Renderer {
 
 		inline void RegisterMesh(Mesh *mesh) { meshes.push_back(mesh); }
 		inline void RegisterMaterial(Material *material) { materials.push_back(material); }
-	
+
 		Prop *AllocateProp(unsigned meshidx, unsigned materialidx);
 		void ReleaseProp(Prop *prop);
 

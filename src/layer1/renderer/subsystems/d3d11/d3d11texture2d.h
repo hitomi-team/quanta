@@ -2,7 +2,8 @@
 #define RENDERER_D3D11TEXTURE2D_H
 
 #include "d3d11required.h"
-#include "../../texture2d.h"
+
+#include "layer1/renderer/texture2d.h"
 
 namespace Renderer {
 
@@ -14,7 +15,7 @@ namespace Renderer {
 
 		bool SetData(unsigned char *data, unsigned width, unsigned height, SamplerStateDesc samplerstatedesc);
 		void Release();
-	
+
 	protected:
 		ID3D11Texture2D *texture_res;
 	};

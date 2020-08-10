@@ -1,3 +1,5 @@
+#include "pch/pch.h"
+
 #include "imgui/imgui.h"
 #include "runtime.h"
 
@@ -21,11 +23,11 @@ namespace Renderer {
 		// Check if window is minimized, if it is then don't draw anything
 		if (!rhi->BeginFrame())
 			return true;
-		
+
 		// for now, we use a test clear to make sure things are working
 		// if the window doesn't show pink then it probably means something isn't working.
 		rhi->Clear(CLEAR_COLOR, glm::vec4(0.8f, 0.0f, 0.8f, 1.0f), 1.0f);
-		
+
 		for (auto &prop : prop_queue) // TODO: Instancing. We need better perf
 			prop->Draw(rhi);
 
@@ -44,7 +46,7 @@ namespace Renderer {
 	{
 		if (!rhi)
 			return;
-		
+
 		if (this->rhi)
 			this->rhi->Close();
 
@@ -57,9 +59,9 @@ namespace Renderer {
 			global_log.Warn("Tried to allocate invalid prop.");
 			return nullptr;
 		}
-		
+
 		Prop *prop = new Prop;
-		
+
 		prop->Setup(meshes[meshidx], materials[materialidx]);
 		prop_queue.push_back(prop);
 
@@ -70,7 +72,7 @@ namespace Renderer {
 	{
 		if (!prop)
 			return;
-		
+
 		// TODO: Put all of this in Prop::Release() and destroy all children.
 
 		prop_queue.erase(std::remove(prop_queue.begin(), prop_queue.end(), prop), prop_queue.end());
@@ -82,7 +84,7 @@ namespace Renderer {
 		// Will add to this later such as hardware info and other profiling info, such as logging and maybe a console?
 
 		rhi->ImGuiNewFrame();
-		
+
 		if (!ImGui::Begin("Developer Menu", nullptr, ImGuiWindowFlags_AlwaysUseWindowPadding | ImGuiWindowFlags_NoSavedSettings)) {
 			rhi->ImGuiEndFrame();
 			return;

@@ -1,3 +1,5 @@
+#include "pch/pch.h"
+
 #include "vk_buffer.h"
 
 namespace Renderer {
@@ -120,7 +122,7 @@ namespace Renderer {
 	{
 		VkBuffer HostBuffer;
 		VkDeviceMemory HostBufferMemory;
-		
+
 		CreateBuffer(size, VK_BUFFER_USAGE_TRANSFER_SRC_BIT, VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT, HostBuffer, HostBufferMemory);
 
 		void *data_loc;
@@ -152,8 +154,8 @@ namespace Renderer {
 		if (!released) {
 			vkUnmapMemory(devcopy.get(), HostReadBufferMemory);
 			vkFreeMemory(devcopy.get(), HostReadBufferMemory, nullptr);
-			vkDestroyBuffer(devcopy.get(), HostReadBuffer, nullptr);	
-			released = true;	
+			vkDestroyBuffer(devcopy.get(), HostReadBuffer, nullptr);
+			released = true;
 		}
 	}
 

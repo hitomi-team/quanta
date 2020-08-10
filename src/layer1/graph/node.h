@@ -1,11 +1,6 @@
 #ifndef GRAPH_NODE_H
 #define GRAPH_NODE_H
 
-#include <algorithm>
-#include <iostream>
-#include <string>
-#include <vector>
-
 namespace Graph {
 
 	class Node {

@@ -1,3 +1,5 @@
+#include "pch/pch.h"
+
 #include "d3d11vertexbuffer.h"
 
 namespace Renderer {
@@ -6,7 +8,7 @@ namespace Renderer {
 	{
 		if (!d3d11_global_device)
 			return false;
-		
+
 		if (!vertices || count == 0)
 			return false;
 
@@ -14,7 +16,7 @@ namespace Renderer {
 		vertex_desc.ByteWidth = sizeof(Vertex) * count;
 		vertex_desc.Usage = D3D11_USAGE_DEFAULT;
 		vertex_desc.BindFlags = D3D11_BIND_VERTEX_BUFFER;
-		
+
 		D3D11_SUBRESOURCE_DATA sr_data = {};
 		sr_data.pSysMem = vertices;
 

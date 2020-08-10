@@ -4,7 +4,14 @@
 #ifndef NOMINMAX
 #define NOMINMAX
 #endif
+#ifndef UNICODE
+#define UNICODE
+#endif
+#ifndef _UNICODE
+#define _UNICODE
+#endif
 
+#include <SDL2/SDL_syswm.h>
 #include <d3d11.h>
 #include <dxgi.h>
 

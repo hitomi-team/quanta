@@ -1,22 +1,24 @@
-#include <string>
-#include <stdio.h>
+#include "pch/pch.h"
 
+#include "layer1/log.h"
+#include "layer1/graph/game.h"
 
-#include "renderer/stb_image.h"
-#include "renderer/runtime.h"
-#include "renderer/input.h"
-#include "graph/game.h"
-#include "log.h"
+#include "layer1/filesystem/runtime.h"
 
-#include "renderer/material.h"
-#include "renderer/mesh.h"
-
-#include "filesystem/runtime.h"
+#include "layer1/renderer/stb_image.h"
+#include "layer1/renderer/runtime.h"
+#include "layer1/renderer/input.h"
+#include "layer1/renderer/material.h"
+#include "layer1/renderer/mesh.h"
 
 using namespace Renderer;
 
-int main()
+// SDL2main
+int main(int argc, char **argv)
 {
+	(void)argc;
+	(void)argv;
+
 	// Setup filesystem service
 	Filesystem::Runtime filesystem;
 
@@ -75,7 +77,7 @@ int main()
 	char *tex_buf = new char[len];
 	filesystem.ReadFile(h, tex_buf, len);
 	unsigned char *pix_data = stbi_load_from_memory((unsigned char *)tex_buf, (int)len, &x, &y, &channels, 4);
-	
+
 	SamplerStateDesc desc = {};
 	desc.Filter = FILTER_NEAREST;
 	desc.AddressModeU = ADDRESS_MIRROR;
@@ -88,7 +90,7 @@ int main()
 	desc.MaxAniso = 0;
 
 	Texture2D *tex = renderer_api.CreateTexture2D(pix_data, x, y, desc);
-	
+
 	stbi_image_free(pix_data);
 	delete[] tex_buf;
 
@@ -112,4 +114,6 @@ int main()
 	newprop->Release();
 	newmat.Release();
 	newmesh.Release();
+
+	return 0;
 }

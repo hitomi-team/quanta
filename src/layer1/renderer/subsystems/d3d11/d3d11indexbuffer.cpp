@@ -1,3 +1,5 @@
+#include "pch/pch.h"
+
 #include "d3d11indexbuffer.h"
 
 namespace Renderer {
@@ -14,7 +16,7 @@ namespace Renderer {
 		index_desc.ByteWidth = sizeof(unsigned) * count;
 		index_desc.Usage = D3D11_USAGE_DEFAULT;
 		index_desc.BindFlags = D3D11_BIND_INDEX_BUFFER;
-		
+
 		D3D11_SUBRESOURCE_DATA sr_data = {};
 		sr_data.pSysMem = indices;
 

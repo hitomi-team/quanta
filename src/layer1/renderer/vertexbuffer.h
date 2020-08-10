@@ -1,9 +1,6 @@
 #ifndef RENDERER_VERTEXBUFFER_H
 #define RENDERER_VERTEXBUFFER_H
 
-#include <glm/glm.hpp>
-#include <glm/gtc/type_ptr.hpp>
-
 namespace Renderer {
 
 	struct Vertex {
@@ -17,7 +14,7 @@ namespace Renderer {
 	public:
 		inline VertexBuffer() {}
 		inline virtual ~VertexBuffer() {}
-	
+
 		virtual bool SetData(Vertex *vertices, unsigned count) = 0;
 		virtual void Release() = 0;
 

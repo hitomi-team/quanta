@@ -1,3 +1,5 @@
+#include "pch/pch.h"
+
 #include "mesh.h"
 
 namespace Renderer {
@@ -8,12 +10,12 @@ namespace Renderer {
 
 		if (!rhi || !vertices || !count)
 			return false;
-		
+
 		vbuffer = rhi->CreateVertexBuffer(vertices, count);
 
 		if (!vbuffer)
 			return false;
-		
+
 		return true;
 	}
 
@@ -23,13 +25,13 @@ namespace Renderer {
 
 		if (!rhi || !vertices || !vcount || !indices || !icount)
 			return false;
-		
+
 		vbuffer = rhi->CreateVertexBuffer(vertices, vcount);
 		ibuffer = rhi->CreateIndexBuffer(indices, icount);
 
 		if (!vbuffer || !ibuffer)
 			return false;
-		
+
 		indexDraw = true;
 
 		return true;
@@ -53,7 +55,7 @@ namespace Renderer {
 	{
 		if (!rhi || !vbuffer)
 			return;
-		
+
 		rhi->SetVertexBuffer(vbuffer);
 		rhi->SetIndexBuffer(ibuffer); // This is safe even if ibuffer is nullptr
 	}

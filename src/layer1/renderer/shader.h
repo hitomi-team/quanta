@@ -17,13 +17,15 @@ namespace Renderer {
 		virtual void Release() = 0;
 
 		virtual void *GetProgram() = 0;
-		virtual void *GetObject(ShaderType type) = 0;
+
+		// koukuno: used to be GetObject, but WinAPI kicks in.
+		virtual void *GetShaderObject(ShaderType type) = 0;
 		virtual void *GetInputLayout() = 0;
 
 	protected:
 		void *program; // I guess this can be the pipeline object?
 		void *objects[3]; // put into pipeline in Vulkan, used for setting shader in D3D11
-		
+
 		InputLayout *inputlayout;
 	};
 

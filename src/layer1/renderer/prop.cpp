@@ -1,3 +1,5 @@
+#include "pch/pch.h"
+
 #include "prop.h"
 
 namespace Renderer {
@@ -22,10 +24,10 @@ namespace Renderer {
 
 		if (!rhi || !vbuffer)
 			return;
-		
+
 		rhi->SetVertexBuffer(vbuffer);
 		rhi->SetIndexBuffer(ibuffer);
-	
+
 		if (indexDraw) {
 			rhi->DrawIndexed(TRIANGLE_LIST, 0, getIndexCount());
 		} else {
@@ -33,7 +35,7 @@ namespace Renderer {
 		}
 
 		*/
-		
+
 		material->Bind(rhi);
 		mesh->Bind(rhi);
 		mesh->Draw(rhi);

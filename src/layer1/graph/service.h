@@ -16,7 +16,7 @@ namespace Graph {
 
 		inline bool isInitialized() { return Initialized; }
 		inline void setInitialized() { Initialized = true; }
-	
+
 	protected:
 		bool Initialized;
 	};

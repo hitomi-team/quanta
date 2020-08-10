@@ -4,9 +4,6 @@
 #include "vulkanrequired.h"
 #include "vk_instance.h"
 
-#include <vector>
-#include <string>
-
 namespace Renderer {
 
 	std::vector<VkPhysicalDevice> QueryPhysicalDevices(VkInstance instance);
@@ -37,7 +34,7 @@ namespace Renderer {
 		inline VkCommandPool getGraphicsCommandPool() { return GraphicsPool; }
 		inline VkCommandPool  getComputeCommandPool() { return ComputePool; }
 		inline uint32_t *getQueueFamilyIndices() { return QueueFamilyIndices; } // [0] = Graphics, [1] = Transfer, [2] = Compute
-	
+
 		inline void WaitIdle() { vkDeviceWaitIdle(device); }
 
 		VulkanDevice &operator= (const VulkanDevice &devb);

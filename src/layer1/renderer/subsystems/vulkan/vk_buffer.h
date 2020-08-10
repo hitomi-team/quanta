@@ -3,10 +3,6 @@
 
 #include "vk_device.h"
 
-#include <vector>
-#include <string>
-#include <cstring>
-
 namespace Renderer {
 
 	class VulkanBuffer {
