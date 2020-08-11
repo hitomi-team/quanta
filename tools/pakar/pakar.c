@@ -453,39 +453,111 @@ void pakar_validate_all(FILE *index_fp)
 	(void)index_fp;
 }
 
+// why? because windows.
+char *work_strdup(const char *src)
+{
+	char *s = malloc(strlen(src) + 1);
+	if (s == NULL) {
+		oom();
+		return NULL;
+	}
+
+	strcpy(s, src);
+	return s;
+}
+
+char *work_basename(const char *path)
+{
+	char *s = strrchr(path, '/');
+	if (s == NULL)
+		return work_strdup(path);
+	else
+		return work_strdup(s + 1);
+}
+
+int work_in_console()
+{
+#ifndef _WIN32
+	return isatty(fileno(stdout));
+#else
+	DWORD dummy;
+	return GetConsoleMode(GetStdHandle(STD_INPUT_HANDLE), &dummy);
+#endif
+}
+
 FILE *fopen_chunk(const char *name, const char *open_mode, uint32_t num)
 {
 	FILE *fp;
+	const char *tmp;
+	char *tmp_basename;
 	char *path;
 	int len;
 
-	len = snprintf(NULL, 0, "%s_%03" PRIu32 ".pak", name, num);
+	tmp_basename = NULL;
+
+	if (work_in_console() != 0) {
+		tmp_basename = work_basename(name);
+		if (tmp_basename == NULL)
+			return NULL;
+
+		tmp = tmp_basename;
+	} else {
+		tmp = name;
+	}
+
+	len = snprintf(NULL, 0, "%s_%03" PRIu32 ".pak", tmp, num);
 	if ((path = malloc(len + 2)) == NULL) {
+		if (tmp_basename != NULL)
+			free(tmp_basename);
+
 		oom();
 		return NULL;
 	}
 
 	path[len + 1] = '\0';
-	snprintf(path, len + 1, "%s_%03" PRIu32 ".pak", name, num);
+	snprintf(path, len + 1, "%s_%03" PRIu32 ".pak", tmp, num);
 
 	if ((fp = fopen(path, open_mode)) == NULL)
 		fprintf(stderr, "failed to open chunk pak: %s with openmode %s\n", path, open_mode);
 
 	free(path);
+
+	if (tmp_basename != NULL)
+		free(tmp_basename);
+
 	return fp;
 }
 
 FILE *fopen_index(const char *name, const char *open_mode)
 {
 	FILE *fp;
+	char *tmp_s;
 	char *path;
 
-	if ((path = malloc(strlen(name) + 12)) == NULL) {
-		oom();
-		return NULL;
+	if (work_in_console() != 0) {
+		tmp_s = work_basename(name);
+		if (tmp_s == NULL)
+			return NULL;
+
+		path = malloc(strlen(tmp_s) + 11);
+		if (path == NULL) {
+			oom();
+			free(tmp_s);
+			return NULL;
+		}
+
+		strcpy(path, tmp_s);
+		free(tmp_s);
+	} else {
+		path = malloc(strlen(name) + 11);
+		if (path == NULL) {
+			oom();
+			return NULL;
+		}
+
+		strcpy(path, name);
 	}
 
-	strcpy(path, name);
 	strcat(path, "_index.pak");
 
 	if ((fp = fopen(path, open_mode)) == NULL)
