@@ -11,8 +11,6 @@
 #include "layer1/renderer/material.h"
 #include "layer1/renderer/mesh.h"
 
-using namespace Renderer;
-
 // SDL2main
 int main(int argc, char **argv)
 {
@@ -25,7 +23,7 @@ int main(int argc, char **argv)
 	// Setup render service
 	// TODO: Add option to switch between supported renderers
 	// Also TODO: Add command arguments to do this which is a lot better
-#if defined(_WIN32)
+#if defined(__D3D11)
 	Renderer::D3D11Renderer renderer_api;
 #else	// use vulkan on lunix
 	Renderer::VulkanRenderer renderer_api;
@@ -41,11 +39,11 @@ int main(int argc, char **argv)
 	game.registerService(&input);
 	game.setupServices();
 
-	Vertex vertices[] = {
-		Vertex(glm::vec3(-1.0f,  1.0f, 0.0f), glm::vec3(1.0f, 0.0f, 0.0f), glm::vec2(0.0f, 0.0f)),
-		Vertex(glm::vec3( 1.0f,  1.0f, 0.0f), glm::vec3(0.0f, 1.0f, 0.0f), glm::vec2(1.0f, 0.0f)),
-		Vertex(glm::vec3( 1.0f, -1.0f, 0.0f), glm::vec3(0.0f, 0.0f, 1.0f), glm::vec2(1.0f, 1.0f)),
-		Vertex(glm::vec3(-1.0f, -1.0f, 0.0f), glm::vec3(1.0f, 0.0f, 0.0f), glm::vec2(0.0f, 1.0f))
+	Renderer::Vertex vertices[] = {
+		Renderer::Vertex(glm::vec3(-1.0f,  1.0f, 0.0f), glm::vec3(1.0f, 0.0f, 0.0f), glm::vec2(0.0f, 0.0f)),
+		Renderer::Vertex(glm::vec3( 1.0f,  1.0f, 0.0f), glm::vec3(0.0f, 1.0f, 0.0f), glm::vec2(1.0f, 0.0f)),
+		Renderer::Vertex(glm::vec3( 1.0f, -1.0f, 0.0f), glm::vec3(0.0f, 0.0f, 1.0f), glm::vec2(1.0f, 1.0f)),
+		Renderer::Vertex(glm::vec3(-1.0f, -1.0f, 0.0f), glm::vec3(1.0f, 0.0f, 0.0f), glm::vec2(0.0f, 1.0f))
 	};
 
 	unsigned indices[] = {
@@ -64,7 +62,7 @@ int main(int argc, char **argv)
 	char *fs_bytecode = new char[fs_size + 1];
 	filesystem.ReadFile(h, fs_bytecode, fs_size);
 
-	Shader *shader = renderer_api.CreateShader((unsigned char *)vs_bytecode, vs_size, (unsigned char *)fs_bytecode, fs_size);
+	Renderer::Shader *shader = renderer_api.CreateShader((unsigned char *)vs_bytecode, vs_size, (unsigned char *)fs_bytecode, fs_size);
 
 	delete[] vs_bytecode;
 	delete[] fs_bytecode;
@@ -78,34 +76,34 @@ int main(int argc, char **argv)
 	filesystem.ReadFile(h, tex_buf, len);
 	unsigned char *pix_data = stbi_load_from_memory((unsigned char *)tex_buf, (int)len, &x, &y, &channels, 4);
 
-	SamplerStateDesc desc = {};
-	desc.Filter = FILTER_NEAREST;
-	desc.AddressModeU = ADDRESS_MIRROR;
-	desc.AddressModeV = ADDRESS_MIRROR;
-	desc.AddressModeW = ADDRESS_MIRROR;
-	desc.ComparisonFunc = TCF_LESSEQUAL;
+	Renderer::SamplerStateDesc desc = {};
+	desc.Filter = Renderer::FILTER_NEAREST;
+	desc.AddressModeU = Renderer::ADDRESS_MIRROR;
+	desc.AddressModeV = Renderer::ADDRESS_MIRROR;
+	desc.AddressModeW = Renderer::ADDRESS_MIRROR;
+	desc.ComparisonFunc = Renderer::TCF_LESSEQUAL;
 	desc.MipLODBias = 0;
 	desc.MaxLOD = 0;
 	desc.MinLOD = 0;
 	desc.MaxAniso = 0;
 
-	Texture2D *tex = renderer_api.CreateTexture2D(pix_data, x, y, desc);
+	Renderer::Texture2D *tex = renderer_api.CreateTexture2D(pix_data, x, y, desc);
 
 	stbi_image_free(pix_data);
 	delete[] tex_buf;
 
 	// Actual Renderer Usage
 
-	Material newmat;
+	Renderer::Material newmat;
 	newmat.Setup(shader, tex);
 
-	Mesh newmesh;
-	newmesh.Setup(renderer.GetRenderer(), vertices, 4, indices, 6, MESH_2D);
+	Renderer::Mesh newmesh;
+	newmesh.Setup(renderer.GetRenderer(), vertices, 4, indices, 6, Renderer::MESH_2D);
 
 	renderer.RegisterMesh(&newmesh);
 	renderer.RegisterMaterial(&newmat);
 
-	Prop *newprop = renderer.AllocateProp(0, 0);
+	Renderer::Prop *newprop = renderer.AllocateProp(0, 0);
 
 	// Finally we can run the game
 

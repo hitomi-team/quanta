@@ -11,10 +11,13 @@
 
 #if defined(__VULKAN)
 #include "subsystems/vulkan/vulkanrenderer.h"
-#elif defined(__D3D11)
+#endif
+
+#if defined(__D3D11)
 #include "subsystems/d3d11/d3d11renderer.h"
-#include "subsystems/vulkan/vulkanrenderer.h"
-#else
+#endif
+
+#if !defined(__D3D11) && !defined(__VULKAN)
 #error A renderer must be defined
 #endif
 
