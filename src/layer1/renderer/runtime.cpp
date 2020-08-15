@@ -5,6 +5,8 @@
 
 namespace Renderer {
 
+	static float time = 0.f;
+
 	Runtime::Runtime() : Service("RenderService")
 	{
 		rhi = nullptr;
@@ -24,9 +26,19 @@ namespace Renderer {
 		if (!rhi->BeginFrame())
 			return true;
 
+		// TODO: Update shader parameters
+
 		// for now, we use a test clear to make sure things are working
 		// if the window doesn't show pink then it probably means something isn't working.
 		rhi->Clear(CLEAR_COLOR, glm::vec4(0.8f, 0.0f, 0.8f, 1.0f), 1.0f);
+
+		for (auto &mat : materials) { // update materials
+			time += 0.016667;
+
+			mat->getParamBuffer()->Map();
+			mat->getParamBuffer()->SetShaderParameter(SHADER_PARAM_TIME, time);
+			mat->getParamBuffer()->Unmap();
+		}
 
 		for (auto &prop : prop_queue) // TODO: Instancing. We need better perf
 			prop->Draw(rhi);
@@ -55,7 +67,7 @@ namespace Renderer {
 
 	Prop *Runtime::AllocateProp(unsigned meshidx, unsigned materialidx)
 	{
-		if ((meshidx >= meshes.capacity()) || (materialidx >= materials.capacity())) {
+		if ((meshidx >= meshes.size()) || (materialidx >= materials.size())) {
 			global_log.Warn("Tried to allocate invalid prop.");
 			return nullptr;
 		}

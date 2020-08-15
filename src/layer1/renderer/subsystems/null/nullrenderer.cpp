@@ -117,61 +117,16 @@ namespace Renderer {
 		return nullptr;
 	}
 
+	ShaderParameterBuffer *NullRenderer::CreateShaderParameterBuffer(std::vector<ShaderParameterElement> elements)
+	{
+		(void)elements;
+		return nullptr;
+	}
 
 	void NullRenderer::SetShaders(Shader *shader)
 	{
 		(void)shader;
 	}
-
-	void NullRenderer::SetShaderParameter(unsigned param, const float* data, unsigned count)
-	{
-		(void)param;
-		(void)data;
-		(void)count;
-	}
-
-	void NullRenderer::SetShaderParameter(unsigned param, float value)
-	{
-		(void)param;
-		(void)value;
-	}
-
-	void NullRenderer::SetShaderParameter(unsigned param, bool value)
-	{
-		(void)param;
-		(void)value;
-	}
-
-	void NullRenderer::SetShaderParameter(unsigned param, const glm::vec2& vector)
-	{
-		(void)param;
-		(void)vector;
-	}
-
-	void NullRenderer::SetShaderParameter(unsigned param, const glm::mat3& matrix)
-	{
-		(void)param;
-		(void)matrix;
-	}
-
-	void NullRenderer::SetShaderParameter(unsigned param, const glm::vec3& vector)
-	{
-		(void)param;
-		(void)vector;
-	}
-
-	void NullRenderer::SetShaderParameter(unsigned param, const glm::mat4& matrix)
-	{
-		(void)param;
-		(void)matrix;
-	}
-
-	void NullRenderer::SetShaderParameter(unsigned param, const glm::vec4& vector)
-	{
-		(void)param;
-		(void)vector;
-	}
-
 
 	void NullRenderer::SetVertexBuffer(VertexBuffer* buffer)
 	{
@@ -191,13 +146,6 @@ namespace Renderer {
 		return true;
 	}
 
-
-	bool NullRenderer::NeedParameterUpdate(ShaderParameterGroup group, const void* source)
-	{
-		(void)group;
-		(void)source;
-		return false;
-	}
 
 	void NullRenderer::SetFlushGPU(bool flushGpu)
 	{
@@ -305,26 +253,6 @@ namespace Renderer {
 		(void)indexCount;
 		(void)instanceCount;
 	}
-
-
-	void NullRenderer::ClearParameterSource(ShaderParameterGroup group)
-	{
-		(void)group;
-	}
-
-	void NullRenderer::ClearParameterSources()
-	{
-	}
-
-	void NullRenderer::ClearTransformSources()
-	{
-	}
-
-	void NullRenderer::CleanupShaderPrograms(Shader* variation)
-	{
-		(void)variation;
-	}
-
 
 	SDL_Window *NullRenderer::GetWindow()
 	{

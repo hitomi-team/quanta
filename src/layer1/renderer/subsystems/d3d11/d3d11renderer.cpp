@@ -491,6 +491,22 @@ namespace Renderer {
 		return texture2d;
 	}
 
+	ShaderParameterBuffer *D3D11Renderer::CreateShaderParameterBuffer(std::vector<ShaderParameterElement> elements)
+	{
+		if (!elements.size())
+			return nullptr;
+		
+		D3D11ShaderParameterBuffer *shaderParam = new D3D11ShaderParameterBuffer;
+
+		if (!shaderParam->Setup(elements)) {
+			delete shaderParam;
+			return nullptr;
+		}		
+	
+		return shaderParam;
+	}
+
+
 	void D3D11Renderer::SetShaders(Shader *shader)
 	{
 		// Assume the shaders are already compiled (Which they should be)
@@ -513,56 +529,6 @@ namespace Renderer {
 
 		shaderProgram_ = shader;
 	}
-
-	void D3D11Renderer::SetShaderParameter(unsigned param, const float* data, unsigned count)
-	{
-		(void)param;
-		(void)data;
-		(void)count;
-	}
-
-	void D3D11Renderer::SetShaderParameter(unsigned param, float value)
-	{
-		(void)param;
-		(void)value;
-	}
-
-	void D3D11Renderer::SetShaderParameter(unsigned param, bool value)
-	{
-		(void)param;
-		(void)value;
-	}
-
-	void D3D11Renderer::SetShaderParameter(unsigned param, const glm::vec2& vector)
-	{
-		(void)param;
-		(void)vector;
-	}
-
-	void D3D11Renderer::SetShaderParameter(unsigned param, const glm::mat3& matrix)
-	{
-		(void)param;
-		(void)matrix;
-	}
-
-	void D3D11Renderer::SetShaderParameter(unsigned param, const glm::vec3& vector)
-	{
-		(void)param;
-		(void)vector;
-	}
-
-	void D3D11Renderer::SetShaderParameter(unsigned param, const glm::mat4& matrix)
-	{
-		(void)param;
-		(void)matrix;
-	}
-
-	void D3D11Renderer::SetShaderParameter(unsigned param, const glm::vec4& vector)
-	{
-		(void)param;
-		(void)vector;
-	}
-
 
 	void D3D11Renderer::SetVertexBuffer(VertexBuffer* buffer)
 	{
@@ -606,14 +572,6 @@ namespace Renderer {
 		(void)elementMasks;
 		(void)instanceOffset;
 		return true;
-	}
-
-
-	bool D3D11Renderer::NeedParameterUpdate(ShaderParameterGroup group, const void* source)
-	{
-		(void)group;
-		(void)source;
-		return false;
 	}
 
 	void D3D11Renderer::SetFlushGPU(bool flushGpu)
@@ -728,6 +686,7 @@ namespace Renderer {
 		}
 
 		context->Draw(vertexCount, vertexStart);
+		global_log.Info("draw!");
 
 		primitiveCount += primitive;
 		++drawCount;
@@ -735,8 +694,9 @@ namespace Renderer {
 
 	void D3D11Renderer::DrawIndexed(PrimitiveType type, unsigned indexStart, unsigned indexCount)
 	{
-		if (!shaderProgram_ || !indexCount)
+		if (!shaderProgram_ || !indexCount) {
 			return;
+		}
 
 		unsigned primitive = 0;
 		D3D_PRIMITIVE_TOPOLOGY d3dtype;
@@ -772,26 +732,6 @@ namespace Renderer {
 		primitiveCount += instanceCount * primitive;
 		++drawInstancedCount;
 	}
-
-
-	void D3D11Renderer::ClearParameterSource(ShaderParameterGroup group)
-	{
-		(void)group;
-	}
-
-	void D3D11Renderer::ClearParameterSources()
-	{
-	}
-
-	void D3D11Renderer::ClearTransformSources()
-	{
-	}
-
-	void D3D11Renderer::CleanupShaderPrograms(Shader* variation)
-	{
-		(void)variation;
-	}
-
 
 	void D3D11Renderer::ImGuiNewFrame()
 	{

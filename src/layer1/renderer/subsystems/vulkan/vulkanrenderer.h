@@ -46,22 +46,13 @@ namespace Renderer {
 		Shader *CreateShader(unsigned char *vs_bytecode, unsigned int vs_size,
 					     unsigned char *fs_bytecode, unsigned int fs_size);
 		Texture2D *CreateTexture2D(unsigned char *data, unsigned width, unsigned height, SamplerStateDesc samplerstatedesc);
+		ShaderParameterBuffer *CreateShaderParameterBuffer(std::vector<ShaderParameterElement> elements);
 
 		void SetShaders(Shader *shader);
-		void SetShaderParameter(unsigned param, const float* data, unsigned count);
-		void SetShaderParameter(unsigned param, float value);
-		void SetShaderParameter(unsigned param, bool value);
-		void SetShaderParameter(unsigned param, const glm::vec2& vector);
-		void SetShaderParameter(unsigned param, const glm::mat3& matrix);
-		void SetShaderParameter(unsigned param, const glm::vec3& vector);
-		void SetShaderParameter(unsigned param, const glm::mat4& matrix);
-		void SetShaderParameter(unsigned param, const glm::vec4& vector);
-
 		void SetVertexBuffer(VertexBuffer* buffer);
 		void SetIndexBuffer(IndexBuffer* buffer);
 		bool SetVertexBuffers(const std::vector<VertexBuffer*>& buffers, const std::vector<unsigned>& elementMasks, unsigned instanceOffset);
 
-		bool NeedParameterUpdate(ShaderParameterGroup group, const void* source);
 		void SetFlushGPU(bool flushGpu);
 		void SetBlendMode(BlendMode mode);
 		void SetColorWrite(bool enable);
@@ -83,11 +74,6 @@ namespace Renderer {
 		void Draw(PrimitiveType type, unsigned vertexStart, unsigned vertexCount);
 		void DrawIndexed(PrimitiveType type, unsigned indexStart, unsigned indexCount);
 		void DrawInstanced(PrimitiveType type, unsigned indexStart, unsigned indexCount, unsigned instanceCount);
-
-		void ClearParameterSource(ShaderParameterGroup group);
-		void ClearParameterSources();
-		void ClearTransformSources();
-		void CleanupShaderPrograms(Shader* variation);
 
 		SDL_Window *GetWindow() { return window; }
 

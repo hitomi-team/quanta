@@ -5,6 +5,7 @@
 #include "layer1/renderer/gpuresource.h"
 #include "layer1/renderer/indexbuffer.h"
 #include "layer1/renderer/inputlayout.h"
+#include "layer1/renderer/shaderparameterbuffer.h"
 #include "layer1/renderer/rendertarget.h"
 #include "layer1/renderer/shader.h"
 #include "layer1/renderer/texture2d.h"

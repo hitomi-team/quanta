@@ -67,11 +67,10 @@ namespace Renderer {
 
 		d3d11_global_context->GenerateMips((ID3D11ShaderResourceView *)buffer);
 
-		D3D11_FILTER filter;
+		D3D11_FILTER filter = D3D11_FILTER_MIN_MAG_MIP_POINT;
 
 		switch(samplerstatedesc.Filter) {
 		case FILTER_NEAREST:
-			filter = D3D11_FILTER_MIN_MAG_MIP_POINT;
 			break;
 		case FILTER_BILINEAR:
 			filter = D3D11_FILTER_MIN_MAG_LINEAR_MIP_POINT;

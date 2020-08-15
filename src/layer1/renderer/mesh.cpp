@@ -65,7 +65,7 @@ namespace Renderer {
 		if (indexDraw) {
 			if (ibuffer == nullptr)
 				return;
-
+			
 			rhi->DrawIndexed(TRIANGLE_LIST, 0, getIndexCount());
 		} else {
 			if (vbuffer == nullptr)

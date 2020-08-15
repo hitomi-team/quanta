@@ -36,22 +36,14 @@ namespace Renderer {
 		virtual Shader *CreateShader(unsigned char *vs_bytecode, unsigned int vs_size,
 					     unsigned char *fs_bytecode, unsigned int fs_size) = 0;
 		virtual Texture2D *CreateTexture2D(unsigned char *data, unsigned width, unsigned height, SamplerStateDesc samplerstatedesc) = 0;
+		virtual ShaderParameterBuffer *CreateShaderParameterBuffer(std::vector<ShaderParameterElement> elements) = 0;
 
 		virtual void SetShaders(Shader *shader) = 0;
-		virtual void SetShaderParameter(unsigned param, const float* data, unsigned count) = 0;
-		virtual void SetShaderParameter(unsigned param, float value) = 0;
-		virtual void SetShaderParameter(unsigned param, bool value) = 0;
-		virtual void SetShaderParameter(unsigned param, const glm::vec2& vector) = 0;
-		virtual void SetShaderParameter(unsigned param, const glm::mat3& matrix) = 0;
-		virtual void SetShaderParameter(unsigned param, const glm::vec3& vector) = 0;
-		virtual void SetShaderParameter(unsigned param, const glm::mat4& matrix) = 0;
-		virtual void SetShaderParameter(unsigned param, const glm::vec4& vector) = 0;
 
 		virtual void SetVertexBuffer(VertexBuffer* buffer) = 0;
 		virtual void SetIndexBuffer(IndexBuffer* buffer) = 0;
 		virtual bool SetVertexBuffers(const std::vector<VertexBuffer*>& buffers, const std::vector<unsigned>& elementMasks, unsigned instanceOffset = 0) = 0;
 
-		virtual bool NeedParameterUpdate(ShaderParameterGroup group, const void* source) = 0;
 		virtual void SetFlushGPU(bool flushGpu) = 0;
 		virtual void SetBlendMode(BlendMode mode) = 0;
 		virtual void SetColorWrite(bool enable) = 0;
@@ -73,11 +65,6 @@ namespace Renderer {
 		virtual void Draw(PrimitiveType type, unsigned vertexStart, unsigned vertexCount) = 0;
 		virtual void DrawIndexed(PrimitiveType type, unsigned indexStart, unsigned indexCount) = 0;
 		virtual void DrawInstanced(PrimitiveType type, unsigned indexStart, unsigned indexCount, unsigned instanceCount) = 0;
-
-		virtual void ClearParameterSource(ShaderParameterGroup group) = 0;
-		virtual void ClearParameterSources() = 0;
-		virtual void ClearTransformSources() = 0;
-		virtual void CleanupShaderPrograms(Shader* variation) = 0;
 
 		virtual SDL_Window *GetWindow() = 0;
 

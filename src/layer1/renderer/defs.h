@@ -179,20 +179,11 @@ namespace Renderer {
 	};
 
 
-	enum ShaderParameterGroup
-	{
-		SP_FRAME = 0,
-		SP_CAMERA,
-		SP_ZONE,
-		SP_LIGHT,
-		SP_MATERIAL,
-		SP_OBJECT,
-		SP_CUSTOM,
-		SP_CUSTOM1,
-		SP_CUSTOM2,
-		MAX_SHADER_PARAMETER_GROUPS
+	enum ShaderParameterUsage {
+		SHADER_PARAM_MVP = 0, // Model * Perspective
+		SHADER_PARAM_TIME, // time since startup (in float)
+		SHADER_PARAM_ALBEDO // Base Texture
 	};
-
 
 	enum TextureUnit
 	{

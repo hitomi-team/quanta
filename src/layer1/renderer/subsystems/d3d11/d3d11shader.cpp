@@ -52,23 +52,4 @@ namespace Renderer {
 		}
 	}
 
-	void *D3D11Shader::GetShaderObject(ShaderType type)
-	{
-		switch (type) {
-		case VS:
-			return objects[0];
-		case FS:
-			return objects[1];
-		default:
-			break;
-		}
-
-		return nullptr;
-	}
-
-	void *D3D11Shader::GetInputLayout()
-	{
-		return nullptr;
-	}
-
 }

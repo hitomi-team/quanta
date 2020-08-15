@@ -4,8 +4,8 @@
 #include <string>
 #include <fstream>
 #include <iostream>
-#include <vector>
 #include <mutex>
+#include <vector>
 
 #include <glm/glm.hpp>
 #include <glm/gtc/type_ptr.hpp>
@@ -16,4 +16,5 @@
 #include <cstdlib>
 #include <cstdint>
 
+#define SDL_MAIN_HANDLED
 #include <SDL2/SDL.h>

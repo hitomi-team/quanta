@@ -186,61 +186,16 @@ namespace Renderer {
 		return nullptr;
 	}
 
+	ShaderParameterBuffer *VulkanRenderer::CreateShaderParameterBuffer(std::vector<ShaderParameterElement> elements)
+	{
+		(void)elements;
+		return nullptr;
+	}
 
 	void VulkanRenderer::SetShaders(Shader *shader)
 	{
 		(void)shader;
 	}
-
-	void VulkanRenderer::SetShaderParameter(unsigned param, const float* data, unsigned count)
-	{
-		(void)param;
-		(void)data;
-		(void)count;
-	}
-
-	void VulkanRenderer::SetShaderParameter(unsigned param, float value)
-	{
-		(void)param;
-		(void)value;
-	}
-
-	void VulkanRenderer::SetShaderParameter(unsigned param, bool value)
-	{
-		(void)param;
-		(void)value;
-	}
-
-	void VulkanRenderer::SetShaderParameter(unsigned param, const glm::vec2& vector)
-	{
-		(void)param;
-		(void)vector;
-	}
-
-	void VulkanRenderer::SetShaderParameter(unsigned param, const glm::mat3& matrix)
-	{
-		(void)param;
-		(void)matrix;
-	}
-
-	void VulkanRenderer::SetShaderParameter(unsigned param, const glm::vec3& vector)
-	{
-		(void)param;
-		(void)vector;
-	}
-
-	void VulkanRenderer::SetShaderParameter(unsigned param, const glm::mat4& matrix)
-	{
-		(void)param;
-		(void)matrix;
-	}
-
-	void VulkanRenderer::SetShaderParameter(unsigned param, const glm::vec4& vector)
-	{
-		(void)param;
-		(void)vector;
-	}
-
 
 	void VulkanRenderer::SetVertexBuffer(VertexBuffer* buffer)
 	{
@@ -258,14 +213,6 @@ namespace Renderer {
 		(void)elementMasks;
 		(void)instanceOffset;
 		return true;
-	}
-
-
-	bool VulkanRenderer::NeedParameterUpdate(ShaderParameterGroup group, const void* source)
-	{
-		(void)group;
-		(void)source;
-		return false;
 	}
 
 	void VulkanRenderer::SetFlushGPU(bool flushGpu)
@@ -373,25 +320,6 @@ namespace Renderer {
 		(void)indexStart;
 		(void)indexCount;
 		(void)instanceCount;
-	}
-
-
-	void VulkanRenderer::ClearParameterSource(ShaderParameterGroup group)
-	{
-		(void)group;
-	}
-
-	void VulkanRenderer::ClearParameterSources()
-	{
-	}
-
-	void VulkanRenderer::ClearTransformSources()
-	{
-	}
-
-	void VulkanRenderer::CleanupShaderPrograms(Shader* variation)
-	{
-		(void)variation;
 	}
 
 

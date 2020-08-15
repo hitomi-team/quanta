@@ -19,8 +19,8 @@ namespace Renderer {
 		virtual void *GetProgram() = 0;
 
 		// koukuno: used to be GetObject, but WinAPI kicks in.
-		virtual void *GetShaderObject(ShaderType type) = 0;
-		virtual void *GetInputLayout() = 0;
+		void *GetShaderObject(ShaderType type);
+		inline void *GetInputLayout() { return inputlayout->GetInputLayout(); }
 
 	protected:
 		void *program; // I guess this can be the pipeline object?

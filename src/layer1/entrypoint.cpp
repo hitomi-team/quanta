@@ -63,6 +63,10 @@ int main(int argc, char **argv)
 	filesystem.ReadFile(h, fs_bytecode, fs_size);
 
 	Renderer::Shader *shader = renderer_api.CreateShader((unsigned char *)vs_bytecode, vs_size, (unsigned char *)fs_bytecode, fs_size);
+	if (!shader) {
+		global_log.Error("Failed to compile shaders");
+		return 0;
+	}
 
 	delete[] vs_bytecode;
 	delete[] fs_bytecode;
@@ -94,11 +98,26 @@ int main(int argc, char **argv)
 
 	// Actual Renderer Usage
 
+	float time = 1.0;
+
+	Renderer::ShaderParameterElement param0;
+	param0.data = (char *)&time;
+	param0.dataSize = sizeof(float);
+	param0.usage = Renderer::SHADER_PARAM_TIME;
+
+	std::vector<Renderer::ShaderParameterElement> paramElements;
+	paramElements.push_back(param0);
+
+	Renderer::ShaderParameterBuffer *paramBuffer = renderer_api.CreateShaderParameterBuffer(paramElements);
+	if (!paramBuffer)
+		return 0;
+
 	Renderer::Material newmat;
-	newmat.Setup(shader, tex);
+	newmat.Setup(shader, tex, paramBuffer);
 
 	Renderer::Mesh newmesh;
-	newmesh.Setup(renderer.GetRenderer(), vertices, 4, indices, 6, Renderer::MESH_2D);
+	if (!newmesh.Setup(renderer.GetRenderer(), vertices, 4, indices, 6, Renderer::MESH_2D))
+		return 0;
 
 	renderer.RegisterMesh(&newmesh);
 	renderer.RegisterMaterial(&newmat);
@@ -108,7 +127,7 @@ int main(int argc, char **argv)
 	// Finally we can run the game
 
 	game.Run();
-
+	
 	newprop->Release();
 	newmat.Release();
 	newmesh.Release();

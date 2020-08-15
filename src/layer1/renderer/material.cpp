@@ -4,13 +4,14 @@
 
 namespace Renderer {
 
-	bool Material::Setup(Shader *shader, Texture2D *texture)
+	bool Material::Setup(Shader *shader, Texture2D *texture, ShaderParameterBuffer *paramBuffer)
 	{
 		if (!shader || !texture)
 			return false;
 
 		this->shader = shader;
 		this->texture = texture;
+		this->paramBuffer = paramBuffer;
 
 		return true;
 	}
@@ -31,6 +32,7 @@ namespace Renderer {
 
 		rhi->SetShaders(shader);
 		rhi->SetTexture(0, texture);
+		paramBuffer->Apply();
 	}
 
 }
