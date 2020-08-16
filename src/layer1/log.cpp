@@ -16,19 +16,37 @@ Log::Log(const std::string &filename)
 
 void Log::Load(const std::string &filename)
 {
-	fstream = std::ofstream(filename);
+	this->fstream = std::ofstream(filename);
 }
 
 void Log::Print(LogLevel level, const std::string &msg)
 {
 	std::unique_lock< std::mutex > lock(this->mtx);
 
-	buffer.push_back(std::string(Prefixes[static_cast<int>(level)]) + msg + '\n');
+	std::stringstream stream(msg);
+	std::string line;
 
-	if (fstream.is_open()) {
-		fstream   << Prefixes[static_cast<int>(level)] << msg << std::endl;
-	} else {
-		std::cout << Prefixes[static_cast<int>(level)] << msg << std::endl;
+	// the string that will be written to stream
+	std::string temp;
+
+	const char *prefix = Prefixes[static_cast< int >(level)];
+
+	while (std::getline(stream, line, '\n')) {
+		temp.clear();
+		temp.append(prefix);
+		temp.append(line);
+		temp.append(1, '\n');
+
+		if (level == LogLevel::Error)
+			std::cerr << temp << std::flush;
+		else
+			std::cout << temp << std::flush;
+
+		if (fstream.is_open())
+			this->fstream << temp << std::flush;
+
+		// TODO: limit the amount of lines
+		this->buffer.push_back(temp);
 	}
 }
 
