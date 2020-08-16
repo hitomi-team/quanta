@@ -157,7 +157,6 @@ namespace Renderer {
 
 			const rapidjson::Value &uniformValues = shaderType["params"];
 			for (rapidjson::SizeType i = 0; i < uniformValues.Size(); i++) {
-				printf("%u\n", uniformValues.Size());
 				ShaderParameterElement element = {};
 
 				if (uniformValues[i].HasMember("mvp")) {
@@ -166,7 +165,6 @@ namespace Renderer {
 					element.data = (char *)&matrix; // fill with weird data. will set it to default vals later
 					element.dataSize = sizeof(glm::mat4);
 					element.usage = SHADER_PARAM_MVP;
-					printf("parsed mvp\n");
 				} else if (uniformValues[i].HasMember("time")) {
 					float time = 0.f;
 
@@ -215,8 +213,6 @@ namespace Renderer {
 			
 			return nullptr;
 		}
-
-		printf("stuff: %llu\n", uniforms.size());
 
 		ShaderParameterBuffer *paramBuffer = rsRuntime.GetRenderer()->CreateShaderParameterBuffer(uniforms);
 
