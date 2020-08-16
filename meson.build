@@ -31,8 +31,8 @@ if target_machine.system() == 'windows'
 	lib_d3dcomp  = compiler.find_library('d3dcompiler', dirs : lib_path)
 
 	compiler_flags += '-D=__D3D11'
-	libs += lib_sdl2
 	libs += lib_sdl2main
+	libs += lib_sdl2
 	libs += lib_d3d11
 	libs += lib_dxgi
 	libs += lib_d3dcomp
@@ -42,8 +42,8 @@ else
 	lib_sdl2     = compiler.find_library('SDL2')
 	lib_sdl2main = compiler.find_library('SDL2main')
 
-	libs += lib_sdl2
 	libs += lib_sdl2main
+	libs += lib_sdl2
 endif
 
 # get source files
