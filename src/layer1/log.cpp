@@ -32,10 +32,7 @@ void Log::Print(LogLevel level, const std::string &msg)
 	const char *prefix = Prefixes[static_cast< int >(level)];
 
 	while (std::getline(stream, line, '\n')) {
-		temp.clear();
-		temp.append(prefix);
-		temp.append(line);
-		temp.append(1, '\n');
+		temp = StringFormat(prefix, line, "\n");
 
 		if (level == LogLevel::Error)
 			std::cerr << temp << std::flush;
@@ -45,7 +42,10 @@ void Log::Print(LogLevel level, const std::string &msg)
 		if (fstream.is_open())
 			this->fstream << temp << std::flush;
 
-		// TODO: limit the amount of lines
+		// if some weird stuff happens
+		while (this->buffer.size() >= 1024)
+			this->buffer.erase(this->buffer.begin());
+
 		this->buffer.push_back(temp);
 	}
 }
