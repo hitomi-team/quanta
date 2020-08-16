@@ -6,6 +6,7 @@ renderer_src = files([
 	'shader.cpp',
 	'input.cpp',
 	'material.cpp',
+	'materialjson.cpp',
 	'mesh.cpp',
 	'prop.cpp',
 	'transform.cpp',

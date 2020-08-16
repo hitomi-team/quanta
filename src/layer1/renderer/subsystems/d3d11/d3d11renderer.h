@@ -87,6 +87,8 @@ namespace Renderer {
 		void ImGuiNewFrame();
 		void ImGuiEndFrame();
 
+		RendererType getRendererType();
+
 	private:
 		SDL_Window *window;
 		SDL_DisplayMode display;

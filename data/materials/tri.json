@@ -1,0 +1,20 @@
+{
+	"shaders" : [
+		{
+			"shader" : "tri_vs",
+			"type"   : "vertex",
+
+			"params" : [
+				{"time" : "float"}
+			]
+		},
+		{
+			"shader": "tri_fs",
+			"type"  : "fragment",
+			
+			"params" : [
+				{"albedo" : "/materials/textures/oh.jpg"}
+			]
+		}
+	]
+}

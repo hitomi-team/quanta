@@ -2,6 +2,7 @@
 
 #include <algorithm>
 #include <string>
+#include <sstream>
 #include <fstream>
 #include <iostream>
 #include <mutex>
@@ -10,6 +11,9 @@
 #include <glm/glm.hpp>
 #include <glm/gtc/type_ptr.hpp>
 #include <glm/gtx/transform.hpp>
+
+#include <rapidjson/document.h>
+#include <rapidjson/filereadstream.h>
 
 #include <cstring>
 #include <cstdio>

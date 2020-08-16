@@ -268,4 +268,9 @@ namespace Renderer {
 	{
 	}
 
+	RendererType NullRenderer::getRendererType()
+	{
+		return RENDERER_NULL;
+	}
+
 }

@@ -3,6 +3,13 @@
 
 namespace Renderer {
 
+	enum RendererType
+	{
+		RENDERER_NULL = 0,
+		RENDERER_D3D11,
+		RENDERER_VULKAN
+	};
+
 	enum PrimitiveType
 	{
 		TRIANGLE_LIST = 0,

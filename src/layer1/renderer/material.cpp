@@ -6,7 +6,7 @@ namespace Renderer {
 
 	bool Material::Setup(Shader *shader, Texture2D *texture, ShaderParameterBuffer *paramBuffer)
 	{
-		if (!shader || !texture)
+		if (!shader || !texture || !paramBuffer)
 			return false;
 
 		this->shader = shader;

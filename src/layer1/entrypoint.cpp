@@ -11,6 +11,8 @@
 #include "layer1/renderer/material.h"
 #include "layer1/renderer/mesh.h"
 
+#include "layer1/renderer/materialjson.h"
+
 // SDL2main
 int main(int argc, char **argv)
 {
@@ -51,85 +53,28 @@ int main(int argc, char **argv)
 		2, 3, 0
 	};
 
-	// Shader Setup
+	Renderer::MaterialJSON parser;
 
-	auto h = filesystem.FindFile("/shaders/tri_vs.dxbc");
-	size_t vs_size = filesystem.GetFileSize(h);
-	char *vs_bytecode = new char[vs_size + 1];
-	filesystem.ReadFile(h, vs_bytecode, vs_size);
-	h = filesystem.FindFile("/shaders/tri_fs.dxbc");
-	size_t fs_size = filesystem.GetFileSize(h);
-	char *fs_bytecode = new char[fs_size + 1];
-	filesystem.ReadFile(h, fs_bytecode, fs_size);
-
-	Renderer::Shader *shader = renderer_api.CreateShader((unsigned char *)vs_bytecode, vs_size, (unsigned char *)fs_bytecode, fs_size);
-	if (!shader) {
-		global_log.Error("Failed to compile shaders");
+	Renderer::Material *newmat = parser.Load(filesystem, renderer, "/materials/tri.json");
+	if (!newmat) {
 		return 0;
 	}
-
-	delete[] vs_bytecode;
-	delete[] fs_bytecode;
-
-	// Texture Setup
-
-	int x, y, channels;
-	h = filesystem.FindFile("/textures/pfp.png");
-	size_t len = filesystem.GetFileSize(h);
-	char *tex_buf = new char[len];
-	filesystem.ReadFile(h, tex_buf, len);
-	unsigned char *pix_data = stbi_load_from_memory((unsigned char *)tex_buf, (int)len, &x, &y, &channels, 4);
-
-	Renderer::SamplerStateDesc desc = {};
-	desc.Filter = Renderer::FILTER_NEAREST;
-	desc.AddressModeU = Renderer::ADDRESS_MIRROR;
-	desc.AddressModeV = Renderer::ADDRESS_MIRROR;
-	desc.AddressModeW = Renderer::ADDRESS_MIRROR;
-	desc.ComparisonFunc = Renderer::TCF_LESSEQUAL;
-	desc.MipLODBias = 0;
-	desc.MaxLOD = 0;
-	desc.MinLOD = 0;
-	desc.MaxAniso = 0;
-
-	Renderer::Texture2D *tex = renderer_api.CreateTexture2D(pix_data, x, y, desc);
-
-	stbi_image_free(pix_data);
-	delete[] tex_buf;
-
-	// Actual Renderer Usage
-
-	float time = 1.0;
-
-	Renderer::ShaderParameterElement param0;
-	param0.data = (char *)&time;
-	param0.dataSize = sizeof(float);
-	param0.usage = Renderer::SHADER_PARAM_TIME;
-
-	std::vector<Renderer::ShaderParameterElement> paramElements;
-	paramElements.push_back(param0);
-
-	Renderer::ShaderParameterBuffer *paramBuffer = renderer_api.CreateShaderParameterBuffer(paramElements);
-	if (!paramBuffer)
-		return 0;
-
-	Renderer::Material newmat;
-	newmat.Setup(shader, tex, paramBuffer);
 
 	Renderer::Mesh newmesh;
 	if (!newmesh.Setup(renderer.GetRenderer(), vertices, 4, indices, 6, Renderer::MESH_2D))
 		return 0;
 
 	renderer.RegisterMesh(&newmesh);
-	renderer.RegisterMaterial(&newmat);
+	renderer.RegisterMaterial(newmat);
 
 	Renderer::Prop *newprop = renderer.AllocateProp(0, 0);
 
 	// Finally we can run the game
 
 	game.Run();
-	
+
 	newprop->Release();
-	newmat.Release();
+	newmat->Release();
 	newmesh.Release();
 
 	return 0;

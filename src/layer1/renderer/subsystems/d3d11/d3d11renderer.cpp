@@ -747,6 +747,11 @@ namespace Renderer {
 		ImGui_ImplDX11_RenderDrawData(ImGui::GetDrawData());
 	}
 
+	RendererType D3D11Renderer::getRendererType()
+	{
+		return RENDERER_D3D11;
+	}
+
 	ID3D11Device *d3d11_global_device;
 	ID3D11DeviceContext *d3d11_global_context;
 

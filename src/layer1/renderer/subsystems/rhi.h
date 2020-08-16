@@ -80,6 +80,8 @@ namespace Renderer {
 		inline unsigned getDrawInstancedCount() { return drawInstancedCount; }
 		inline unsigned getTotalDrawCallCount() { return drawCount + drawIndexedCount + drawInstancedCount; }
 
+		virtual RendererType getRendererType() = 0;
+
 	protected:
 		// For Profiler
 		unsigned primitiveCount;

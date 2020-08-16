@@ -77,6 +77,8 @@ namespace Renderer {
 		void ImGuiNewFrame(); // Called before ImGui commands
 		void ImGuiEndFrame(); // Called after ImGui commands
 
+		RendererType getRendererType();
+
 	protected:
 		// For Profiler
 		unsigned primitiveCount;

@@ -337,4 +337,9 @@ namespace Renderer {
 //		ImGui_ImplVulkan_RenderDrawData(ImGui::GetDrawData());
 	}
 
+	RendererType VulkanRenderer::getRendererType()
+	{
+		return RENDERER_VULKAN;
+	}
+
 }
