@@ -14,11 +14,11 @@ namespace Renderer {
 	public:
 		MaterialJSON() {}
 
-		Material *Load(Filesystem::Runtime &fsRuntime, Renderer::Runtime &rsRuntime, std::string jsonPath);
+		Material *Load(Filesystem::Runtime &fsRuntime, Renderer::Runtime &rsRuntime, const std::string &jsonPath);
 	
 	private:
-		Shader *parseShaderBytecode(Filesystem::Runtime &fsRuntime, Renderer::Runtime &rsRuntime, std::string vs_filePath, std::string fs_filePath);
-		Texture2D *loadTexture(Filesystem::Runtime &fsRuntime, Renderer::Runtime &rsRuntime, std::string filePath);
+		Shader *parseShaderBytecode(Filesystem::Runtime &fsRuntime, Renderer::Runtime &rsRuntime, const std::string &vs_filePath, const std::string &fs_filePath);
+		Texture2D *loadTexture(Filesystem::Runtime &fsRuntime, Renderer::Runtime &rsRuntime, const std::string &filePath);
 	};
 
 }

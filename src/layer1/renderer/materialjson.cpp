@@ -34,12 +34,11 @@
 
 namespace Renderer {
 
-	Shader *MaterialJSON::parseShaderBytecode(Filesystem::Runtime &fsRuntime, Renderer::Runtime &rsRuntime, std::string vs_filePath, std::string fs_filePath)
+	Shader *MaterialJSON::parseShaderBytecode(Filesystem::Runtime &fsRuntime, Renderer::Runtime &rsRuntime, const std::string &vs_filePath, const std::string &fs_filePath)
 	{
 		auto h = fsRuntime.FindFile(vs_filePath);
 		if (h == -1) {
-			global_log.Error("Cannot find Vertex Shader!");
-			global_log.Error(vs_filePath);
+			global_log.Error(StringFormat("Cannot find Vertex Shader: ", vs_filePath));
 			return nullptr;
 		}
 
@@ -49,7 +48,7 @@ namespace Renderer {
 
 		h = fsRuntime.FindFile(fs_filePath);
 		if (h == -1) {
-			global_log.Error("Cannot find Fragment Shader!");
+			global_log.Error(StringFormat("Cannot find Fragment Shader: ", fs_filePath));
 			return nullptr;
 		}
 
@@ -67,11 +66,11 @@ namespace Renderer {
 		return shader;
 	}
 
-	Texture2D *MaterialJSON::loadTexture(Filesystem::Runtime &fsRuntime, Renderer::Runtime &rsRuntime, std::string filePath)
+	Texture2D *MaterialJSON::loadTexture(Filesystem::Runtime &fsRuntime, Renderer::Runtime &rsRuntime, const std::string &filePath)
 	{
 		auto h = fsRuntime.FindFile(filePath);
 		if (h == -1) {
-			global_log.Error("Cannot find Texture!");
+			global_log.Error(StringFormat("Cannot find Texture: ", filePath));
 			return nullptr;
 		}
 
@@ -101,7 +100,7 @@ namespace Renderer {
 		return texture;
 	}
 
-	Material *MaterialJSON::Load(Filesystem::Runtime &fsRuntime, Renderer::Runtime &rsRuntime, std::string jsonPath)
+	Material *MaterialJSON::Load(Filesystem::Runtime &fsRuntime, Renderer::Runtime &rsRuntime, const std::string &jsonPath)
 	{
 		rapidjson::Document doc;
 
@@ -109,7 +108,7 @@ namespace Renderer {
 
 		auto h = fsRuntime.FindFile(jsonPath);
 		if (h == -1) {
-			global_log.Error("Cannot find Material");
+			global_log.Error(StringFormat("Cannot find Material: ", jsonPath));
 			return nullptr;
 		}
 
@@ -119,7 +118,7 @@ namespace Renderer {
 
 		doc.Parse(jsonData, jsonLength);
 		if (doc.HasParseError()) {
-			global_log.Error("Failed to parse JSON");
+			global_log.Error(StringFormat("Failed to parse JSON: ", jsonPath));
 			return nullptr;
 		}
 
@@ -131,8 +130,6 @@ namespace Renderer {
 		Texture2D *albedo = nullptr;
 		Shader *shader = nullptr;
 		
-		global_log.Info("parsing json");
-
 		switch (rsRuntime.GetRenderer()->getRendererType()) {
 		case RENDERER_D3D11:
 			filepath = "/materials/shadersd3d11/";
@@ -151,9 +148,9 @@ namespace Renderer {
 
 		// Parse each shader!
 		for (rapidjson::SizeType i = 0; i < shaders.Size(); i++) {
-			global_log.Info("pjson");
-
 			const rapidjson::Value &shaderType = shaders[i];			
+			const std::string shaderTypeStr = shaderType["type"].GetString();
+			const std::string shaderName = shaderType["shader"].GetString();
 
 			const rapidjson::Value &uniformValues = shaderType["params"];
 			for (rapidjson::SizeType i = 0; i < uniformValues.Size(); i++) {
@@ -172,15 +169,15 @@ namespace Renderer {
 					element.dataSize = sizeof(float);
 					element.usage = SHADER_PARAM_TIME;
 				} else if (uniformValues[i].HasMember("albedo")) {
-					std::string albedoPath = uniformValues[i]["albedo"].GetString();
+					const std::string albedoPath = uniformValues[i]["albedo"].GetString();
 					albedo = loadTexture(fsRuntime, rsRuntime, albedoPath);
 				
 					if (!albedo) {
-						global_log.Error(albedoPath);
+						global_log.Error(StringFormat("Cannot load albedo texture: \"", albedoPath, "\" requested by Material: \"", jsonPath, "\""));
 						return nullptr;
 					}
 				} else {
-					global_log.Warn("Unsupported Shader Parameter");
+					global_log.Warn(StringFormat("Unsupported Shader Parameter: \"", uniformValues[i].GetString(), "\""));
 				}
 
 				if (element.dataSize)
@@ -188,20 +185,16 @@ namespace Renderer {
 
 			}
 
-			global_log.Info("fin");
-
 			// Process filename to retrieve bytecode
 			// Shaders will always be in:
 			// /materials/shadersd3d11/[shadername].dxbc
 
-			// this is fucking ugly please send help. this is a genuine call for hlep PLEASE HELP OH GODD!!!!!!!!!!!!!!
-
-			if (!strcmp(shaderType["type"].GetString(), "vertex")) {
-				vsPath = filepath + std::string(shaderType["shader"].GetString()) + std::string(".dxbc");
-			} else if (!strcmp(shaderType["type"].GetString(), "fragment")) {
-				fsPath = filepath + std::string(shaderType["shader"].GetString()) + std::string(".dxbc");
+			if (shaderTypeStr == "vertex") {
+				vsPath = StringFormat(filepath, shaderName, ".dxbc");
+			} else if (shaderTypeStr == "fragment") {
+				fsPath = StringFormat(filepath, shaderName, ".dxbc");
 			} else {
-				global_log.Error("Failed to parse JSON: Unknown Shader Type!");
+				global_log.Error(StringFormat("Unknown Shader Type: \"", shaderTypeStr, "\" in Material: \"", jsonPath, "\""));
 			}
 		}
 

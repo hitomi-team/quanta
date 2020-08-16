@@ -4,7 +4,7 @@
 #include "volk.h"
 #include <SDL2/SDL_vulkan.h>
 
-#define VK_ASSERT(X, STR) if (X != VK_SUCCESS) { fprintf(stderr, "vk error (%d): %s\n", X, STR); abort(); }
-#define VK_FATAL(X, STR) if (X) { fprintf(stderr, "vk error: %s\n", STR); }
+#define VK_ASSERT(X, STR) if (X != VK_SUCCESS) { global_log.Error(StringFormat("vk error (", std::hex, X, std::dec, "): ", STR)); abort(); }
+#define VK_FATAL(X, STR) if (X) { global_log.Error(StringFormat("vk error: ", STR)); }
 
 #endif
