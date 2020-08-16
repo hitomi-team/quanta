@@ -21,6 +21,8 @@ void Log::Load(const std::string &filename)
 
 void Log::Print(LogLevel level, const std::string &msg)
 {
+	std::unique_lock< std::mutex > lock(this->mtx);
+
 	buffer.push_back(std::string(Prefixes[static_cast<int>(level)]) + msg + '\n');
 
 	if (fstream.is_open()) {

@@ -22,6 +22,7 @@ public:
 	inline std::vector<std::string> &getBuffer() { return buffer; }
 
 protected:
+	std::mutex mtx;
 	std::vector<std::string> buffer;
 	std::ofstream fstream;
 	void Print(LogLevel level, const std::string &msg);
