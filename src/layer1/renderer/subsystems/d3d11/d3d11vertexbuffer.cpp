@@ -14,7 +14,7 @@ namespace Renderer {
 
 		D3D11_BUFFER_DESC vertex_desc = {};
 		vertex_desc.ByteWidth = sizeof(Vertex) * count;
-		vertex_desc.Usage = D3D11_USAGE_DEFAULT;
+		vertex_desc.Usage = D3D11_USAGE_IMMUTABLE;
 		vertex_desc.BindFlags = D3D11_BIND_VERTEX_BUFFER;
 
 		D3D11_SUBRESOURCE_DATA sr_data = {};

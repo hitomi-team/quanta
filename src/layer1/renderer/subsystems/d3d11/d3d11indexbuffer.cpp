@@ -14,7 +14,7 @@ namespace Renderer {
 
 		D3D11_BUFFER_DESC index_desc = {};
 		index_desc.ByteWidth = sizeof(unsigned) * count;
-		index_desc.Usage = D3D11_USAGE_DEFAULT;
+		index_desc.Usage = D3D11_USAGE_IMMUTABLE;
 		index_desc.BindFlags = D3D11_BIND_INDEX_BUFFER;
 
 		D3D11_SUBRESOURCE_DATA sr_data = {};
