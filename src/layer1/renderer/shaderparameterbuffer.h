@@ -29,7 +29,7 @@ namespace Renderer {
 //		virtual void SetShaderParameter(ShaderParameterUsage param, const glm::vec2& vector) = 0;
 //		virtual void SetShaderParameter(ShaderParameterUsage param, const glm::mat3& matrix) = 0;
 //		virtual void SetShaderParameter(ShaderParameterUsage param, const glm::vec3& vector) = 0;
-//		virtual void SetShaderParameter(ShaderParameterUsage param, const glm::mat4& matrix) = 0;
+		virtual void SetShaderParameter(ShaderParameterUsage param, const glm::mat4& matrix) = 0;
 //		virtual void SetShaderParameter(ShaderParameterUsage param, const glm::vec4& vector) = 0;
 
 	protected:

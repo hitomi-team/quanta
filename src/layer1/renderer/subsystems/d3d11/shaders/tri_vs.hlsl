@@ -12,6 +12,7 @@ struct PS_INPUT {
 
 cbuffer GlobalData : register(b0) {
 	float time;
+	float4 mvp;
 };
 
 PS_INPUT main(VS_INPUT input)

@@ -13,7 +13,7 @@
 			"type"  : "fragment",
 			
 			"params" : [
-				{"albedo" : "/materials/textures/oh.jpg"}
+				{"albedo" : "/materials/textures/pfp.png"}
 			]
 		}
 	]

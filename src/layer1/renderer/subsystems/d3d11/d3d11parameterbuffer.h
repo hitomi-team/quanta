@@ -19,6 +19,8 @@ namespace Renderer {
 		void Unmap();
 
 		void SetShaderParameter(ShaderParameterUsage param, float value); // Map() must be called before this can be used.
+		
+		void SetShaderParameter(ShaderParameterUsage param, const glm::mat4& matrix);
 
 	protected:
 		unsigned int mappedMemorySize;

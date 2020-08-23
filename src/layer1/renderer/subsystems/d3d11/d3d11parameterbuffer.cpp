@@ -92,5 +92,18 @@ namespace Renderer {
 		}
 	}
 
+	void D3D11ShaderParameterBuffer::SetShaderParameter(ShaderParameterUsage param, const glm::mat4& matrix)
+	{
+		size_t stride = 0;
+		for (auto &i : elements) {
+			if (i.usage == param) {
+				*(glm::mat4 *)i.data = matrix;
+				memcpy(mappedMemory + stride, &matrix[0], i.dataSize);
+				break;
+			}
+			stride += i.dataSize;
+		}
+	}
+
 }
 

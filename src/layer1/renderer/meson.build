@@ -2,6 +2,7 @@ subdir('imgui')
 subdir('subsystems')
 
 renderer_src = files([
+	'camera.cpp',
 	'runtime.cpp',
 	'shader.cpp',
 	'input.cpp',

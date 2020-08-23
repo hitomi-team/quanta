@@ -140,7 +140,7 @@ namespace Renderer {
 		SDL_VERSION(&sysinfo.version);
 		SDL_GetWindowWMInfo(window, &sysinfo);
 
-		HRESULT hr = D3D11CreateDevice(0, D3D_DRIVER_TYPE_HARDWARE, 0, D3D11_CREATE_DEVICE_DEBUG, 0, 0, D3D11_SDK_VERSION, &device, 0, &context);
+		HRESULT hr = D3D11CreateDevice(0, D3D_DRIVER_TYPE_HARDWARE, 0, 0, 0, 0, D3D11_SDK_VERSION, &device, 0, &context);
 
 		if (D3D_FAILED(hr)) {
 			D3D_SAFE_RELEASE(device);
@@ -284,8 +284,11 @@ namespace Renderer {
 	void D3D11Renderer::PreDraw()
 	{
 		if (renderTargetsDirty_) {
-			depthStencilView = defaultDepthStencilView;
-			renderTargetViews[0] = defaultRenderTargetView;
+			if (!depthStencilView)
+				depthStencilView = defaultDepthStencilView;
+			if (!renderTargetViews[0])
+				renderTargetViews[0] = defaultRenderTargetView;
+			
 			context->OMSetRenderTargets(MAX_RENDERTARGETS, &renderTargetViews[0], nullptr);
 			renderTargetsDirty_ = false;
 		}
@@ -648,8 +651,13 @@ namespace Renderer {
 
 	void D3D11Renderer::SetRenderTarget(unsigned index, RenderTarget* renderTarget)
 	{
-		(void)index;
-		(void)renderTarget;
+		if (index >= MAX_RENDERTARGETS)
+			return;
+		
+		if (renderTarget != (ID3D11RenderTargetView *)renderTargetViews[index]) {
+			renderTargetViews[index] = (ID3D11RenderTargetView *)renderTarget->getView();
+			renderTargetsDirty_ = true;
+		}
 	}
 
 	void D3D11Renderer::SetDepthStencil(RenderTarget* depthStencil)
@@ -688,8 +696,10 @@ namespace Renderer {
 		context->Draw(vertexCount, vertexStart);
 		global_log.Info("draw!");
 
+#ifdef PROFILING
 		primitiveCount += primitive;
 		++drawCount;
+#endif
 	}
 
 	void D3D11Renderer::DrawIndexed(PrimitiveType type, unsigned indexStart, unsigned indexCount)
@@ -708,8 +718,10 @@ namespace Renderer {
 
 		context->DrawIndexed(indexCount, indexStart, 0);
 
+#ifdef PROFILING
 		primitiveCount += primitive;
 		++drawIndexedCount;
+#endif
 	}
 
 	void D3D11Renderer::DrawInstanced(PrimitiveType type, unsigned indexStart, unsigned indexCount, unsigned instanceCount)
@@ -729,8 +741,10 @@ namespace Renderer {
 
 		context->DrawIndexedInstanced(indexCount, instanceCount, indexStart, 0, 0);
 
+#ifdef PROFILING
 		primitiveCount += instanceCount * primitive;
 		++drawInstancedCount;
+#endif
 	}
 
 	void D3D11Renderer::ImGuiNewFrame()

@@ -104,6 +104,7 @@ namespace Renderer {
 		hr = d3d11_global_device->CreateSamplerState(&sampler_desc, (ID3D11SamplerState **)&sampler);
 		if (D3D_FAILED(hr)) {
 			Release();
+			return false;
 		}
 
 		return true;

@@ -122,7 +122,7 @@ namespace Renderer {
 
 		if (ImGui::CollapsingHeader("Performance")) {
 			ImGui::Text("Frametime: %.3f ms (%.1f FPS)", 1000.0f / ImGui::GetIO().Framerate, ImGui::GetIO().Framerate);
-			ImGui::Separator();
+/*			ImGui::Separator();
 			ImGui::Text("RHI Information (Low-Level Interface)");
 			ImGui::Text("Primitives Drawn: %u", rhi->getPrimitiveCount());
 			ImGui::Text("Draw Non-Indexed Calls: %u", rhi->getDrawCount());
@@ -134,7 +134,7 @@ namespace Renderer {
 			ImGui::Text("Prop Queue: %u", (unsigned int)prop_queue.capacity());
 			ImGui::Text("Registered Materials: %u", (unsigned int)materials.capacity());
 			ImGui::Text("Registered Meshes: %u", (unsigned int)meshes.capacity());
-		}
+*/		}
 
 		rhi->ImGuiEndFrame();
 	}
