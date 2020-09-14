@@ -44,7 +44,7 @@ namespace Renderer {
 		HRESULT hr = d3d11_global_device->CreateTexture2D(&desc, nullptr, &image);
 		if (D3D_FAILED(hr)) {
 			D3D_SAFE_RELEASE(image);
-			global_log.Error("d3d11: RenderTarget " + hr);
+			global_log.Error(fmt::format("d3d11: RenderTarget {:016}", hr));
 			return false;
 		}
 

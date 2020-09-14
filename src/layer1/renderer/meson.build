@@ -1,7 +1,7 @@
 subdir('imgui')
 subdir('subsystems')
 
-renderer_src = files([
+srcs += files([
 	'camera.cpp',
 	'runtime.cpp',
 	'shader.cpp',
@@ -12,4 +12,4 @@ renderer_src = files([
 	'prop.cpp',
 	'transform.cpp',
 	'stb_image.c'
-]) + imgui_src + subsystem_src
+])

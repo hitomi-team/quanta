@@ -18,12 +18,12 @@ namespace Graph {
 		for (auto &service : this->Services) {
 			if (!service->isInitialized()) {
 				if (!service->Setup()) {
-					global_log.Error(StringFormat("Failed to initialize service: ", service->getName()));
+					global_log.Error(fmt::format("Failed to initialize service: {}", service->getName()));
 					Abort();
 				}
 
 				service->setInitialized();
-				global_log.Info(StringFormat("Service initialized: ", service->getName()));
+				global_log.Info(fmt::format("Service initialized: {}", service->getName()));
 			}
 		}
 	}
@@ -32,10 +32,10 @@ namespace Graph {
 	{
 		for (auto &service : this->Services) {
 			if (!service->isInitialized()) {
-				global_log.Warn(StringFormat("Service was not initialized before calling runServices(): ", service->getName()));
+				global_log.Warn(fmt::format("Service was not initialized before calling runServices(): {}", service->getName()));
 
 				if (!service->Setup()) {
-					global_log.Error(StringFormat("Failed to initialize service: ", service->getName()));
+					global_log.Error(fmt::format("Failed to initialize service: {}", service->getName()));
 					Abort();
 				}
 
@@ -43,7 +43,7 @@ namespace Graph {
 			}
 
 			if (!service->Update()) {
-				global_log.Error(StringFormat("Service failed to run properly: ", service->getName()));
+				global_log.Error(fmt::format("Service failed to run properly: {}", service->getName()));
 				return;
 			}
 		}

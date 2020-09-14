@@ -14,6 +14,6 @@
 #include "layer1/log.h"
 #include "rhi.h"
 
-#define FATAL(x) SDL_ShowSimpleMessageBox(SDL_MESSAGEBOX_ERROR, "Fatal Engine Error", x, nullptr); global_log.Error(StringFormat("Renderer: ", x));
+#define FATAL(x) SDL_ShowSimpleMessageBox(SDL_MESSAGEBOX_ERROR, "Fatal Engine Error", x, nullptr); global_log.Error(fmt::format("Renderer: {}", x));
 
 #endif

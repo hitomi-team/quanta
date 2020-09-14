@@ -20,6 +20,10 @@
 #include <cstdlib>
 #include <cstdint>
 
+#define SDL_MAIN_HANDLED
 #include <SDL2/SDL.h>
 
-#include "str_format.h"
+#define FMT_HEADER_ONLY
+#include <fmt/core.h>
+#include <fmt/format.h>
+#include <fmt/os.h>

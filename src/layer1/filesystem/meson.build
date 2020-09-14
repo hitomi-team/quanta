@@ -1,3 +1,3 @@
-filesystem_src = files([
+srcs += files([
 	'runtime.cpp'
 ])

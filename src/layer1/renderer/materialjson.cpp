@@ -38,7 +38,7 @@ namespace Renderer {
 	{
 		auto h = fsRuntime.FindFile(vs_filePath);
 		if (h == -1) {
-			global_log.Error(StringFormat("Cannot find Vertex Shader: ", vs_filePath));
+			global_log.Error(fmt::format("Cannot find Vertex Shader: {}", vs_filePath));
 			return nullptr;
 		}
 
@@ -48,7 +48,7 @@ namespace Renderer {
 
 		h = fsRuntime.FindFile(fs_filePath);
 		if (h == -1) {
-			global_log.Error(StringFormat("Cannot find Fragment Shader: ", fs_filePath));
+			global_log.Error(fmt::format("Cannot find Fragment Shader: {}", fs_filePath));
 			return nullptr;
 		}
 
@@ -70,7 +70,7 @@ namespace Renderer {
 	{
 		auto h = fsRuntime.FindFile(filePath);
 		if (h == -1) {
-			global_log.Error(StringFormat("Cannot find Texture: ", filePath));
+			global_log.Error(fmt::format("Cannot find Texture: {}", filePath));
 			return nullptr;
 		}
 
@@ -108,7 +108,7 @@ namespace Renderer {
 
 		auto h = fsRuntime.FindFile(jsonPath);
 		if (h == -1) {
-			global_log.Error(StringFormat("Cannot find Material: ", jsonPath));
+			global_log.Error(fmt::format("Cannot find Material: {}", jsonPath));
 			return nullptr;
 		}
 
@@ -118,7 +118,7 @@ namespace Renderer {
 
 		doc.Parse(jsonData, jsonLength);
 		if (doc.HasParseError()) {
-			global_log.Error(StringFormat("Failed to parse JSON: ", jsonPath));
+			global_log.Error(fmt::format("Failed to parse JSON: {}", jsonPath));
 			return nullptr;
 		}
 
@@ -173,11 +173,11 @@ namespace Renderer {
 					albedo = loadTexture(fsRuntime, rsRuntime, albedoPath);
 				
 					if (!albedo) {
-						global_log.Error(StringFormat("Cannot load albedo texture: \"", albedoPath, "\" requested by Material: \"", jsonPath, "\""));
+						global_log.Error(fmt::format("Cannot load albedo texture: \"{}\" requested by Material: \"{}\"", albedoPath, jsonPath));
 						return nullptr;
 					}
 				} else {
-					global_log.Warn(StringFormat("Unsupported Shader Parameter: \"", uniformValues[i].GetString(), "\""));
+					global_log.Warn(fmt::format("Unsupported Shader Parameter: \"{}\"", uniformValues[i].GetString()));
 				}
 
 				if (element.dataSize)
@@ -190,11 +190,11 @@ namespace Renderer {
 			// /materials/shadersd3d11/[shadername].dxbc
 
 			if (shaderTypeStr == "vertex") {
-				vsPath = StringFormat(filepath, shaderName, ".dxbc");
+				vsPath = fmt::format("{}{}.dxbc", filepath, shaderName);
 			} else if (shaderTypeStr == "fragment") {
-				fsPath = StringFormat(filepath, shaderName, ".dxbc");
+				fsPath = fmt::format("{}{}.dxbc", filepath, shaderName);
 			} else {
-				global_log.Error(StringFormat("Unknown Shader Type: \"", shaderTypeStr, "\" in Material: \"", jsonPath, "\""));
+				global_log.Error(fmt::format("Unknown Shader Type: \"{}\" in Material: \"{}\"", shaderTypeStr, jsonPath));
 			}
 		}
 

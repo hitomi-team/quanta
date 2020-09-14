@@ -1,4 +1,4 @@
-subsystem_d3d11_src = files([
+srcs += files([
 	'd3d11indexbuffer.cpp',
 	'd3d11inputlayout.cpp',
 	'd3d11parameterbuffer.cpp',

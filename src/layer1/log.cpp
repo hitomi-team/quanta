@@ -32,7 +32,7 @@ void Log::Print(LogLevel level, const std::string &msg)
 	const char *prefix = Prefixes[static_cast< int >(level)];
 
 	while (std::getline(stream, line, '\n')) {
-		temp = StringFormat(prefix, line, "\n");
+		temp = fmt::format("{}{}\n", prefix, line);
 
 		if (level == LogLevel::Error)
 			std::cerr << temp << std::flush;

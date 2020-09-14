@@ -42,7 +42,7 @@ namespace Filesystem {
 		stream.data = reinterpret_cast< std::uint8_t * >(stream_buf);
 		file.open("data_index.pak", std::ios::binary);
 		if (!file.is_open()) {
-			global_log.Error(StringFormat("Failed to open pak file:", "data_index.pak"));
+			global_log.Error(fmt::format("Failed to open pak file: {}", "data_index.pak"));
 			return false;
 		}
 
@@ -51,7 +51,7 @@ namespace Filesystem {
 
 		file.read(stream_buf, measure.pos);
 		if (static_cast< std::size_t >(file.gcount()) != measure.pos) {
-			global_log.Error(StringFormat("Failed to read pak file: ", "data_index.pak"));
+			global_log.Error(fmt::format("Failed to read pak file: {}", "data_index.pak"));
 			return false;
 		}
 
@@ -59,7 +59,7 @@ namespace Filesystem {
 		header.Deserialize(stream);
 
 		if (header.begin != PAKAR_INDEX_HEADER_BEGIN || header.version != PAKAR_VERSION) {
-			global_log.Error(StringFormat("Invalid pak file: ", "data_index.pak"));
+			global_log.Error(fmt::format("Invalid pak file: {}", "data_index.pak"));
 			return false;
 		}
 
@@ -73,7 +73,7 @@ namespace Filesystem {
 		for (auto &chunk_pak : m_chunk_paks) {
 			chunk_pak.open("data_000.pak", std::ios::binary);
 			if (!chunk_pak.is_open()) {
-				global_log.Error(StringFormat("Failed to open pak file: ", "data_000.pak"));
+				global_log.Error(fmt::format("Failed to open pak file: {}", "data_000.pak"));
 				m_chunk_paks.clear();
 				return false;
 			}
@@ -83,7 +83,7 @@ namespace Filesystem {
 			stream.ResetPosition();
 			chunk_header.Deserialize(stream);
 			if (chunk_header.begin != PAKAR_CHUNK_HEADER_BEGIN) {
-				global_log.Error(StringFormat("Invalid pak file: ", "data_000.pak"));
+				global_log.Error(fmt::format("Invalid pak file: {}", "data_000.pak"));
 				m_chunk_paks.clear();
 				return false;
 			}

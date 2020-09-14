@@ -654,7 +654,7 @@ namespace Renderer {
 		if (index >= MAX_RENDERTARGETS)
 			return;
 		
-		if (renderTarget != (ID3D11RenderTargetView *)renderTargetViews[index]) {
+		if (renderTarget->getView() != this->renderTargetViews[index]) {
 			renderTargetViews[index] = (ID3D11RenderTargetView *)renderTarget->getView();
 			renderTargetsDirty_ = true;
 		}

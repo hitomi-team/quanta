@@ -19,6 +19,8 @@ int main(int argc, char **argv)
 	(void)argc;
 	(void)argv;
 
+	SDL_SetMainReady();
+
 	// Setup filesystem service
 	Filesystem::Runtime filesystem;
 

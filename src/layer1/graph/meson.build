@@ -1,4 +1,4 @@
-graph_src = files([
+srcs += files([
 	'node.cpp',
 	'game.cpp'
 ])
