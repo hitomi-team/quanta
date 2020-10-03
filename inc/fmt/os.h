@@ -401,7 +401,7 @@ class ostream : private detail::buffer<char> {
         file_(std::move(other.file_)) {
     other.set(nullptr, 0);
   }
-  ~ostream() {
+  virtual ~ostream() {
     flush();
     delete[] data();
   }

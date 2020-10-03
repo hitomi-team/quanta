@@ -2,12 +2,13 @@ this should be pretty secure
 
 project structure:
 
-data   - game assets
-design - game ideas
-inc    - include headers
-lib    - library dependencies
-src    - source code for engine
-tools  - source code for tools
+data    - game assets
+design  - game ideas
+inc     - include headers
+inc-win - include headers for windows targets
+lib     - library dependencies
+src     - source code for engine
+tools   - source code for tools
 
 build instructions:
 

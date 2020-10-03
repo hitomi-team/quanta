@@ -633,7 +633,7 @@ class basic_memory_buffer : public detail::buffer<T> {
       : alloc_(alloc) {
     this->set(store_, SIZE);
   }
-  ~basic_memory_buffer() { deallocate(); }
+  virtual ~basic_memory_buffer() { deallocate(); }
 
  private:
   // Move data from other to this buffer.

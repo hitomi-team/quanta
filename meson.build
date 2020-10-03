@@ -11,7 +11,7 @@ compiler       = meson.get_compiler('cpp')
 inc_directory  = include_directories('./inc')
 src_directory  = include_directories('./src')
 
-includes = []
+includes = [inc_directory]
 compiler_flags = []
 libs = []
 
@@ -25,7 +25,6 @@ endif
 if target_machine.system() == 'windows'
 	lib_path     = meson.source_root() + '/lib/win64release'
 	lib_sdl2     = compiler.find_library('SDL2', dirs : lib_path)
-	lib_sdl2main = compiler.find_library('SDL2main', dirs : lib_path)
 	lib_d3d11    = compiler.find_library('d3d11', dirs : lib_path)
 	lib_dxgi     = compiler.find_library('dxgi', dirs : lib_path)
 	lib_d3dcomp  = compiler.find_library('d3dcompiler', dirs : lib_path)
@@ -34,20 +33,17 @@ if target_machine.system() == 'windows'
 
 	compiler_flags += '-D__D3D11'
 	libs += lib_sdl2
-	#libs += lib_sdl2main
 	libs += lib_d3d11
 	libs += lib_dxgi
 	libs += lib_d3dcomp
 	libs += lib_dxguid
 	libs += lib_wincodec
 
-	includes += inc_directory
+	includes += include_directories('./inc-win')
 else
 	lib_sdl2     = compiler.find_library('SDL2')
-	lib_sdl2main = compiler.find_library('SDL2main')
 
 	libs += lib_sdl2
-	#libs += lib_sdl2main
 endif
 
 # tools
