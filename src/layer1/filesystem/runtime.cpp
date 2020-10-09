@@ -8,15 +8,19 @@ namespace Filesystem {
 
 	Runtime::Runtime()
 		: Service("FilesystemService")
+		, argv0(nullptr)
+/*
 		, m_chunk_paks{}
 		, m_entries{}
 		, m_offsets{}
 		, m_chunk_begin_size{}
 		, m_mtx{}
 		, m_seekmtx{}
+*/
+
 	{
 	}
-
+/*
 	void Runtime::Release()
 	{
 		std::unique_lock< std::mutex > lock(m_mtx), seek_lock(m_seekmtx);
@@ -220,6 +224,28 @@ namespace Filesystem {
 			return UINT64_MAX;
 
 		return m_entries[handle].size;
+	}
+*/
+
+	bool Runtime::Setup()
+	{
+		if (PHYSFS_init(this->argv0) == 0)
+			return false;
+
+		PHYSFS_permitSymbolicLinks(0);
+
+		if (PHYSFS_mount("data.7z", nullptr, 1) == 0) {
+			global_log.Error("data.7z not found");
+			PHYSFS_deinit();
+			return false;
+		}
+
+		return true;
+	}
+
+	void Runtime::Release()
+	{
+		PHYSFS_deinit();
 	}
 
 }

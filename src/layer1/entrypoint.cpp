@@ -17,12 +17,12 @@
 int main(int argc, char **argv)
 {
 	(void)argc;
-	(void)argv;
 
 	SDL_SetMainReady();
 
 	// Setup filesystem service
 	Filesystem::Runtime filesystem;
+	filesystem.argv0 = argv[0];
 
 	// Setup render service
 	// TODO: Add option to switch between supported renderers
@@ -57,7 +57,7 @@ int main(int argc, char **argv)
 
 	Renderer::MaterialJSON parser;
 
-	Renderer::Material *newmat = parser.Load(filesystem, renderer, "/materials/tri.json");
+	Renderer::Material *newmat = parser.Load(renderer, "/materials/tri.json");
 	if (!newmat) {
 		return 0;
 	}

@@ -21,6 +21,18 @@ public:
 
 	inline std::vector<std::string> &getBuffer() { return buffer; }
 
+	template < typename _StringType, typename ... Args >
+	inline void Debug(const _StringType &fmt, Args &&...args) { Print(LogLevel::Debug, fmt::format(fmt, std::forward< Args >(args)...)); }
+
+	template < typename _StringType, typename ... Args >
+	inline void Error(const _StringType &fmt, Args &&...args) { Print(LogLevel::Error, fmt::format(fmt, std::forward< Args >(args)...)); }
+
+	template < typename _StringType, typename ... Args >
+	inline void Info(const _StringType &fmt, Args &&...args) { Print(LogLevel::Info, fmt::format(fmt, std::forward< Args >(args)...)); }
+
+	template < typename _StringType, typename ... Args >
+	inline void Warn(const _StringType &fmt, Args &&...args) { Print(LogLevel::Warn, fmt::format(fmt, std::forward< Args >(args)...)); }
+
 protected:
 	std::mutex mtx;
 	std::vector<std::string> buffer;

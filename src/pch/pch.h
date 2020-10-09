@@ -27,3 +27,5 @@
 #include <fmt/core.h>
 #include <fmt/format.h>
 #include <fmt/os.h>
+
+#include "physfs.h"

@@ -15,17 +15,19 @@ namespace Filesystem {
 
 	class Runtime : public Graph::Service {
 	public:
+		const char *argv0;
+
 		Runtime();
 		inline ~Runtime() {}
 
 		bool Setup();
 		void Release();
 
+/*
 		int FindFile(const std::string &path);
+		std::size_t ReadFile(PHYSFS_File *handle, char *block, std::size_t n);
 
-		std::size_t ReadFile(int handle, char *block, std::size_t n);
-
-		bool SeekFile(int handle, uint64_t offset, int seek_dir);
+		bool SeekFile(int handle, std::uint64_t offset, int seek_dir);
 		std::uint64_t TellFile(int handle);
 
 		std::uint64_t GetFileSize(int handle);
@@ -38,7 +40,7 @@ namespace Filesystem {
 
 		std::mutex m_mtx;
 		std::mutex m_seekmtx;
-
+*/
 	};
 
 }

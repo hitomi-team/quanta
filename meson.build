@@ -47,11 +47,13 @@ else
 endif
 
 # tools
+subdir('src/physfs')
 subdir('tools')
 
 # get source files
 srcs = []
 subdir('src')
+srcs += physfs_srcs
 
 # libraries
 

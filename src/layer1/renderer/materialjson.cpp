@@ -34,27 +34,29 @@
 
 namespace Renderer {
 
-	Shader *MaterialJSON::parseShaderBytecode(Filesystem::Runtime &fsRuntime, Renderer::Runtime &rsRuntime, const std::string &vs_filePath, const std::string &fs_filePath)
+	Shader *MaterialJSON::parseShaderBytecode(Renderer::Runtime &rsRuntime, const std::string &vs_filePath, const std::string &fs_filePath)
 	{
-		auto h = fsRuntime.FindFile(vs_filePath);
-		if (h == -1) {
+		PHYSFS_File *h = PHYSFS_openRead(vs_filePath.c_str());
+		if (h == nullptr) {
 			global_log.Error(fmt::format("Cannot find Vertex Shader: {}", vs_filePath));
 			return nullptr;
 		}
 
-		size_t  vs_size = fsRuntime.GetFileSize(h);
+		size_t vs_size = static_cast< size_t >(PHYSFS_fileLength(h));
 		char *vs_bytecode = new char[vs_size + 1];
-		fsRuntime.ReadFile(h, vs_bytecode, vs_size);
+		PHYSFS_readBytes(h, vs_bytecode, vs_size);
+		PHYSFS_close(h);
 
-		h = fsRuntime.FindFile(fs_filePath);
-		if (h == -1) {
+		h = PHYSFS_openRead(fs_filePath.c_str());
+		if (h == nullptr) {
 			global_log.Error(fmt::format("Cannot find Fragment Shader: {}", fs_filePath));
 			return nullptr;
 		}
 
-		size_t  fs_size = fsRuntime.GetFileSize(h);
+		size_t fs_size = static_cast< size_t >(PHYSFS_fileLength(h));
 		char *fs_bytecode = new char[fs_size + 1];
-		fsRuntime.ReadFile(h, fs_bytecode, fs_size);
+		PHYSFS_readBytes(h, fs_bytecode, fs_size);
+		PHYSFS_close(h);
 
 		Shader *shader = rsRuntime.GetRenderer()->CreateShader((unsigned char *)vs_bytecode, vs_size, (unsigned char *)fs_bytecode, fs_size);
 		if (!shader)
@@ -66,17 +68,18 @@ namespace Renderer {
 		return shader;
 	}
 
-	Texture2D *MaterialJSON::loadTexture(Filesystem::Runtime &fsRuntime, Renderer::Runtime &rsRuntime, const std::string &filePath)
+	Texture2D *MaterialJSON::loadTexture(Renderer::Runtime &rsRuntime, const std::string &filePath)
 	{
-		auto h = fsRuntime.FindFile(filePath);
-		if (h == -1) {
+		PHYSFS_File *h = PHYSFS_openRead(filePath.c_str());
+		if (h == nullptr) {
 			global_log.Error(fmt::format("Cannot find Texture: {}", filePath));
 			return nullptr;
 		}
 
-		size_t image_size = fsRuntime.GetFileSize(h);
+		size_t image_size = static_cast< size_t >(PHYSFS_fileLength(h));
 		unsigned char *image = new unsigned char[image_size];
-		fsRuntime.ReadFile(h, (char *)image, image_size);
+		PHYSFS_readBytes(h, (char *)image, image_size);
+		PHYSFS_close(h);
 
 		int x, y, channels;
 		unsigned char *pixels = stbi_load_from_memory((unsigned char *)image, (int)image_size, &x, &y, &channels, 4);
@@ -100,21 +103,22 @@ namespace Renderer {
 		return texture;
 	}
 
-	Material *MaterialJSON::Load(Filesystem::Runtime &fsRuntime, Renderer::Runtime &rsRuntime, const std::string &jsonPath)
+	Material *MaterialJSON::Load(Renderer::Runtime &rsRuntime, const std::string &jsonPath)
 	{
 		rapidjson::Document doc;
 
 		// Shader Properties
 
-		auto h = fsRuntime.FindFile(jsonPath);
-		if (h == -1) {
+		PHYSFS_File *h = PHYSFS_openRead(jsonPath.c_str());
+		if (h == nullptr) {
 			global_log.Error(fmt::format("Cannot find Material: {}", jsonPath));
 			return nullptr;
 		}
 
-		size_t jsonLength = fsRuntime.GetFileSize(h);
+		size_t jsonLength = static_cast< size_t >(PHYSFS_fileLength(h));
 		char *jsonData = new char[jsonLength + 1];
-		fsRuntime.ReadFile(h, jsonData, jsonLength);
+		PHYSFS_readBytes(h, jsonData, jsonLength);
+		PHYSFS_close(h);
 
 		doc.Parse(jsonData, jsonLength);
 		if (doc.HasParseError()) {
@@ -170,7 +174,7 @@ namespace Renderer {
 					element.usage = SHADER_PARAM_TIME;
 				} else if (uniformValues[i].HasMember("albedo")) {
 					const std::string albedoPath = uniformValues[i]["albedo"].GetString();
-					albedo = loadTexture(fsRuntime, rsRuntime, albedoPath);
+					albedo = loadTexture(rsRuntime, albedoPath);
 				
 					if (!albedo) {
 						global_log.Error(fmt::format("Cannot load albedo texture: \"{}\" requested by Material: \"{}\"", albedoPath, jsonPath));
@@ -198,7 +202,7 @@ namespace Renderer {
 			}
 		}
 
-		shader = parseShaderBytecode(fsRuntime, rsRuntime, vsPath, fsPath);
+		shader = parseShaderBytecode(rsRuntime, vsPath, fsPath);
 
 		if (!shader) {
 			if (albedo)
