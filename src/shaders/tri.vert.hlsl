@@ -1,3 +1,4 @@
+#include "common.hlsl"
 
 struct VS_INPUT {
 	float4 position : POSITION;

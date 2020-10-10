@@ -32,6 +32,12 @@
 
 */
 
+static const char *shader_exts[] = {
+	nullptr,
+	".dxbc",
+	".spv"
+};
+
 namespace Renderer {
 
 	Shader *MaterialJSON::parseShaderBytecode(Renderer::Runtime &rsRuntime, const std::string &vs_filePath, const std::string &fs_filePath)
@@ -108,6 +114,11 @@ namespace Renderer {
 		rapidjson::Document doc;
 
 		// Shader Properties
+		const char *shader_ext = shader_exts[rsRuntime.GetRenderer()->getRendererType()];
+		if (shader_ext == nullptr) {
+			global_log.Error("No valid RHI for Materials!");
+			return nullptr;
+		}
 
 		PHYSFS_File *h = PHYSFS_openRead(jsonPath.c_str());
 		if (h == nullptr) {
@@ -191,12 +202,12 @@ namespace Renderer {
 
 			// Process filename to retrieve bytecode
 			// Shaders will always be in:
-			// /materials/shadersd3d11/[shadername].dxbc
+			// /materials/shaders[api]/[shadername].[ext]
 
 			if (shaderTypeStr == "vertex") {
-				vsPath = fmt::format("{}{}.dxbc", filepath, shaderName);
+				vsPath = fmt::format("{}{}{}", filepath, shaderName, shader_ext);
 			} else if (shaderTypeStr == "fragment") {
-				fsPath = fmt::format("{}{}.dxbc", filepath, shaderName);
+				fsPath = fmt::format("{}{}{}", filepath, shaderName, shader_ext);
 			} else {
 				global_log.Error(fmt::format("Unknown Shader Type: \"{}\" in Material: \"{}\"", shaderTypeStr, jsonPath));
 			}

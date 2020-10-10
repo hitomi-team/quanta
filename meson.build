@@ -55,9 +55,22 @@ srcs = []
 subdir('src')
 srcs += physfs_srcs
 
+# shader compiler
+shader_targets = []
+
+spirvgen = generator(find_program('dxc'), output : '@BASENAME@.spv', arguments : ['-nologo', '-spirv', '@INPUT@', '-Fo', '@OUTPUT@', '-D', 'VULKAN', '@EXTRA_ARGS@'])
+shader_targets += spirvgen.process(vs_srcs, extra_args : ['-T', 'vs_6_0'])
+shader_targets += spirvgen.process(fs_srcs, extra_args : ['-T', 'ps_6_0'])
+
+if target_machine.system() == 'windows'
+	dxbcgen = generator(find_program('fxc'), output : '@BASENAME@.dxbc', arguments : ['-nologo', '@INPUT@', '-Fo', '@OUTPUT@', '@EXTRA_ARGS@'])
+	shader_targets += dxbcgen.process(vs_srcs, extra_args : ['-T', 'vs_5_0'])
+	shader_targets += dxbcgen.process(fs_srcs, extra_args : ['-T', 'ps_5_0'])
+endif
+
 # libraries
 
 compiler_flags += '-D__VULKAN'
 includes += src_directory
 
-binary = executable('quanta', srcs, dependencies : libs, include_directories : includes, c_args : compiler_flags, cpp_args : compiler_flags, cpp_pch : './src/pch/pch.h')
+binary = executable('quanta', srcs, shader_targets, dependencies : libs, include_directories : includes, c_args : compiler_flags, cpp_args : compiler_flags, cpp_pch : './src/pch/pch.h')
