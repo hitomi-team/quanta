@@ -7,8 +7,8 @@ namespace Renderer {
 #ifdef __DEBUG
 	void __Debug_Print_VkSurfaceCapabilitiesKHR(VkSurfaceCapabilitiesKHR _c)
 	{
-		fprintf(stdout,
-			"VkSurfaceCapabilitiesKHR:\n\tminImageCount:  %u\n\tmaxImageCount:  %u\n\tcurrentExtent:  %u %u\n\tminImageExtent: %u %u\n\tmaxImageExtent: %u %u\n\tmaxImageArrayLayers: %u\n",
+		global_log.Debug(
+			FMT_STRING("VkSurfaceCapabilitiesKHR:\n\tminImageCount:  {}\n\tmaxImageCount:  {}\n\tcurrentExtent:  {} {}\n\tminImageExtent: {} {}\n\tmaxImageExtent: {} {}\n\tmaxImageArrayLayers: {}"),
 			_c.minImageCount,
 			_c.maxImageCount,
 			_c.currentExtent.width,
@@ -18,13 +18,13 @@ namespace Renderer {
 			_c.maxImageExtent.width,
 			_c.maxImageExtent.height,
 			_c.maxImageArrayLayers
-			);
+		);
 	}
 
 	void __Debug_Print_VkSurfaceFormatKHR(VkSurfaceFormatKHR _f, uint32_t index)
 	{
-		fprintf(stdout,
-			"VkSurfaceFormatKHR [%u]:\n\tformat: %u\n\tcolorSpace: %u\n",
+		global_log.Debug(
+			FMT_STRING("VkSurfaceFormatKHR [{}]:\n\tformat: {}\n\tcolorSpace: {}"),
 			index,
 			_f.format,
 			_f.colorSpace
@@ -34,10 +34,6 @@ namespace Renderer {
 	void __Debug_Print_VkPresentModeKHR(VkPresentModeKHR _p, uint32_t index)
 	{
 		const char *str;
-
-		fprintf(stdout,
-			"VkPresentModeKHR [%u]: ",
-			index);
 
 		switch(_p) {
 		case VK_PRESENT_MODE_IMMEDIATE_KHR:
@@ -57,7 +53,7 @@ namespace Renderer {
 			break;
 		}
 
-		fprintf(stdout, "%s\n", str);
+		global_log.Debug(FMT_STRING("VkPresentModeKHR [{}]: {}"), index, str);
 	}
 #endif
 
