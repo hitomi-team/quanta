@@ -4,7 +4,7 @@
 #include "volk.h"
 #include <SDL2/SDL_vulkan.h>
 
-#define VK_ASSERT(X, STR) if (X != VK_SUCCESS) { global_log.Error(fmt::format("vk error {:08}: {}", X, STR)); abort(); }
-#define VK_FATAL(X, STR) if (X) { global_log.Error(fmt::format("vk error: {}", STR)); }
+#define VK_ASSERT(X, STR) do { if (X != VK_SUCCESS) { global_log.Error(FMT_STRING("vk error {:08X}: {}"), X, STR); abort(); } } while (0);
+#define VK_FATAL(X, STR) do { if (X) { global_log.Error(FMT_STRING("vk error: {}"), STR); } } while (0);
 
 #endif

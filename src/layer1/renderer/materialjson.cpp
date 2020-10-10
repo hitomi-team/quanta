@@ -44,7 +44,7 @@ namespace Renderer {
 	{
 		PHYSFS_File *h = PHYSFS_openRead(vs_filePath.c_str());
 		if (h == nullptr) {
-			global_log.Error(fmt::format("Cannot find Vertex Shader: {}", vs_filePath));
+			global_log.Error(FMT_STRING("Cannot find Vertex Shader: {}"), vs_filePath);
 			return nullptr;
 		}
 
@@ -55,7 +55,7 @@ namespace Renderer {
 
 		h = PHYSFS_openRead(fs_filePath.c_str());
 		if (h == nullptr) {
-			global_log.Error(fmt::format("Cannot find Fragment Shader: {}", fs_filePath));
+			global_log.Error(FMT_STRING("Cannot find Fragment Shader: {}"), fs_filePath);
 			return nullptr;
 		}
 
@@ -78,7 +78,7 @@ namespace Renderer {
 	{
 		PHYSFS_File *h = PHYSFS_openRead(filePath.c_str());
 		if (h == nullptr) {
-			global_log.Error(fmt::format("Cannot find Texture: {}", filePath));
+			global_log.Error(FMT_STRING("Cannot find Texture: {}"), filePath);
 			return nullptr;
 		}
 
@@ -122,7 +122,7 @@ namespace Renderer {
 
 		PHYSFS_File *h = PHYSFS_openRead(jsonPath.c_str());
 		if (h == nullptr) {
-			global_log.Error(fmt::format("Cannot find Material: {}", jsonPath));
+			global_log.Error(FMT_STRING("Cannot find Material: {}"), jsonPath);
 			return nullptr;
 		}
 
@@ -133,7 +133,7 @@ namespace Renderer {
 
 		doc.Parse(jsonData, jsonLength);
 		if (doc.HasParseError()) {
-			global_log.Error(fmt::format("Failed to parse JSON: {}", jsonPath));
+			global_log.Error(FMT_STRING("Failed to parse JSON: {}"), jsonPath);
 			return nullptr;
 		}
 
@@ -188,11 +188,11 @@ namespace Renderer {
 					albedo = loadTexture(rsRuntime, albedoPath);
 				
 					if (!albedo) {
-						global_log.Error(fmt::format("Cannot load albedo texture: \"{}\" requested by Material: \"{}\"", albedoPath, jsonPath));
+						global_log.Error(FMT_STRING("Cannot load albedo texture: \"{}\" requested by Material: \"{}\""), albedoPath, jsonPath);
 						return nullptr;
 					}
 				} else {
-					global_log.Warn(fmt::format("Unsupported Shader Parameter: \"{}\"", uniformValues[i].GetString()));
+					global_log.Warn(FMT_STRING("Unsupported Shader Parameter: \"{}\""), uniformValues[i].GetString());
 				}
 
 				if (element.dataSize)
@@ -205,11 +205,11 @@ namespace Renderer {
 			// /materials/shaders[api]/[shadername].[ext]
 
 			if (shaderTypeStr == "vertex") {
-				vsPath = fmt::format("{}{}{}", filepath, shaderName, shader_ext);
+				vsPath = fmt::format(FMT_STRING("{}{}{}"), filepath, shaderName, shader_ext);
 			} else if (shaderTypeStr == "fragment") {
-				fsPath = fmt::format("{}{}{}", filepath, shaderName, shader_ext);
+				fsPath = fmt::format(FMT_STRING("{}{}{}"), filepath, shaderName, shader_ext);
 			} else {
-				global_log.Error(fmt::format("Unknown Shader Type: \"{}\" in Material: \"{}\"", shaderTypeStr, jsonPath));
+				global_log.Error(FMT_STRING("Unknown Shader Type: \"{}\" in Material: \"{}\""), shaderTypeStr, jsonPath);
 			}
 		}
 
