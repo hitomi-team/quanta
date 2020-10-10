@@ -17,6 +17,8 @@
 #include "subsystems/d3d11/d3d11renderer.h"
 #endif
 
+#include "subsystems/null/nullrenderer.h"
+
 #if !defined(__D3D11) && !defined(__VULKAN)
 #error A renderer must be defined
 #endif

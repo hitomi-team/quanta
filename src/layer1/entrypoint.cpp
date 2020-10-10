@@ -16,24 +16,50 @@
 // SDL2main
 int main(int argc, char **argv)
 {
-	(void)argc;
+	// TODO: put this somewhere else
+	struct {
+		Renderer::RendererType type;
+	} options = {
+#if defined(__D3D11)
+		Renderer::RENDERER_D3D11
+#else
+		Renderer::RENDERER_VULKAN
+#endif
+	};
 
 	SDL_SetMainReady();
+
+	for (int i = 1; i < argc; i++) {
+#if defined(__D3D11)
+		if (std::strcmp(argv[i], "-vulkan") == 0) {
+			options.type = Renderer::RENDERER_VULKAN;
+		} else if (std::strcmp(argv[i], "-d3d11") == 0) {
+			options.type = Renderer::RENDERER_D3D11;
+		}
+#endif
+	}
+
 
 	// Setup filesystem service
 	Filesystem::Runtime filesystem;
 	filesystem.argv0 = argv[0];
 
 	// Setup render service
-	// TODO: Add option to switch between supported renderers
-	// Also TODO: Add command arguments to do this which is a lot better
 #if defined(__D3D11)
-	Renderer::D3D11Renderer renderer_api;
-#else	// use vulkan on lunix
-	Renderer::VulkanRenderer renderer_api;
+	Renderer::D3D11Renderer d3d11renderer;
 #endif
+	Renderer::VulkanRenderer vulkanrenderer;
+	// Renderer::NullRenderer nullrenderer;
+
 	Renderer::Runtime renderer;
-	renderer.SetRenderer(&renderer_api);
+#if defined(__D3D11)
+	if (options.type == Renderer::RENDERER_D3D11)
+		renderer.SetRenderer(&d3d11renderer);
+	else
+		renderer.SetRenderer(&vulkanrenderer);
+#else
+	renderer.SetRenderer(&vulkanrenderer);
+#endif
 
 	Renderer::Input input;
 
@@ -59,12 +85,15 @@ int main(int argc, char **argv)
 
 	Renderer::Material *newmat = parser.Load(renderer, "/materials/tri.json");
 	if (!newmat) {
+		renderer.Release();
 		return 0;
 	}
 
 	Renderer::Mesh newmesh;
-	if (!newmesh.Setup(renderer.GetRenderer(), vertices, 4, indices, 6, Renderer::MESH_2D))
+	if (!newmesh.Setup(renderer.GetRenderer(), vertices, 4, indices, 6, Renderer::MESH_2D)) {
+		renderer.Release();
 		return 0;
+	}
 
 	renderer.RegisterMesh(&newmesh);
 	renderer.RegisterMaterial(newmat);
@@ -78,6 +107,8 @@ int main(int argc, char **argv)
 	newprop->Release();
 	newmat->Release();
 	newmesh.Release();
+
+	renderer.Release();
 
 	return 0;
 }
