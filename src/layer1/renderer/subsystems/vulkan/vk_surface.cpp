@@ -57,21 +57,22 @@ namespace Renderer {
 	}
 #endif
 
-	void VulkanSurface::Load(SDL_Window *window, VulkanInstance &instance, const VulkanDevice &dev)
+	void VulkanSurface::Load(SDL_Window *window, VulkanInstance *inst, VulkanDevice *dev)
 	{
+		this->instance = inst;
 		this->dev = dev;
 
 		/* Get Surface Information for creating Swap Chain */
 
-		if (!SDL_Vulkan_CreateSurface(window, instance.get(), &surface))
+		if (!SDL_Vulkan_CreateSurface(window, instance->get(), &surface))
 			return;
 
 		VkBool32 Supported;
-		VK_ASSERT(vkGetPhysicalDeviceSurfaceSupportKHR(this->dev.getPhysicalDev(), this->dev.getQueueFamilyIndices()[0], surface, &Supported), "surface got lost somewhere")
+		VK_ASSERT(vkGetPhysicalDeviceSurfaceSupportKHR(this->dev->getPhysicalDev(), this->dev->getQueueFamilyIndices()[0], surface, &Supported), "surface got lost somewhere")
 		VK_FATAL(Supported == VK_FALSE, "VulkanDevice does not support presentation")
 
 		VkSurfaceCapabilitiesKHR capabilities;
-		vkGetPhysicalDeviceSurfaceCapabilitiesKHR(this->dev.getPhysicalDev(), surface, &capabilities);
+		vkGetPhysicalDeviceSurfaceCapabilitiesKHR(this->dev->getPhysicalDev(), surface, &capabilities);
 #ifdef __DEBUG
 		__Debug_Print_VkSurfaceCapabilitiesKHR(capabilities);
 #endif
@@ -80,9 +81,9 @@ namespace Renderer {
 
 		uint32_t formatcount;
 		std::vector<VkSurfaceFormatKHR> formats;
-		vkGetPhysicalDeviceSurfaceFormatsKHR(this->dev.getPhysicalDev(), surface, &formatcount, nullptr);
+		vkGetPhysicalDeviceSurfaceFormatsKHR(this->dev->getPhysicalDev(), surface, &formatcount, nullptr);
 		formats.resize(formatcount);
-		vkGetPhysicalDeviceSurfaceFormatsKHR(this->dev.getPhysicalDev(), surface, &formatcount, formats.data());
+		vkGetPhysicalDeviceSurfaceFormatsKHR(this->dev->getPhysicalDev(), surface, &formatcount, formats.data());
 
 		surfaceFormat = {};
 
@@ -100,9 +101,9 @@ namespace Renderer {
 
 		uint32_t presentmodecount;
 		std::vector<VkPresentModeKHR> presentmodes;
-		vkGetPhysicalDeviceSurfacePresentModesKHR(this->dev.getPhysicalDev(), surface, &presentmodecount, nullptr);
+		vkGetPhysicalDeviceSurfacePresentModesKHR(this->dev->getPhysicalDev(), surface, &presentmodecount, nullptr);
 		presentmodes.resize(presentmodecount);
-		vkGetPhysicalDeviceSurfacePresentModesKHR(this->dev.getPhysicalDev(), surface, &presentmodecount, presentmodes.data());
+		vkGetPhysicalDeviceSurfacePresentModesKHR(this->dev->getPhysicalDev(), surface, &presentmodecount, presentmodes.data());
 
 		presentMode = (VkPresentModeKHR)0xFF; // some garbage value that isnt used, this is for checking.
 
@@ -119,6 +120,7 @@ namespace Renderer {
 		VK_FATAL(presentMode == 0xFF, "cannot find supported surface present mode")
 
 		uint32_t images = capabilities.minImageCount + 1;
+		this->minNumImages = capabilities.minImageCount;
 
 		VkSwapchainCreateInfoKHR createinfo = {};
 		createinfo.sType = VK_STRUCTURE_TYPE_SWAPCHAIN_CREATE_INFO_KHR;
@@ -140,11 +142,11 @@ namespace Renderer {
 		createinfo.clipped = VK_TRUE;
 		createinfo.oldSwapchain = VK_NULL_HANDLE;
 
-		VK_ASSERT(vkCreateSwapchainKHR(this->dev.get(), &createinfo, nullptr, &swapchain), "failed to create swapchain")
+		VK_ASSERT(this->dev->fn.vkCreateSwapchainKHR(this->dev->get(), &createinfo, nullptr, &swapchain), "failed to create swapchain")
 
-		vkGetSwapchainImagesKHR(this->dev.get(), swapchain, &images, nullptr);
+		this->dev->fn.vkGetSwapchainImagesKHR(this->dev->get(), swapchain, &images, nullptr);
 		swapchainimages.resize(images);
-		vkGetSwapchainImagesKHR(this->dev.get(), swapchain, &images, swapchainimages.data());
+		this->dev->fn.vkGetSwapchainImagesKHR(this->dev->get(), swapchain, &images, swapchainimages.data());
 
 		/* Setup image views for viewing swapchain images */
 		swapchainimageViews.resize(images);
@@ -162,7 +164,7 @@ namespace Renderer {
 			view_createinfo.subresourceRange.baseArrayLayer = 0;
 			view_createinfo.subresourceRange.layerCount = 1;
 
-			VK_ASSERT(vkCreateImageView(this->dev.get(), &view_createinfo, nullptr, &swapchainimageViews[i]), "failed to create swapchain image views")
+			VK_ASSERT(this->dev->fn.vkCreateImageView(this->dev->get(), &view_createinfo, nullptr, &swapchainimageViews[i]), "failed to create swapchain image views")
 		}
 
 		/* Setup synchronization primitives */
@@ -180,41 +182,41 @@ namespace Renderer {
 		fenceinfo.flags = VK_FENCE_CREATE_SIGNALED_BIT;
 
 		for (uint32_t i = 0; i < images; i++) {
-			VK_ASSERT(vkCreateSemaphore(this->dev.get(), &semaphoreinfo, nullptr, &available[i]) ||
-				  vkCreateSemaphore(this->dev.get(), &semaphoreinfo, nullptr, &finished[i])  ||
-				  vkCreateFence(this->dev.get(), &fenceinfo, nullptr, &inflight[i]), "failed to create synchronization objects")
+			VK_ASSERT(this->dev->fn.vkCreateSemaphore(this->dev->get(), &semaphoreinfo, nullptr, &available[i]) ||
+				  this->dev->fn.vkCreateSemaphore(this->dev->get(), &semaphoreinfo, nullptr, &finished[i])  ||
+				  this->dev->fn.vkCreateFence(this->dev->get(), &fenceinfo, nullptr, &inflight[i]), "failed to create synchronization objects")
 		}
 
 		VkCommandBufferAllocateInfo commandbufferinfo = {};
 		commandbufferinfo.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_ALLOCATE_INFO;
 		commandbufferinfo.level = VK_COMMAND_BUFFER_LEVEL_PRIMARY;
-		commandbufferinfo.commandPool = this->dev.getGraphicsCommandPool();
+		commandbufferinfo.commandPool = this->dev->getGraphicsCommandPool();
 		commandbufferinfo.commandBufferCount = images;
 
 		presentcommandbuffers.resize(images);
 
-		VK_ASSERT(vkAllocateCommandBuffers(this->dev.get(), &commandbufferinfo, presentcommandbuffers.data()), "Failed to allocate command buffers for the presenter")
+		VK_ASSERT(this->dev->fn.vkAllocateCommandBuffers(this->dev->get(), &commandbufferinfo, presentcommandbuffers.data()), "Failed to allocate command buffers for the presenter")
 
 		current_image = 0;
 	}
 
-	void VulkanSurface::Release(VulkanInstance instance)
+	void VulkanSurface::Release()
 	{
-		dev.WaitIdle();
+		dev->WaitIdle();
 
-		vkFreeCommandBuffers(dev.get(), this->dev.getGraphicsCommandPool(), presentcommandbuffers.size(), presentcommandbuffers.data());
+		this->dev->fn.vkFreeCommandBuffers(dev->get(), this->dev->getGraphicsCommandPool(), presentcommandbuffers.size(), presentcommandbuffers.data());
 
 		for (uint32_t i = 0; i < swapchainimageViews.size(); i++) {
-			vkDestroySemaphore(dev.get(), available[i], nullptr);
-			vkDestroySemaphore(dev.get(), finished[i], nullptr);
-			vkDestroyFence(dev.get(), inflight[i], nullptr);
+			this->dev->fn.vkDestroySemaphore(dev->get(), available[i], nullptr);
+			this->dev->fn.vkDestroySemaphore(dev->get(), finished[i], nullptr);
+			this->dev->fn.vkDestroyFence(dev->get(), inflight[i], nullptr);
 		}
 
 		for (auto i : swapchainimageViews)
-			vkDestroyImageView(dev.get(), i, nullptr);
+			this->dev->fn.vkDestroyImageView(dev->get(), i, nullptr);
 
-		vkDestroySwapchainKHR(dev.get(), swapchain, nullptr);
-		vkDestroySurfaceKHR(instance.get(), surface, nullptr);
+		this->dev->fn.vkDestroySwapchainKHR(dev->get(), swapchain, nullptr);
+		vkDestroySurfaceKHR(instance->get(), surface, nullptr);
 	}
 
 	VkCommandBuffer VulkanSurface::getPresentCommandBuffer()
@@ -224,17 +226,17 @@ namespace Renderer {
 
 	void VulkanSurface::Present()
 	{
-		vkWaitForFences(dev.get(), 1, &inflight[current_image], VK_TRUE, UINT64_MAX);
+		this->dev->fn.vkWaitForFences(dev->get(), 1, &inflight[current_image], VK_TRUE, UINT64_MAX);
 
 		uint32_t image_index;
-		VK_ASSERT(vkAcquireNextImageKHR(dev.get(), swapchain, UINT64_MAX, available[current_image], VK_NULL_HANDLE, &image_index), "failed to get image from swapchain")
+		VK_ASSERT(this->dev->fn.vkAcquireNextImageKHR(dev->get(), swapchain, UINT64_MAX, available[current_image], VK_NULL_HANDLE, &image_index), "failed to get image from swapchain")
 
 		if (imagesinflight[image_index] != VK_NULL_HANDLE) {
-			vkWaitForFences(dev.get(), 1, &imagesinflight[image_index], VK_TRUE, UINT64_MAX);
+			this->dev->fn.vkWaitForFences(dev->get(), 1, &imagesinflight[image_index], VK_TRUE, UINT64_MAX);
 		}
 		imagesinflight[image_index] = inflight[current_image];
 
-		VkPipelineStageFlags waitDst = VK_PIPELINE_STAGE_TRANSFER_BIT;
+		VkPipelineStageFlags waitDst = VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT;
 
 		VkSubmitInfo submitinfo = {};
 		submitinfo.sType = VK_STRUCTURE_TYPE_SUBMIT_INFO;
@@ -246,9 +248,9 @@ namespace Renderer {
 		submitinfo.signalSemaphoreCount = 1;
 		submitinfo.pSignalSemaphores = &finished[current_image]; // when done, signal rendering finished semaphore
 
-		vkResetFences(dev.get(), 1, &inflight[current_image]);
+		this->dev->fn.vkResetFences(dev->get(), 1, &inflight[current_image]);
 
-		VK_ASSERT(vkQueueSubmit(dev.getGraphicsQueue(), 1, &submitinfo, inflight[current_image]), "failed to submit presenter command buffer")
+		VK_ASSERT(this->dev->fn.vkQueueSubmit(dev->getGraphicsQueue(), 1, &submitinfo, inflight[current_image]), "failed to submit presenter command buffer")
 
 		VkPresentInfoKHR presentinfo = {};
 		presentinfo.sType = VK_STRUCTURE_TYPE_PRESENT_INFO_KHR;
@@ -258,14 +260,14 @@ namespace Renderer {
 		presentinfo.pSwapchains = &swapchain;
 		presentinfo.pImageIndices = (const uint32_t *)&image_index;
 
-		VK_ASSERT(vkQueuePresentKHR(dev.getGraphicsQueue(), &presentinfo), "failed to present")
+		VK_ASSERT(this->dev->fn.vkQueuePresentKHR(dev->getGraphicsQueue(), &presentinfo), "failed to present")
 
 		current_image = (current_image + 1) % swapchainimages.size();
 	}
 
 	void VulkanSurface::Clear(float r, float g, float b, float a)
 	{
-		uint32_t queuefamily = dev.getQueueFamilyIndices()[0];
+		uint32_t queuefamily = dev->getQueueFamilyIndices()[0];
 
 		VkImageSubresourceRange subResourceRange = {};
 		subResourceRange.aspectMask = VK_IMAGE_ASPECT_COLOR_BIT;
@@ -305,14 +307,11 @@ namespace Renderer {
 		begininfo.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_BEGIN_INFO;
 		begininfo.flags = VK_COMMAND_BUFFER_USAGE_SIMULTANEOUS_USE_BIT;
 
-		vkBeginCommandBuffer(getPresentCommandBuffer(), &begininfo);
+		this->dev->fn.vkCmdPipelineBarrier(getPresentCommandBuffer(), VK_PIPELINE_STAGE_TRANSFER_BIT, VK_PIPELINE_STAGE_TRANSFER_BIT, 0, 0, nullptr, 0, nullptr, 1, &presentToClearBarrier);
+		this->dev->fn.vkCmdClearColorImage(getPresentCommandBuffer(), swapchainimages[current_image], VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL, &clearColor, 1, &subResourceRange);
+		this->dev->fn.vkCmdPipelineBarrier(getPresentCommandBuffer(), VK_PIPELINE_STAGE_TRANSFER_BIT, VK_PIPELINE_STAGE_BOTTOM_OF_PIPE_BIT, 0, 0, nullptr, 0, nullptr, 1, &clearToPresentBarrier);
 
-		vkCmdPipelineBarrier(getPresentCommandBuffer(), VK_PIPELINE_STAGE_TRANSFER_BIT, VK_PIPELINE_STAGE_TRANSFER_BIT, 0, 0, nullptr, 0, nullptr, 1, &presentToClearBarrier);
-		vkCmdClearColorImage(getPresentCommandBuffer(), swapchainimages[current_image], VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL, &clearColor, 1, &subResourceRange);
-		vkCmdPipelineBarrier(getPresentCommandBuffer(), VK_PIPELINE_STAGE_TRANSFER_BIT, VK_PIPELINE_STAGE_BOTTOM_OF_PIPE_BIT, 0, 0, nullptr, 0, nullptr, 1, &clearToPresentBarrier);
-		vkEndCommandBuffer(getPresentCommandBuffer());
-
-		dev.WaitIdle();
+		dev->WaitIdle();
 	}
 
 }

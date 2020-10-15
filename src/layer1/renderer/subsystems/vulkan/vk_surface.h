@@ -7,7 +7,7 @@
 // these can be defined manually, but these are the defaults.
 
 #ifndef VK_SURFACE_FORMAT
-#define VK_SURFACE_FORMAT VK_FORMAT_B8G8R8A8_SRGB
+#define VK_SURFACE_FORMAT VK_FORMAT_B8G8R8A8_UNORM
 #endif
 
 #ifndef VK_SURFACE_COLORSPACE
@@ -15,7 +15,7 @@
 #endif
 
 #ifndef VK_PRESENT_MODE
-#define VK_PRESENT_MODE VK_PRESENT_MODE_FIFO_KHR
+#define VK_PRESENT_MODE VK_PRESENT_MODE_IMMEDIATE_KHR 
 #endif
 
 namespace Renderer {
@@ -23,27 +23,37 @@ namespace Renderer {
 	class VulkanSurface {
 	public:
 		VulkanSurface() {}
-		VulkanSurface(SDL_Window *window, VulkanInstance &instance, const VulkanDevice &dev) { Load(window, instance, dev); }
-		void Load(SDL_Window *window, VulkanInstance &instance, const VulkanDevice &dev);
-		void Release(VulkanInstance instance);
+		inline VulkanSurface(SDL_Window *window, VulkanInstance *inst, VulkanDevice *dev) { this->Load(window, inst, dev); }
+		void Load(SDL_Window *window, VulkanInstance *inst, VulkanDevice *dev);
+		void Release();
 
 		VkCommandBuffer getPresentCommandBuffer();
 		void Present();
 		void Clear(float r, float g, float b, float a);
 
+		// imGui
+		inline uint32_t getMinNumImages() { return this->minNumImages; }
+		inline uint32_t getNumImages() { return static_cast< uint32_t >(this->swapchainimages.size()); }
+		inline VkSurfaceFormatKHR getSurfaceFormat() { return this->surfaceFormat; }
+
 	protected:
-		VulkanDevice dev;
+		VulkanInstance *instance;
+		VulkanDevice *dev;
+
 		VkSurfaceKHR surface;
 		VkSwapchainKHR swapchain;
 		std::vector<VkImage> swapchainimages;
 		std::vector<VkImageView> swapchainimageViews;
 		std::vector<VkCommandBuffer> presentcommandbuffers;
+		// NEED THIS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+		std::vector<VkFramebuffer> swapchainframebuffers;
 		uint32_t current_image;
 
 		// Surface Properties
 		VkSurfaceFormatKHR surfaceFormat;
 		VkPresentModeKHR presentMode;
 		VkExtent2D swapExtent;
+		uint32_t minNumImages;
 
 		// Synchronization Primitives
 		std::vector<VkSemaphore> available;

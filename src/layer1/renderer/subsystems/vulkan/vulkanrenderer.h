@@ -91,10 +91,16 @@ namespace Renderer {
 		VulkanInstance instance;
 		VulkanDevice device;
 		VulkanSurface surface;
+		VkRenderPass imGuiRenderPass;
+		VkPipelineCache imGuiPipelineCache;
+		VkDescriptorPool imGuiDescriptorPool;
 
 		// internal functions
 		bool UpdateSwapchain(int width, int height, int multisample);
 		void PreDraw();
+
+		void InitializeImGui(int width, int height);
+		void CloseImGui();
 	};
 
 }
