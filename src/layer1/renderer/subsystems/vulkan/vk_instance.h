@@ -8,8 +8,8 @@ namespace Renderer {
 
 	class VulkanInstance {
 	public:
-		VulkanInstance() : Loaded(false) {  }
-		~VulkanInstance() {}
+		inline VulkanInstance() : Loaded(false) {  }
+		inline ~VulkanInstance() {}
 		void Release();
 
 		bool Load(SDL_Window *window);

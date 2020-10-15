@@ -10,7 +10,7 @@ namespace Renderer {
 		(void)type;
 		(void)userdata;
 
-		std::cerr << data->pMessage << std::endl;
+		global_log.Warn(data->pMessage);
 
 		return VK_FALSE;
 	}
@@ -30,8 +30,7 @@ namespace Renderer {
 		else
 			Loaded = true;
 
-
-		unsigned int extensionCount = 0;
+		uint32_t extensionCount = 0;
 		std::vector<const char *> extensions;
 
 		if (!SDL_Vulkan_GetInstanceExtensions(window, &extensionCount, nullptr)) {
@@ -51,9 +50,9 @@ namespace Renderer {
 		VkApplicationInfo appInfo = {};
 		appInfo.sType = VK_STRUCTURE_TYPE_APPLICATION_INFO;
 		appInfo.pNext = nullptr;
-		appInfo.pApplicationName = "vkcl";
+		appInfo.pApplicationName = "quanta";
 		appInfo.applicationVersion = 0;
-		appInfo.pEngineName = "vkcl";
+		appInfo.pEngineName = "quanta";
 		appInfo.engineVersion = VK_MAKE_VERSION(0, 1, 0);
 		appInfo.apiVersion = VK_MAKE_VERSION(1, 1, 0);
 
@@ -66,7 +65,7 @@ namespace Renderer {
 		instInfo.enabledLayerCount = 0;
 		instInfo.ppEnabledLayerNames = nullptr;
 #else
-		std::vector<const char *>layernames = {
+		static const char *layernames[] = {
 			"VK_LAYER_KHRONOS_validation" // depending on how your system's vulkan sdk is setup, you might wanna change this.
 		};
 
@@ -76,15 +75,14 @@ namespace Renderer {
 		createinfo.messageType = VK_DEBUG_UTILS_MESSAGE_TYPE_GENERAL_BIT_EXT | VK_DEBUG_UTILS_MESSAGE_TYPE_VALIDATION_BIT_EXT | VK_DEBUG_UTILS_MESSAGE_TYPE_PERFORMANCE_BIT_EXT;
 		createinfo.pfnUserCallback = debugCallback;
 
-		instInfo.enabledLayerCount = 1;
-		instInfo.ppEnabledLayerNames = layernames.data();
+		instInfo.enabledLayerCount = ARRAY_SIZE(layernames);
+		instInfo.ppEnabledLayerNames = layernames;
 		instInfo.pNext = (VkDebugUtilsMessengerCreateInfoEXT *) &createinfo;
 
-		extensionCount++;
 		extensions.push_back(VK_EXT_DEBUG_UTILS_EXTENSION_NAME);
 #endif
 
-		instInfo.enabledExtensionCount = extensionCount;
+		instInfo.enabledExtensionCount = static_cast< uint32_t >(extensions.size());
 		instInfo.ppEnabledExtensionNames = extensions.data();
 		VK_ASSERT(vkCreateInstance(&instInfo, nullptr, &instance), "Failed to create instance")
 
@@ -92,7 +90,8 @@ namespace Renderer {
 
 #ifdef __DEBUG
 		// setup debug messenger
-		VK_ASSERT(vkCreateDebugUtilsMessengerEXT(instance, &createinfo, nullptr, &debugMessenger), "Failed to create debugger messenger callback")
+		if (vkCreateDebugUtilsMessengerEXT(instance, &createinfo, nullptr, &debugMessenger) != VK_SUCCESS)
+			global_log.Warn("Failed to create Vulkan debug messenger; continuing without this support");
 #endif
 
 		return true;
