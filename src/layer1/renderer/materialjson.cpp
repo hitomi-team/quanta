@@ -38,6 +38,12 @@ static const char *shader_exts[] = {
 	".spv"
 };
 
+static const char *shader_paths[] = {
+	nullptr,
+	"/materials/shadersd3d11/",
+	"/materials/shadersvulkan/"
+};
+
 namespace Renderer {
 
 	Shader *MaterialJSON::parseShaderBytecode(Renderer::Runtime &rsRuntime, const std::string &vs_filePath, const std::string &fs_filePath)
@@ -49,8 +55,8 @@ namespace Renderer {
 		}
 
 		size_t vs_size = static_cast< size_t >(PHYSFS_fileLength(h));
-		char *vs_bytecode = new char[vs_size + 1];
-		PHYSFS_readBytes(h, vs_bytecode, vs_size);
+		std::vector< char > vs_bytecode(vs_size + 1);
+		PHYSFS_readBytes(h, vs_bytecode.data(), vs_size);
 		PHYSFS_close(h);
 
 		h = PHYSFS_openRead(fs_filePath.c_str());
@@ -60,16 +66,14 @@ namespace Renderer {
 		}
 
 		size_t fs_size = static_cast< size_t >(PHYSFS_fileLength(h));
-		char *fs_bytecode = new char[fs_size + 1];
-		PHYSFS_readBytes(h, fs_bytecode, fs_size);
+		std::vector< char > fs_bytecode(fs_size + 1);
+		PHYSFS_readBytes(h, fs_bytecode.data(), fs_size);
 		PHYSFS_close(h);
 
-		Shader *shader = rsRuntime.GetRenderer()->CreateShader((unsigned char *)vs_bytecode, vs_size, (unsigned char *)fs_bytecode, fs_size);
+		Shader *shader = rsRuntime.GetRenderer()->CreateShader((unsigned char *)vs_bytecode.data(), vs_size, (unsigned char *)fs_bytecode.data(), fs_size);
 		if (!shader)
 			shader = nullptr;
 		
-		delete[] vs_bytecode;
-		delete[] fs_bytecode;
 
 		return shader;
 	}
@@ -83,12 +87,12 @@ namespace Renderer {
 		}
 
 		size_t image_size = static_cast< size_t >(PHYSFS_fileLength(h));
-		unsigned char *image = new unsigned char[image_size];
-		PHYSFS_readBytes(h, (char *)image, image_size);
+		std::vector< unsigned char > image(image_size);
+		PHYSFS_readBytes(h, (char *)image.data(), image_size);
 		PHYSFS_close(h);
 
 		int x, y, channels;
-		unsigned char *pixels = stbi_load_from_memory((unsigned char *)image, (int)image_size, &x, &y, &channels, 4);
+		unsigned char *pixels = stbi_load_from_memory(image.data(), (int)image_size, &x, &y, &channels, 4);
 
 		SamplerStateDesc desc = {};
 		desc.Filter = FILTER_NEAREST;
@@ -104,7 +108,6 @@ namespace Renderer {
 		Texture2D *texture = rsRuntime.GetRenderer()->CreateTexture2D(pixels, x, y, desc);
 
 		stbi_image_free(pixels);
-		delete[] image;
 
 		return texture;
 	}
@@ -114,9 +117,9 @@ namespace Renderer {
 		rapidjson::Document doc;
 
 		// Shader Properties
-		const char *shader_ext = shader_exts[rsRuntime.GetRenderer()->getRendererType()];
-		if (shader_ext == nullptr) {
-			global_log.Error("No valid RHI for Materials!");
+		const char *shader_ext = shader_exts[rsRuntime.GetRenderer()->getRendererType()], *filepath = shader_paths[rsRuntime.GetRenderer()->getRendererType()];
+		if (shader_ext == nullptr || filepath == nullptr) {
+			global_log.Error("No valid renderer for Materials!");
 			return nullptr;
 		}
 
@@ -127,39 +130,22 @@ namespace Renderer {
 		}
 
 		size_t jsonLength = static_cast< size_t >(PHYSFS_fileLength(h));
-		char *jsonData = new char[jsonLength + 1];
-		PHYSFS_readBytes(h, jsonData, jsonLength);
+		std::vector< char > jsonData(jsonLength + 1);
+		PHYSFS_readBytes(h, jsonData.data(), jsonLength);
 		PHYSFS_close(h);
 
-		doc.Parse(jsonData, jsonLength);
+		doc.Parse(jsonData.data(), jsonLength);
 		if (doc.HasParseError()) {
 			global_log.Error(FMT_STRING("Failed to parse JSON: {}"), jsonPath);
 			return nullptr;
 		}
 
-		delete[] jsonData;
-
 		const rapidjson::Value &shaders = doc["shaders"];
-		std::string filepath;
 		std::vector<ShaderParameterElement> uniforms;
 		Texture2D *albedo = nullptr;
 		Shader *shader = nullptr;
-		
-		switch (rsRuntime.GetRenderer()->getRendererType()) {
-		case RENDERER_D3D11:
-			filepath = "/materials/shadersd3d11/";
-			break;
-		case RENDERER_VULKAN:
-			filepath = "/materials/shadersvulkan/";
-			break;
-		case RENDERER_NULL:
-		default:
-			global_log.Error("Unsupported Renderer... How did you even launch this!?");
-			return nullptr;
-		}
 
-		std::string vsPath(filepath);
-		std::string fsPath(filepath);
+		std::string vsPath, fsPath;
 
 		// Parse each shader!
 		for (rapidjson::SizeType i = 0; i < shaders.Size(); i++) {

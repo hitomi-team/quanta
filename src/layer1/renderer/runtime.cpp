@@ -6,6 +6,11 @@
 namespace Renderer {
 
 	static float time = 0.f;
+	static const char *apiStr[] = {
+		nullptr,
+		"D3D11",
+		"Vulkan"
+	};
 
 	Runtime::Runtime() : Service("RenderService")
 	{
@@ -113,11 +118,7 @@ namespace Renderer {
 #else
 #error __RELEASE or __DEBUG must be defined!
 #endif
-#if defined(__D3D11)
-			ImGui::Text("Rendering API: D3D11");
-#elif defined(__VULKAN)
-			ImGui::Text("Rendering API: Vulkan");
-#endif
+			ImGui::Text("Rendering API: %s", apiStr[this->rhi->getRendererType()]);
 		}
 
 		if (ImGui::CollapsingHeader("Performance")) {
