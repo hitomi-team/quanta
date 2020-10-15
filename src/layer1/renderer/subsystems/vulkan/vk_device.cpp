@@ -4,29 +4,27 @@
 
 namespace Renderer {
 
-	static uint32_t GetQueueFamily(uint32_t starting_point, VkPhysicalDevice PhysicalDevice, int flags, uint32_t *QueueCount)
+	static uint32_t GetQueueFamily(uint32_t starting_point, VkPhysicalDevice PhysicalDevice, VkQueueFlags mask, VkQueueFlags flags, uint32_t *QueueCount, bool required)
 	{
 		// Get Queue Family Indices
-		uint32_t QueueFamilyIndex = 0;
+		uint32_t QueueFamilyIndex = UINT32_MAX;
 		uint32_t QueueFamilyCount;
 		vkGetPhysicalDeviceQueueFamilyProperties(PhysicalDevice, &QueueFamilyCount, nullptr);
 
 		std::vector<VkQueueFamilyProperties> QueueFamilyProps(QueueFamilyCount);
 		vkGetPhysicalDeviceQueueFamilyProperties(PhysicalDevice, &QueueFamilyCount, QueueFamilyProps.data());
 
+		*QueueCount = 0;
+
 		uint32_t i;
 		for (i = starting_point; i < QueueFamilyCount; i++) {
-			if (QueueFamilyProps[i].queueCount > 0 && (QueueFamilyProps[i].queueFlags & flags)) {
-				QueueFamilyIndex = i;
+			if (QueueFamilyProps[i].queueCount > 0 && (QueueFamilyProps[i].queueFlags & mask) == flags) {				QueueFamilyIndex = i;
 				*QueueCount = QueueFamilyProps[i].queueCount;
 				break;
 			}
 		}
 
-		if (QueueFamilyIndex == QueueFamilyCount) {
-			fprintf(stderr, "Failed to get Queue Family Index");
-			abort();
-		}
+		VK_FATAL(QueueFamilyIndex == UINT32_MAX && required, "Failed to get queue family index");
 
 		return QueueFamilyIndex;
 	}
@@ -63,28 +61,6 @@ namespace Renderer {
 		Load(instance, PhysicalDevice);
 	}
 
-	VulkanDevice::VulkanDevice(const VulkanDevice &dev)
-	{
-		Load(dev);
-	}
-
-	void VulkanDevice::Load(const VulkanDevice &dev)
-	{
-		this->PhysicalDevice = dev.PhysicalDevice;
-		this->PhysicalDeviceProps = dev.PhysicalDeviceProps;
-		this->device = dev.device;
-		this->GraphicsQueue = dev.GraphicsQueue;
-		this->TransferQueue = dev.TransferQueue;
-		this->TransferPool = dev.TransferPool;
-		this->GraphicsPool = dev.GraphicsPool;
-		this->ComputePool = dev.ComputePool;
-		this->QueueFamilyIndices[0] = dev.QueueFamilyIndices[0];
-		this->QueueFamilyIndices[1] = dev.QueueFamilyIndices[1];
-		this->id = dev.id;
-		this->vendorname = dev.vendorname;
-		this->freed = true;
-	}
-
 	void VulkanDevice::Load(VkInstance instance, VkPhysicalDevice PhysicalDevice)
 	{
 		(void)instance;
@@ -93,32 +69,49 @@ namespace Renderer {
 		vkGetPhysicalDeviceProperties(PhysicalDevice, &PhysicalDeviceProps);
 		vendorname = PhysicalDeviceProps.deviceName;
 
-		uint32_t graphicsQueueCount, transferQueueCount;
-		this->QueueFamilyIndices[0] = GetQueueFamily(0, PhysicalDevice, VK_QUEUE_GRAPHICS_BIT, &graphicsQueueCount);
-		this->QueueFamilyIndices[1] = GetQueueFamily(QueueFamilyIndices[0] + 1, PhysicalDevice, ~VK_QUEUE_GRAPHICS_BIT & VK_QUEUE_TRANSFER_BIT, &transferQueueCount);
+		uint32_t graphicsQueueCount, computeQueueCount, transferQueueCount;
+
+		// required
+		this->QueueFamilyIndices[0] = GetQueueFamily(0, PhysicalDevice, VK_QUEUE_GRAPHICS_BIT | VK_QUEUE_COMPUTE_BIT, VK_QUEUE_GRAPHICS_BIT | VK_QUEUE_COMPUTE_BIT, &graphicsQueueCount, true);
+
+		// ANV does not support any other queue except graphics, use graphics queue for all operations
+		this->QueueFamilyIndices[2] = GetQueueFamily(0, PhysicalDevice, VK_QUEUE_GRAPHICS_BIT | VK_QUEUE_COMPUTE_BIT, VK_QUEUE_COMPUTE_BIT, &computeQueueCount, false);
+		if (this->QueueFamilyIndices[2] == UINT32_MAX) {
+			global_log.Warn(FMT_STRING("VulkanDevice \"{}\" does not support a {} queue!"), this->vendorname, "compute");
+			this->QueueFamilyIndices[2] = this->QueueFamilyIndices[0];
+		}
+
+		// RADV does not support a transfer queue. use compute bit in place
+		this->QueueFamilyIndices[1] = GetQueueFamily(0, PhysicalDevice, VK_QUEUE_GRAPHICS_BIT | VK_QUEUE_COMPUTE_BIT | VK_QUEUE_TRANSFER_BIT, VK_QUEUE_TRANSFER_BIT, &transferQueueCount, false);
+		if (this->QueueFamilyIndices[1] == UINT32_MAX) {
+			global_log.Warn(FMT_STRING("VulkanDevice \"{}\" does not support a {} queue!"), this->vendorname, "transfer");
+			this->QueueFamilyIndices[1] = this->QueueFamilyIndices[2];
+		}
 
 		// Create Logical VulkanDevice
-		float GraphQueuePriorities = 1.0f;
+		std::vector< VkDeviceQueueCreateInfo > QueueCreateInfos;
+
+		float graphics_priority = 1.0f, transfer_priority = 1.0f, compute_priority = 1.0f;
 		VkDeviceQueueCreateInfo GraphQueueCreateInfo = {};
 		GraphQueueCreateInfo.sType = VK_STRUCTURE_TYPE_DEVICE_QUEUE_CREATE_INFO;
 		GraphQueueCreateInfo.pNext = nullptr;
 		GraphQueueCreateInfo.flags = 0;
 		GraphQueueCreateInfo.queueFamilyIndex = QueueFamilyIndices[0];
 		GraphQueueCreateInfo.queueCount = 1;
-		GraphQueueCreateInfo.pQueuePriorities = &GraphQueuePriorities;
+		GraphQueueCreateInfo.pQueuePriorities = &graphics_priority;
+		QueueCreateInfos.push_back(GraphQueueCreateInfo);
 
-		float TransQueuePriorities = 1.0f;
-		VkDeviceQueueCreateInfo TransQueueCreateInfo = {};
-		TransQueueCreateInfo.sType = VK_STRUCTURE_TYPE_DEVICE_QUEUE_CREATE_INFO;
-		TransQueueCreateInfo.pNext = nullptr;
-		TransQueueCreateInfo.flags = 0;
-		TransQueueCreateInfo.queueFamilyIndex = QueueFamilyIndices[1];
-		TransQueueCreateInfo.queueCount = 1;
-		TransQueueCreateInfo.pQueuePriorities = &TransQueuePriorities;
+		if (transferQueueCount > 0) {
+			GraphQueueCreateInfo.queueFamilyIndex = QueueFamilyIndices[1];
+			GraphQueueCreateInfo.pQueuePriorities = &transfer_priority;
+			QueueCreateInfos.push_back(GraphQueueCreateInfo);
+		}
 
-		VkDeviceQueueCreateInfo QueueCreateInfos[2];
-		QueueCreateInfos[0] = GraphQueueCreateInfo;
-		QueueCreateInfos[1] = TransQueueCreateInfo;
+		if (computeQueueCount > 0) {
+			GraphQueueCreateInfo.queueFamilyIndex = QueueFamilyIndices[2];
+			GraphQueueCreateInfo.pQueuePriorities = &compute_priority;
+			QueueCreateInfos.push_back(GraphQueueCreateInfo);
+		}
 
 		std::vector<const char *> deviceExtensions = {
 			VK_KHR_SWAPCHAIN_EXTENSION_NAME
@@ -129,37 +122,51 @@ namespace Renderer {
 		DevCreateInfo.sType = VK_STRUCTURE_TYPE_DEVICE_CREATE_INFO;
 		DevCreateInfo.pNext = nullptr;
 		DevCreateInfo.flags = 0;
-		DevCreateInfo.queueCreateInfoCount = 2;
-		DevCreateInfo.pQueueCreateInfos = QueueCreateInfos;
+		DevCreateInfo.queueCreateInfoCount = static_cast< uint32_t >(QueueCreateInfos.size());
+		DevCreateInfo.pQueueCreateInfos = QueueCreateInfos.data();
 		DevCreateInfo.enabledLayerCount = 0;
 		DevCreateInfo.ppEnabledLayerNames = nullptr;
-		DevCreateInfo.enabledExtensionCount = deviceExtensions.size();
+		DevCreateInfo.enabledExtensionCount = static_cast< uint32_t >(deviceExtensions.size());
 		DevCreateInfo.ppEnabledExtensionNames = deviceExtensions.data();
 		DevCreateInfo.pEnabledFeatures = &PhysDevFeatures;
 
 		VK_ASSERT(vkCreateDevice(PhysicalDevice, &DevCreateInfo, nullptr, &device), "Failed to create device")
+		volkLoadDeviceTable(&this->fn, this->device);
 
-		vkGetDeviceQueue(device, QueueFamilyIndices[0], 0, &GraphicsQueue);
-		vkGetDeviceQueue(device, QueueFamilyIndices[1], 0, &TransferQueue);
+		this->fn.vkGetDeviceQueue(device, QueueFamilyIndices[0], 0, &GraphicsQueue);
+		if (QueueFamilyIndices[1] != QueueFamilyIndices[0])
+			this->fn.vkGetDeviceQueue(device, QueueFamilyIndices[1], 0, &TransferQueue);
 
-		VkCommandPoolCreateInfo TransferPoolInfo = {};
-		TransferPoolInfo.sType = VK_STRUCTURE_TYPE_COMMAND_POOL_CREATE_INFO;
-		TransferPoolInfo.queueFamilyIndex = QueueFamilyIndices[1];
-		TransferPoolInfo.flags = VK_COMMAND_POOL_CREATE_TRANSIENT_BIT;
+		if (QueueFamilyIndices[2] != QueueFamilyIndices[1])
+			this->fn.vkGetDeviceQueue(device, QueueFamilyIndices[2], 0, &ComputeQueue);
 
 		VkCommandPoolCreateInfo GraphicsPoolInfo = {};
 		GraphicsPoolInfo.sType = VK_STRUCTURE_TYPE_COMMAND_POOL_CREATE_INFO;
 		GraphicsPoolInfo.queueFamilyIndex = QueueFamilyIndices[0];
 		GraphicsPoolInfo.flags = VK_COMMAND_POOL_CREATE_RESET_COMMAND_BUFFER_BIT;
 
+		VkCommandPoolCreateInfo TransferPoolInfo = {};
+		TransferPoolInfo.sType = VK_STRUCTURE_TYPE_COMMAND_POOL_CREATE_INFO;
+		TransferPoolInfo.queueFamilyIndex = QueueFamilyIndices[1];
+		TransferPoolInfo.flags = VK_COMMAND_POOL_CREATE_TRANSIENT_BIT;
+
 		VkCommandPoolCreateInfo ComputePoolInfo = {};
 		ComputePoolInfo.sType = VK_STRUCTURE_TYPE_COMMAND_POOL_CREATE_INFO;
-		ComputePoolInfo.queueFamilyIndex = QueueFamilyIndices[1];
+		ComputePoolInfo.queueFamilyIndex = QueueFamilyIndices[2];
 		ComputePoolInfo.flags = VK_COMMAND_POOL_CREATE_RESET_COMMAND_BUFFER_BIT;
 
-		VK_ASSERT(vkCreateCommandPool(device, &TransferPoolInfo, nullptr, &TransferPool), "Failed to create Transfer Command Pool")
-		VK_ASSERT(vkCreateCommandPool(device, &GraphicsPoolInfo, nullptr, &GraphicsPool), "Failed to create Graphics Command Pool")
-		VK_ASSERT(vkCreateCommandPool(device,  &ComputePoolInfo, nullptr,  &ComputePool), "Failed to create Compute Command Pool")
+		VK_ASSERT(this->fn.vkCreateCommandPool(device, &TransferPoolInfo, nullptr, &TransferPool), "Failed to create Transfer Command Pool")
+		VK_ASSERT(this->fn.vkCreateCommandPool(device, &GraphicsPoolInfo, nullptr, &GraphicsPool), "Failed to create Graphics Command Pool")
+		VK_ASSERT(this->fn.vkCreateCommandPool(device,  &ComputePoolInfo, nullptr,  &ComputePool), "Failed to create Compute Command Pool")
+
+		VmaAllocatorCreateInfo allocCreateInfo = {};
+		allocCreateInfo.physicalDevice = PhysicalDevice;
+		allocCreateInfo.device = this->device;
+		allocCreateInfo.instance = instance;
+
+		vmaCreateAllocator(&allocCreateInfo, &allocator);
+
+		global_log.Debug(FMT_STRING("VulkanDevice \"{}\" available"), this->vendorname);
 
 		freed = false;
 	}
@@ -182,56 +189,37 @@ namespace Renderer {
 	{
 		if (!this->freed) {
 			this->freed = true;
-			vkDestroyCommandPool(device, TransferPool, nullptr);
-			vkDestroyCommandPool(device, GraphicsPool, nullptr);
-			vkDestroyCommandPool(device, ComputePool, nullptr);
-			vkDestroyDevice(device, nullptr);
+
+			vmaDestroyAllocator(allocator);
+			this->fn.vkDestroyCommandPool(device, TransferPool, nullptr);
+			this->fn.vkDestroyCommandPool(device, GraphicsPool, nullptr);
+			this->fn.vkDestroyCommandPool(device, ComputePool, nullptr);
+			this->fn.vkDestroyDevice(device, nullptr);
 		}
 	}
 
-	VulkanDevice &VulkanDevice::operator= (const VulkanDevice &devb)
-	{
-		if (&devb != this) {
-			this->PhysicalDevice = devb.PhysicalDevice;
-			this->PhysicalDeviceProps = devb.PhysicalDeviceProps;
-			this->device = devb.device;
-			this->GraphicsQueue = devb.GraphicsQueue;
-			this->TransferQueue = devb.TransferQueue;
-			this->TransferPool = devb.TransferPool;
-			this->GraphicsPool = devb.GraphicsPool;
-			this->ComputePool = devb.ComputePool;
-			this->QueueFamilyIndices[0] = devb.QueueFamilyIndices[0];
-			this->QueueFamilyIndices[1] = devb.QueueFamilyIndices[1];
-			this->freed = devb.freed;
-		}
-
-		return *this;
-	}
-
-	std::vector<VulkanDevice> QueryAllDevices(VulkanInstance vkinstance)
+	std::vector<VulkanDevice> QueryAllDevices(VulkanInstance *vkinstance)
 	{
 		std::vector<Renderer::VulkanDevice> devices;
 
-		if (!vkinstance.getLoaded())
+		if (!vkinstance->getLoaded())
 			return devices;
 
-		std::vector<VkPhysicalDevice> physdevs = QueryPhysicalDevices(vkinstance.get());
+		std::vector<VkPhysicalDevice> physdevs = QueryPhysicalDevices(vkinstance->get());
 
 		for (uint32_t i = 0; i < physdevs.size(); i++) {
-			Renderer::VulkanDevice device(vkinstance.get(), physdevs[i]);
-			device.setId(i);
-			devices.push_back(device);
+			devices.emplace_back(vkinstance->get(), physdevs[i], i);
 		}
 
 		return devices;
 	}
 
-	VulkanDevice QueryDevice(VulkanInstance vkinstance)
+	VulkanDevice QueryDevice(VulkanInstance *vkinstance)
 	{
 		std::vector<Renderer::VulkanDevice> devices;
-		std::vector<VkPhysicalDevice> physdevs = QueryPhysicalDevices(vkinstance.get());
+		std::vector<VkPhysicalDevice> physdevs = QueryPhysicalDevices(vkinstance->get());
 
-		return Renderer::VulkanDevice(vkinstance.get(), physdevs[0]);
+		return Renderer::VulkanDevice(vkinstance->get(), physdevs[0], 0);
 	}
 
 }

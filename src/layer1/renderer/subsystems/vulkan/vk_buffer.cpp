@@ -4,31 +4,22 @@
 
 namespace Renderer {
 
-	void VulkanBuffer::CreateBuffer(VkDeviceSize size, VkBufferUsageFlags usageflags, VkMemoryPropertyFlags memflags, VkBuffer &buffer, VkDeviceMemory &buffermemory)
+	void VulkanBuffer::CreateBuffer(VkDeviceSize size, VkBufferUsageFlags usageflags, VmaMemoryUsage memusageflags, VkBuffer &buffer, VmaAllocation &alloc, VmaAllocationInfo *allocinfo)
 	{
-		uint32_t *families = devcopy.getQueueFamilyIndices();
+		const uint32_t *families = dev->getQueueFamilyIndices();
 
 		VkBufferCreateInfo BufferCreateInfo = {};
 		BufferCreateInfo.sType = VK_STRUCTURE_TYPE_BUFFER_CREATE_INFO;
 		BufferCreateInfo.size = size;
 		BufferCreateInfo.usage = usageflags;
-		BufferCreateInfo.sharingMode = VK_SHARING_MODE_CONCURRENT;
-		BufferCreateInfo.queueFamilyIndexCount = 2;
-		BufferCreateInfo.pQueueFamilyIndices = families;
+		BufferCreateInfo.sharingMode = VK_SHARING_MODE_EXCLUSIVE;
 
-		VK_ASSERT(vkCreateBuffer(devcopy.get(), &BufferCreateInfo, NULL, &buffer), "Failed to create device buffer")
+		VmaAllocationCreateInfo AllocInfo = {};
+		AllocInfo.usage = memusageflags;
+		if (memusageflags == VMA_MEMORY_USAGE_CPU_ONLY)
+			AllocInfo.flags = VMA_ALLOCATION_CREATE_MAPPED_BIT;
 
-		VkMemoryRequirements MemoryRequirements;
-		vkGetBufferMemoryRequirements(devcopy.get(), buffer, &MemoryRequirements);
-
-		VkMemoryAllocateInfo AllocateInfo = {};
-		AllocateInfo.sType = VK_STRUCTURE_TYPE_MEMORY_ALLOCATE_INFO;
-		AllocateInfo.allocationSize = MemoryRequirements.size;
-		AllocateInfo.memoryTypeIndex = devcopy.MemoryType(MemoryRequirements.memoryTypeBits, memflags);
-
-		VK_ASSERT(vkAllocateMemory(devcopy.get(), &AllocateInfo, NULL, &buffermemory), "Failed to allocate memory for device buffer")
-		VK_ASSERT(vkBindBufferMemory(devcopy.get(), buffer, buffermemory, 0), "Failed to allocate memory for device buffer")
-
+		vmaCreateBuffer(this->dev->getAllocator(), &BufferCreateInfo, &AllocInfo, &buffer, &alloc, allocinfo);
 	}
 
 	void VulkanBuffer::CopyBuffer(VkBuffer src, VkBuffer dst)
@@ -36,16 +27,16 @@ namespace Renderer {
 		VkCommandBufferAllocateInfo cmdbufinfo = {};
 		cmdbufinfo.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_ALLOCATE_INFO;
 		cmdbufinfo.level = VK_COMMAND_BUFFER_LEVEL_PRIMARY;
-		cmdbufinfo.commandPool = devcopy.getTransferCommandPool();
+		cmdbufinfo.commandPool = dev->getTransferCommandPool();
 		cmdbufinfo.commandBufferCount = 1;
 
 		VkCommandBuffer cmdbuf;
-		VK_ASSERT(vkAllocateCommandBuffers(devcopy.get(), &cmdbufinfo, &cmdbuf), "Failed to allocate command buffer for transfer operation")
+		VK_ASSERT(dev->fn.vkAllocateCommandBuffers(dev->get(), &cmdbufinfo, &cmdbuf), "Failed to allocate command buffer for transfer operation")
 
 		VkCommandBufferBeginInfo begininfo = {};
 		begininfo.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_BEGIN_INFO;
 		begininfo.flags = VK_COMMAND_BUFFER_USAGE_ONE_TIME_SUBMIT_BIT;
-		vkBeginCommandBuffer(cmdbuf, &begininfo);
+		dev->fn.vkBeginCommandBuffer(cmdbuf, &begininfo);
 
 		// VK COMMANDS START
 
@@ -53,11 +44,11 @@ namespace Renderer {
 		copyregion.srcOffset = 0;
 		copyregion.dstOffset = 0;
 		copyregion.size = size;
-		vkCmdCopyBuffer(cmdbuf, src, dst, 1, &copyregion);
+		dev->fn.vkCmdCopyBuffer(cmdbuf, src, dst, 1, &copyregion);
 
 		// VK COMMANDS END
 
-		vkEndCommandBuffer(cmdbuf);
+		dev->fn.vkEndCommandBuffer(cmdbuf);
 
 		VkSubmitInfo submitinfo = {};
 		submitinfo.sType = VK_STRUCTURE_TYPE_SUBMIT_INFO;
@@ -68,42 +59,30 @@ namespace Renderer {
 		VkFenceCreateInfo fenceinfo = {};
 		fenceinfo.sType = VK_STRUCTURE_TYPE_FENCE_CREATE_INFO;
 		fenceinfo.flags = 0;
-		vkCreateFence(devcopy.get(), &fenceinfo, nullptr, &fence);
+		dev->fn.vkCreateFence(dev->get(), &fenceinfo, nullptr, &fence);
 
-		vkQueueSubmit(devcopy.getTransferQueue(), 1, &submitinfo, fence);
-		vkWaitForFences(devcopy.get(), 1, &fence, VK_TRUE, UINT64_MAX);
+		dev->fn.vkQueueSubmit(dev->getTransferQueue(), 1, &submitinfo, fence);
+		dev->fn.vkWaitForFences(dev->get(), 1, &fence, VK_TRUE, UINT64_MAX);
 
-		vkDestroyFence(devcopy.get(), fence, nullptr);
-		vkFreeCommandBuffers(devcopy.get(), devcopy.getTransferCommandPool(), 1, &cmdbuf);
+		dev->fn.vkDestroyFence(dev->get(), fence, nullptr);
+		dev->fn.vkFreeCommandBuffers(dev->get(), dev->getTransferCommandPool(), 1, &cmdbuf);
 	}
 
-	void VulkanBuffer::Load(const VulkanDevice &dev, VkDeviceSize size)
+	void VulkanBuffer::Load(VulkanDevice *dev, VkDeviceSize size)
 	{
-		devcopy.Load(dev);
+		this->dev = dev;
 		this->size = size;
 
-		CreateBuffer(size, VK_BUFFER_USAGE_TRANSFER_SRC_BIT | VK_BUFFER_USAGE_TRANSFER_DST_BIT | VK_BUFFER_USAGE_STORAGE_BUFFER_BIT, VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT, DevBuffer, DevBufferMemory);
+#define VULKAN_GPU_ONLY_FLAGS (VK_BUFFER_USAGE_TRANSFER_SRC_BIT | VK_BUFFER_USAGE_TRANSFER_DST_BIT | VK_BUFFER_USAGE_STORAGE_BUFFER_BIT)
+		this->CreateBuffer(size, VULKAN_GPU_ONLY_FLAGS, VMA_MEMORY_USAGE_GPU_ONLY, this->device_buffer, this->device_alloc, nullptr);
 
 		freed = false;
 		released = true;
 	}
 
-	void VulkanBuffer::Load(const VulkanBuffer &buf)
-	{
-		devcopy = buf.devcopy;
-		HostReadBuffer = buf.HostReadBuffer;
-		HostReadBufferMemory = buf.HostReadBufferMemory;
-		DevBuffer = buf.DevBuffer;
-		DevBufferMemory = buf.DevBufferMemory;
-		size = buf.size;
-		released = buf.released;
-		freed = buf.freed;
-	}
-
 	void VulkanBuffer::Delete()
 	{
-		vkFreeMemory(devcopy.get(), DevBufferMemory, nullptr);
-		vkDestroyBuffer(devcopy.get(), DevBuffer, nullptr);
+		vmaDestroyBuffer(this->dev->getAllocator(), this->device_buffer, this->device_alloc);
 	}
 
 	VulkanBuffer::~VulkanBuffer()
@@ -121,41 +100,39 @@ namespace Renderer {
 	void VulkanBuffer::UploadData(void *data)
 	{
 		VkBuffer HostBuffer;
-		VkDeviceMemory HostBufferMemory;
+		VmaAllocation HostAlloc;
+		VmaAllocationInfo AllocInfo;
 
-		CreateBuffer(size, VK_BUFFER_USAGE_TRANSFER_SRC_BIT, VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT, HostBuffer, HostBufferMemory);
+		this->CreateBuffer(size, VK_BUFFER_USAGE_TRANSFER_SRC_BIT, VMA_MEMORY_USAGE_CPU_ONLY, HostBuffer, HostAlloc, &AllocInfo);
 
-		void *data_loc;
-		vkMapMemory(devcopy.get(), HostBufferMemory, 0, size, 0, &data_loc);
-		memcpy(data_loc, data, (size_t)size);
-		vkUnmapMemory(devcopy.get(), HostBufferMemory);
+		std::memcpy(AllocInfo.pMappedData, data, static_cast< size_t >(size));
+		this->CopyBuffer(HostBuffer, this->device_buffer);
 
-		CopyBuffer(HostBuffer, DevBuffer);
-
-		vkFreeMemory(devcopy.get(), HostBufferMemory, nullptr);
-		vkDestroyBuffer(devcopy.get(), HostBuffer, nullptr);
+		vmaDestroyBuffer(dev->getAllocator(), HostBuffer, HostAlloc);
 	}
 
 	void *VulkanBuffer::GetData()
 	{
-		CreateBuffer(size, VK_BUFFER_USAGE_TRANSFER_DST_BIT, VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT, HostReadBuffer, HostReadBufferMemory);
-		CopyBuffer(DevBuffer, HostReadBuffer);
+		VmaAllocationInfo AllocInfo;
+		this->CreateBuffer(size, VK_BUFFER_USAGE_TRANSFER_DST_BIT, VMA_MEMORY_USAGE_CPU_ONLY, this->host_buffer, this->host_alloc, &AllocInfo);
+/*
+		this->CopyBuffer(DevBuffer, HostReadBuffer);
 
 		void *data_loc;
-		vkMapMemory(devcopy.get(), HostReadBufferMemory, 0, size, 0, &data_loc);
+		dev->fn.vkMapMemory(dev->get(), HostReadBufferMemory, 0, size, 0, &data_loc);
 
 		released = false;
 
 		return data_loc; // not implemented yet
+*/
+		return nullptr;
 	}
 
 	void VulkanBuffer::ReleaseData()
 	{
-		if (!released) {
-			vkUnmapMemory(devcopy.get(), HostReadBufferMemory);
-			vkFreeMemory(devcopy.get(), HostReadBufferMemory, nullptr);
-			vkDestroyBuffer(devcopy.get(), HostReadBuffer, nullptr);
-			released = true;
+		if (!this->released) {
+			vmaDestroyBuffer(this->dev->getAllocator(), this->host_buffer, this->host_alloc);
+			this->released = true;
 		}
 	}
 

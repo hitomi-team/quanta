@@ -11,12 +11,17 @@ namespace Renderer {
 	class VulkanDevice {
 	public:
 		VulkanDevice() { freed = true; }
-		VulkanDevice(const VulkanDevice &dev);
 		VulkanDevice(VkInstance instance, VkPhysicalDevice PhysicalDevice);
-		virtual ~VulkanDevice() {  }
+
+		inline VulkanDevice(VkInstance instance, VkPhysicalDevice adapter, int id)
+		{
+			this->Load(instance, adapter);
+			this->setId(id);
+		}
+
+		inline virtual ~VulkanDevice() {  }
 		void Release();
 
-		void Load(const VulkanDevice &dev);
 		void Load(VkInstance instance, VkPhysicalDevice PhysicalDevice);
 		uint32_t MemoryType(uint32_t Type, VkMemoryPropertyFlags Props);
 
@@ -30,31 +35,34 @@ namespace Renderer {
 		inline VkQueue getComputeQueue()  { return TransferQueue; }
 		inline VkPhysicalDeviceProperties getProps() { return PhysicalDeviceProps; }
 		inline VkPhysicalDevice getPhysicalDev() { return PhysicalDevice; }
-		inline VkCommandPool getTransferCommandPool() { return TransferPool; }
 		inline VkCommandPool getGraphicsCommandPool() { return GraphicsPool; }
-		inline VkCommandPool  getComputeCommandPool() { return ComputePool; }
-		inline uint32_t *getQueueFamilyIndices() { return QueueFamilyIndices; } // [0] = Graphics, [1] = Transfer, [2] = Compute
+		inline VkCommandPool getTransferCommandPool() { return TransferPool; }
+		inline VkCommandPool getComputeCommandPool() { return ComputePool; }
+		inline VmaAllocator getAllocator() { return allocator; }
+		inline const uint32_t *getQueueFamilyIndices() { return QueueFamilyIndices; } // [0] = Graphics, [1] = Transfer, [2] = Compute
 
-		inline void WaitIdle() { vkDeviceWaitIdle(device); }
+		inline void WaitIdle() { this->fn.vkDeviceWaitIdle(this->device); }
 
-		VulkanDevice &operator= (const VulkanDevice &devb);
+		VolkDeviceTable fn;
 	protected:
 		VkPhysicalDevice PhysicalDevice;
 		VkPhysicalDeviceProperties PhysicalDeviceProps;
 		VkDevice device;
 		VkQueue GraphicsQueue;
 		VkQueue TransferQueue;
-		VkCommandPool TransferPool;
+		VkQueue ComputeQueue;
 		VkCommandPool GraphicsPool;
+		VkCommandPool TransferPool;
 		VkCommandPool ComputePool;
-		uint32_t QueueFamilyIndices[2];
+		VmaAllocator allocator;
+		uint32_t QueueFamilyIndices[3];
 		uint32_t id;
 		std::string vendorname;
 		bool freed;
 	};
 
-	std::vector<VulkanDevice> QueryAllDevices(VulkanInstance vkinstance);
-	VulkanDevice QueryDevice(VulkanInstance vkinstance);
+	std::vector<VulkanDevice> QueryAllDevices(VulkanInstance *vkinstance);
+	VulkanDevice QueryDevice(VulkanInstance *vkinstance);
 
 }
 

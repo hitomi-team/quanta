@@ -8,9 +8,8 @@ namespace Renderer {
 	class VulkanBuffer {
 	public:
 		VulkanBuffer() : released(true), freed(true) { }
-		VulkanBuffer(const VulkanDevice &dev, VkDeviceSize size) { Load(dev, size); }
-		void Load(const VulkanDevice &dev, VkDeviceSize size);
-		void Load(const VulkanBuffer &buf);
+		VulkanBuffer(VulkanDevice *dev, VkDeviceSize size) { this->Load(dev, size); }
+		void Load(VulkanDevice *dev, VkDeviceSize size);
 		void Delete();
 		~VulkanBuffer();
 
@@ -18,18 +17,21 @@ namespace Renderer {
 		void *GetData(); // Returns address to where data is written
 		void ReleaseData(); // Releases objects allocated from GetData();
 
-		inline VkDeviceSize getSize() { return size; }
-		inline VkBuffer getHostBuffer() { return HostReadBuffer; }
-		inline VkBuffer getDevBuffer() { return DevBuffer; }
+		inline VkDeviceSize getSize() { return this->size; }
+		inline VkBuffer getHostBuffer() { return this->host_buffer; }
+		inline VkBuffer getDevBuffer() { return this->device_buffer; }
 	protected:
-		void CreateBuffer(VkDeviceSize size, VkBufferUsageFlags usageflags, VkMemoryPropertyFlags memflags, VkBuffer &buffer, VkDeviceMemory &buffermemory);
+		void CreateBuffer(VkDeviceSize size, VkBufferUsageFlags usageflags, VmaMemoryUsage memusageflags, VkBuffer &buffer, VmaAllocation &alloc, VmaAllocationInfo *allocinfo);
 		void CopyBuffer(VkBuffer src, VkBuffer dst);
 
-		VulkanDevice devcopy;
-		VkBuffer HostReadBuffer;
-		VkDeviceMemory HostReadBufferMemory;
-		VkBuffer DevBuffer;
-		VkDeviceMemory DevBufferMemory;
+		VulkanDevice *dev;
+		// device
+		VmaAllocation device_alloc;
+		VkBuffer device_buffer;
+		// staging
+		VmaAllocation host_alloc;
+		VkBuffer host_buffer;
+		// total size of the buffer
 		VkDeviceSize size;
 
 		bool released;
