@@ -101,14 +101,11 @@ int main(int argc, char **argv)
 	Renderer::Prop *newprop = renderer.AllocateProp(0, 0);
 
 	// Finally we can run the game
-
 	game.Run();
 
 	newprop->Release();
 	newmat->Release();
 	newmesh.Release();
-
-	renderer.Release();
 
 	return 0;
 }
