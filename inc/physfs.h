@@ -226,7 +226,7 @@ extern "C" {
 #if defined(PHYSFS_DECL)
 /* do nothing. */
 #elif defined(_MSC_VER)
-#define PHYSFS_DECL __declspec(dllexport)
+#define PHYSFS_DECL extern
 #elif defined(__SUNPRO_C)
 #define PHYSFS_DECL __global
 #elif ((__GNUC__ >= 3) && (!defined(__EMX__)) && (!defined(sun)))
