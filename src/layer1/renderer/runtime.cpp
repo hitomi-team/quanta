@@ -8,7 +8,8 @@ namespace Renderer {
 	static const char *apiStr[] = {
 		nullptr,
 		"D3D11",
-		"Vulkan"
+		"Vulkan",
+		"OpenGL",
 	};
 
 	Runtime::Runtime() : Service("RenderService")

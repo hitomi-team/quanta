@@ -18,9 +18,13 @@
 #include "subsystems/d3d11/d3d11renderer.h"
 #endif
 
+#if defined(__OPENGL)
+#include "subsystems/opengl/openglrenderer.h"
+#endif
+
 #include "subsystems/null/nullrenderer.h"
 
-#if !defined(__D3D11) && !defined(__VULKAN)
+#if !defined(__D3D11) && !defined(__VULKAN) && !defined(__OPENGL)
 #error A renderer must be defined
 #endif
 

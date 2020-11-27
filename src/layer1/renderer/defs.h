@@ -7,7 +7,8 @@ namespace Renderer {
 	{
 		RENDERER_NULL = 0,
 		RENDERER_D3D11,
-		RENDERER_VULKAN
+		RENDERER_VULKAN,
+		RENDERER_OPENGL,
 	};
 
 	enum PrimitiveType

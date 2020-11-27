@@ -35,13 +35,15 @@
 static const char *shader_exts[] = {
 	nullptr,
 	".dxbc",
-	".spv"
+	".spv",
+	".gl.spv",
 };
 
 static const char *shader_paths[] = {
 	nullptr,
 	"/materials/shadersd3d11/",
-	"/materials/shadersvulkan/"
+	"/materials/shadersvulkan/",
+	"/materials/shadersopengl/"
 };
 
 namespace Renderer {
