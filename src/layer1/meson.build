@@ -4,5 +4,6 @@ subdir('renderer')
 
 srcs += files([
 	'entrypoint.cpp',
-	'log.cpp'
+	'log.cpp',
+	'perfclock.cpp'
 ])

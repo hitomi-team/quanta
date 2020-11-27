@@ -2,6 +2,7 @@
 #define RENDERER_RUNTIME_H
 
 #include "layer1/graph/service.h"
+#include "layer1/perfclock.h"
 #include "layer1/log.h"
 #include "imgui/imgui_impl_sdl.h"
 #include "subsystems/rhi.h"
@@ -47,6 +48,8 @@ namespace Renderer {
 
 	private:
 		RHI *rhi;
+		CPerfClock clock;
+		float time;
 
 		std::vector<Prop *> prop_queue; // Rendered every frame
 		std::vector<Mesh *> meshes;

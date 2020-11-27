@@ -5,7 +5,6 @@
 
 namespace Renderer {
 
-	static float time = 0.f;
 	static const char *apiStr[] = {
 		nullptr,
 		"D3D11",
@@ -22,11 +21,14 @@ namespace Renderer {
 		if (rhi->SetGraphicsMode(WINDOW_DEFAULT_WIDTH, WINDOW_DEFAULT_HEIGHT, false, false, false, false, 1) != true)
 			return false;
 
+		this->time = 0.0f;
 		return true;
 	}
 
 	bool Runtime::Update()
 	{
+		this->clock.Begin();
+
 		// Check if window is minimized, if it is then don't draw anything
 		if (!rhi->BeginFrame())
 			return true;
@@ -38,8 +40,6 @@ namespace Renderer {
 		rhi->Clear(CLEAR_COLOR, glm::vec4(0.8f, 0.0f, 0.8f, 1.0f), 1.0f);
 
 		for (auto &mat : materials) { // update materials
-			time += 0.016667;
-
 			mat->getParamBuffer()->Map();
 			mat->getParamBuffer()->SetShaderParameter(SHADER_PARAM_TIME, time);
 			mat->getParamBuffer()->Unmap();
@@ -50,6 +50,9 @@ namespace Renderer {
 
 		__debug_menu(); // called last
 		rhi->EndFrame();
+		this->clock.End();
+
+		this->time += this->clock.deltaf32;
 
 		return true;
 	}
