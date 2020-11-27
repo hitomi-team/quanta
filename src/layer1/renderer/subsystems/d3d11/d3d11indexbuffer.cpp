@@ -4,7 +4,7 @@
 
 namespace Renderer {
 
-	bool D3D11IndexBuffer::SetData(unsigned *indices, unsigned count)
+	bool D3D11IndexBuffer::SetData(const uint16_t *indices, unsigned count)
 	{
 		if (!d3d11_global_device)
 			return false;
@@ -13,7 +13,7 @@ namespace Renderer {
 			return false;
 
 		D3D11_BUFFER_DESC index_desc = {};
-		index_desc.ByteWidth = sizeof(unsigned) * count;
+		index_desc.ByteWidth = sizeof(uint16_t) * count;
 		index_desc.Usage = D3D11_USAGE_IMMUTABLE;
 		index_desc.BindFlags = D3D11_BIND_INDEX_BUFFER;
 

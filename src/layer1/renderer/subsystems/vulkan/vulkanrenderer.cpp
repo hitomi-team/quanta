@@ -143,14 +143,14 @@ namespace Renderer {
 	}
 
 
-	VertexBuffer* VulkanRenderer::CreateVertexBuffer(Vertex *vertices, unsigned count)
+	VertexBuffer* VulkanRenderer::CreateVertexBuffer(const Vertex *vertices, unsigned count)
 	{
 		(void)vertices;
 		(void)count;
 		return nullptr;
 	}
 
-	IndexBuffer* VulkanRenderer::CreateIndexBuffer(unsigned *indices, unsigned count)
+	IndexBuffer* VulkanRenderer::CreateIndexBuffer(const uint16_t *indices, unsigned count)
 	{
 		(void)indices;
 		(void)count;

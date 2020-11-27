@@ -8,7 +8,7 @@ namespace Renderer {
 		inline IndexBuffer() {}
 		inline virtual ~IndexBuffer() {}
 	
-		virtual bool SetData(unsigned *indices, unsigned count) = 0;
+		virtual bool SetData(const uint16_t *indices, unsigned count) = 0;
 		virtual void Release() = 0;
 
 		inline unsigned GetCount() { return count; }

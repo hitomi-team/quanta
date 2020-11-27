@@ -10,7 +10,7 @@ namespace Renderer {
 	public:
 		D3D11IndexBuffer() {}
 
-		bool SetData(unsigned *indices, unsigned count);
+		bool SetData(const uint16_t *indices, unsigned count);
 		void Release();
 	};
 

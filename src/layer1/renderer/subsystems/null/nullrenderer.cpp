@@ -77,14 +77,14 @@ namespace Renderer {
 	}
 
 
-	VertexBuffer* NullRenderer::CreateVertexBuffer(Vertex *vertices, unsigned count)
+	VertexBuffer* NullRenderer::CreateVertexBuffer(const Vertex *vertices, unsigned count)
 	{
 		(void)vertices;
 		(void)count;
 		return nullptr;
 	}
 
-	IndexBuffer* NullRenderer::CreateIndexBuffer(unsigned *indices, unsigned count)
+	IndexBuffer* NullRenderer::CreateIndexBuffer(const uint16_t *indices, unsigned count)
 	{
 		(void)indices;
 		(void)count;

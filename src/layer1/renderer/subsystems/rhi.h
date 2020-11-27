@@ -30,8 +30,8 @@ namespace Renderer {
 
 		virtual bool IsDeviceLost() = 0;
 
-		virtual VertexBuffer* CreateVertexBuffer(Vertex *vertices, unsigned count) = 0;
-		virtual IndexBuffer* CreateIndexBuffer(unsigned *indices, unsigned count) = 0;
+		virtual VertexBuffer* CreateVertexBuffer(const Vertex *vertices, unsigned count) = 0;
+		virtual IndexBuffer* CreateIndexBuffer(const uint16_t *indices, unsigned count) = 0;
 		virtual InputLayout* CreateInputLayout(unsigned char *vsbytecode, unsigned vsbytecodelen) = 0;
 		virtual Shader *CreateShader(unsigned char *vs_bytecode, unsigned int vs_size,
 					     unsigned char *fs_bytecode, unsigned int fs_size) = 0;

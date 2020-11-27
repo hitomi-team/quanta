@@ -4,7 +4,7 @@
 
 namespace Renderer {
 
-	bool D3D11VertexBuffer::SetData(Vertex *vertices, unsigned count)
+	bool D3D11VertexBuffer::SetData(const Vertex *vertices, unsigned count)
 	{
 		if (!d3d11_global_device)
 			return false;

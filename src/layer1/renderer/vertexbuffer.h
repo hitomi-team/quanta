@@ -15,7 +15,7 @@ namespace Renderer {
 		inline VertexBuffer() {}
 		inline virtual ~VertexBuffer() {}
 
-		virtual bool SetData(Vertex *vertices, unsigned count) = 0;
+		virtual bool SetData(const Vertex *vertices, unsigned count) = 0;
 		virtual void Release() = 0;
 
 		inline void *GetBuffer() { return buffer; }

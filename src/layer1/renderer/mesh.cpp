@@ -4,7 +4,7 @@
 
 namespace Renderer {
 
-	bool Mesh::Setup(RHI *rhi, Vertex *vertices, unsigned count, MeshType type)
+	bool Mesh::Setup(RHI *rhi, const Vertex *vertices, unsigned count, MeshType type)
 	{
 		(void)type;
 
@@ -19,7 +19,7 @@ namespace Renderer {
 		return true;
 	}
 
-	bool Mesh::Setup(RHI *rhi, Vertex *vertices, unsigned vcount, unsigned *indices, unsigned icount, MeshType type)
+	bool Mesh::Setup(RHI *rhi, const Vertex *vertices, unsigned vcount, const uint16_t *indices, unsigned icount, MeshType type)
 	{
 		(void)type;
 

@@ -11,7 +11,7 @@ namespace Renderer {
 	public:
 		D3D11VertexBuffer() {}
 
-		bool SetData(Vertex *vertices, unsigned count);
+		bool SetData(const Vertex *vertices, unsigned count);
 		void Release();
 	};
 
