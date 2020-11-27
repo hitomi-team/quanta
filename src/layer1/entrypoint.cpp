@@ -85,13 +85,13 @@ int main(int argc, char **argv)
 
 	Renderer::Material *newmat = parser.Load(renderer, "/materials/tri.json");
 	if (!newmat) {
-		renderer.Release();
+		game.Abort();
 		return 0;
 	}
 
 	Renderer::Mesh newmesh;
 	if (!newmesh.Setup(renderer.GetRenderer(), vertices, 4, indices, 6, Renderer::MESH_2D)) {
-		renderer.Release();
+		game.Abort();
 		return 0;
 	}
 
