@@ -34,6 +34,9 @@ public:
 	template < typename _StringType, typename ... Args >
 	inline void Warn(const _StringType &fmt, Args &&...args) { Print(LogLevel::Warn, fmt::format(fmt, std::forward< Args >(args)...)); }
 
+	template < typename _StringType, typename ... Args >
+	inline void Fatal(const _StringType &fmt, Args &&...args) { Print(LogLevel::Fatal, fmt::format(fmt, std::forward< Args >(args)...)); }
+
 protected:
 	std::mutex mtx;
 	std::vector<std::string> buffer;

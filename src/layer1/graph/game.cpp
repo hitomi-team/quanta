@@ -86,7 +86,7 @@ namespace Graph {
 
 	void Game::Abort()
 	{
-		global_log.Info("Game Aborted");
+		global_log.Fatal("Game Aborted");
 		std::abort();
 	}
 
