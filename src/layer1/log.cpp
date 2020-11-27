@@ -6,7 +6,8 @@ static const char *Prefixes[] = {
 	"[DEBUG] ",
 	"[ERROR] ",
 	"[INFO] ",
-	"[WARN] "
+	"[WARN] ",
+	"[FATAL] ",
 };
 
 Log::Log(const std::string &filename)

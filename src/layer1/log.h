@@ -5,7 +5,8 @@ enum class LogLevel : int {
 	Debug = 0,
 	Error = 1,
 	Info =  2,
-	Warn =  3
+	Warn =  3,
+	Fatal = 4,
 };
 
 class Log {
