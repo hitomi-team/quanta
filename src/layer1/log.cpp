@@ -3,10 +3,10 @@
 #include "log.h"
 
 static const char *Prefixes[] = {
-	"DEBUG : ",
-	"ERROR : ",
-	"INFO  : ",
-	"WARN  : "
+	"[DEBUG] ",
+	"[ERROR] ",
+	"[INFO] ",
+	"[WARN] "
 };
 
 Log::Log(const std::string &filename)
