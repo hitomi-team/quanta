@@ -58,9 +58,9 @@ srcs += physfs_srcs
 # shader compiler
 shader_targets = []
 
-spirvgen = generator(find_program('dxc'), output : '@BASENAME@.spv', arguments : ['-nologo', '-spirv', '@INPUT@', '-Fo', '@OUTPUT@', '-D', 'VULKAN', '@EXTRA_ARGS@'])
-shader_targets += spirvgen.process(vs_srcs, extra_args : ['-T', 'vs_6_0'])
-shader_targets += spirvgen.process(fs_srcs, extra_args : ['-T', 'ps_6_0'])
+spirvgen = generator(find_program('glslc'), output : '@BASENAME@.spv', arguments : ['@EXTRA_ARGS@', '-c', '@INPUT@', '-o', '@OUTPUT@', '-D_VULKAN'])
+shader_targets += spirvgen.process(vs_srcs, extra_args : ['-fshader-stage=vert'])
+shader_targets += spirvgen.process(fs_srcs, extra_args : ['-fshader-stage=frag'])
 
 if target_machine.system() == 'windows'
 	dxbcgen = generator(find_program('fxc'), output : '@BASENAME@.dxbc', arguments : ['-nologo', '@INPUT@', '-Fo', '@OUTPUT@', '@EXTRA_ARGS@'])
