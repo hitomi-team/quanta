@@ -54,8 +54,6 @@ namespace Renderer {
 		ShaderParameterBuffer *CreateShaderParameterBuffer(std::vector<ShaderParameterElement> elements);
 
 		void SetShaders(Shader *shader);
-		void SetShaderParameter(unsigned param, const float* data, unsigned count);
-
 		void SetVertexBuffer(VertexBuffer* buffer);
 		void SetIndexBuffer(IndexBuffer* buffer);
 		bool SetVertexBuffers(const std::vector<VertexBuffer*>& buffers, const std::vector<unsigned>& elementMasks, unsigned instanceOffset);
