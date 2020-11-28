@@ -12,6 +12,48 @@ static const GLenum glprimtypes[] = {
 	GL_TRIANGLE_FAN
 };
 
+#ifdef __DEBUG
+static void gldbgcallback(GLenum source, GLenum type, GLuint id, GLenum severity, GLsizei length, const GLchar *msg, const void *param)
+{
+	const char *source_str, *type_str, *severity_str;
+
+#define STRTOENUM(a, b) case b: a = #b; break
+	switch (source) {
+	STRTOENUM(source_str, GL_DEBUG_SOURCE_API);
+	STRTOENUM(source_str, GL_DEBUG_SOURCE_WINDOW_SYSTEM);
+	STRTOENUM(source_str, GL_DEBUG_SOURCE_SHADER_COMPILER);
+	STRTOENUM(source_str, GL_DEBUG_SOURCE_THIRD_PARTY);
+	STRTOENUM(source_str, GL_DEBUG_SOURCE_APPLICATION);
+	STRTOENUM(source_str, GL_DEBUG_SOURCE_OTHER);
+	default: source_str = "unknown"; break;
+	}
+
+	switch (type) {
+	STRTOENUM(type_str, GL_DEBUG_TYPE_ERROR);
+	STRTOENUM(type_str, GL_DEBUG_TYPE_DEPRECATED_BEHAVIOR);
+	STRTOENUM(type_str, GL_DEBUG_TYPE_UNDEFINED_BEHAVIOR);
+	STRTOENUM(type_str, GL_DEBUG_TYPE_PORTABILITY);
+	STRTOENUM(type_str, GL_DEBUG_TYPE_PERFORMANCE);
+	STRTOENUM(type_str, GL_DEBUG_TYPE_OTHER);
+	STRTOENUM(type_str, GL_DEBUG_TYPE_MARKER);
+	STRTOENUM(type_str, GL_DEBUG_TYPE_PUSH_GROUP);
+	STRTOENUM(type_str, GL_DEBUG_TYPE_POP_GROUP);
+	default: type_str = "unknown"; break;
+	}
+
+	switch (severity) {
+	STRTOENUM(severity_str, GL_DEBUG_SEVERITY_HIGH);
+	STRTOENUM(severity_str, GL_DEBUG_SEVERITY_MEDIUM);
+	STRTOENUM(severity_str, GL_DEBUG_SEVERITY_LOW);
+	STRTOENUM(severity_str, GL_DEBUG_SEVERITY_NOTIFICATION);
+	default: severity_str = "unknown"; break;
+	}
+
+	(void)id; (void)length; (void)param;
+	global_log.Debug(FMT_STRING("[GLDBG] [%s] [%s] [%s] %s"), source_str, type_str, severity_str, msg);
+}
+#endif
+
 namespace Renderer {
 
 	bool OpenGLRenderer::SetGraphicsMode(int width, int height, bool fullscreen, bool borderless, bool resizable, bool vsync, int multisample)
@@ -86,6 +128,13 @@ namespace Renderer {
 		ImGui::StyleColorsDark();
 		ImGui_ImplSDL2_InitForOpenGL(this->window, this->rc);
 		ImGui_ImplOpenGL3_Init();
+
+#ifdef __DEBUG
+		glEnable(GL_DEBUG_OUTPUT);
+		glEnable(GL_DEBUG_OUTPUT_SYNCHRONOUS);
+		glDebugMessageCallback(gldbgcallback, nullptr);
+		glDebugMessageControl(GL_DONT_CARE, GL_DONT_CARE, GL_DONT_CARE, 0, nullptr, GL_TRUE);
+#endif
 
 		global_log.Debug(FMT_STRING("Using OpenGL 4.6 Core\nGL_VENDOR: {}\nGL_RENDERER: {}\nGL_VERSION: {}"), glGetString(GL_VENDOR), glGetString(GL_RENDERER), glGetString(GL_VERSION));
 
