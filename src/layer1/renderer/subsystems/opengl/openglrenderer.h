@@ -9,6 +9,14 @@
 #include "layer1/renderer/imgui/imgui_impl_sdl.h"
 #include "imgui_impl_opengl3.h"
 
+#include "openglinputlayout.h"
+#include "openglparameterbuffer.h"
+#include "openglindexbuffer.h"
+#include "openglvertexbuffer.h"
+#include "opengltexture2d.h"
+#include "openglshader.h"
+#include "openglrendertarget.h"
+
 namespace Renderer {
 
 	class OpenGLRenderer : public RHI {
@@ -82,6 +90,20 @@ namespace Renderer {
 		SDL_DisplayMode display;
 		SDL_GLContext rc;
 		ImGuiContext *imguictx;
+
+		// cache
+		Shader *current_shader;
+		VertexBuffer *current_vbo;
+		IndexBuffer *current_ibo;
+		RenderTarget *rendertargets[MAX_RENDERTARGETS];
+		Texture2D *textureviews[MAX_TEXTURE_UNITS];
+
+		// state
+		bool rendertargets_dirty;
+		bool textureviews_dirty;
+		bool rasterizerstate_dirty;
+
+		void PreDraw();
 	};
 
 }

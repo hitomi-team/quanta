@@ -50,11 +50,13 @@ static void gldbgcallback(GLenum source, GLenum type, GLuint id, GLenum severity
 	}
 
 	(void)id; (void)length; (void)param;
-	global_log.Debug(FMT_STRING("[GLDBG] [%s] [%s] [%s] %s"), source_str, type_str, severity_str, msg);
+	global_log.Debug(FMT_STRING("[GLDBG] [{}] [{}] [{}] {}"), source_str, type_str, severity_str, msg);
 }
 #endif
 
 namespace Renderer {
+
+	OpenGLRenderer *global_gl = nullptr;
 
 	bool OpenGLRenderer::SetGraphicsMode(int width, int height, bool fullscreen, bool borderless, bool resizable, bool vsync, int multisample)
 	{
@@ -138,13 +140,41 @@ namespace Renderer {
 
 		global_log.Debug(FMT_STRING("Using OpenGL 4.6 Core\nGL_VENDOR: {}\nGL_RENDERER: {}\nGL_VERSION: {}"), glGetString(GL_VENDOR), glGetString(GL_RENDERER), glGetString(GL_VERSION));
 
+		global_gl = this;
+
+		this->ResetCache();
+
 		return true;
+	}
+
+	void OpenGLRenderer::PreDraw()
+	{
+		if (this->rendertargets_dirty) {
+			this->rendertargets_dirty = false;
+			if (this->rendertargets[0] == nullptr)
+				glBindFramebuffer(GL_FRAMEBUFFER, 0);
+			else
+				glBindFramebuffer(GL_FRAMEBUFFER, reinterpret_cast< GLuint * >(this->rendertargets[0]->getView())[0]);
+		}
+
+		if (this->textureviews_dirty) {
+			this->textureviews_dirty = false;
+			glActiveTexture(GL_TEXTURE0);
+			glBindSampler(0, reinterpret_cast< GLuint * >(this->textureviews[0]->GetSampler())[0]);
+			glBindTextureUnit(0, reinterpret_cast< GLuint * >(this->textureviews[0]->GetView())[0]);
+		}
+
+		if (this->rasterizerstate_dirty) {
+			this->rasterizerstate_dirty = false;
+		}
 	}
 
 	bool OpenGLRenderer::BeginFrame()
 	{
 		if (SDL_GetWindowFlags(window) & SDL_WINDOW_MINIMIZED)
 			return false;
+
+		this->PreDraw();
 
 		return true;
 	}
@@ -218,6 +248,21 @@ namespace Renderer {
 
 	void OpenGLRenderer::ResetCache()
 	{
+		size_t i;
+
+		this->rendertargets_dirty = false;
+		this->textureviews_dirty = false;
+		this->rasterizerstate_dirty = false;
+
+		this->current_shader = nullptr;
+		this->current_vbo = nullptr;
+		this->current_ibo = nullptr;
+
+		for (i = 0; i < MAX_RENDERTARGETS; i++)
+			this->rendertargets[i] = nullptr;
+
+		for (i = 0; i < MAX_TEXTURE_UNITS; i++)
+			this->textureviews[i] = nullptr;
 	}
 
 
@@ -229,63 +274,136 @@ namespace Renderer {
 
 	VertexBuffer* OpenGLRenderer::CreateVertexBuffer(const Vertex *vertices, unsigned count)
 	{
-		(void)vertices;
-		(void)count;
-		return nullptr;
+		if (vertices == nullptr || count == 0)
+			return nullptr;
+
+		COpenGLVertexBuffer *out = new COpenGLVertexBuffer;
+		if (!out->SetData(vertices, count)) {
+			delete out;
+			return nullptr;
+		}
+
+		return out;
 	}
 
 	IndexBuffer* OpenGLRenderer::CreateIndexBuffer(const uint16_t *indices, unsigned count)
 	{
-		(void)indices;
-		(void)count;
-		return nullptr;
+		if (indices == nullptr || count == 0)
+			return nullptr;
+
+		COpenGLIndexBuffer *out = new COpenGLIndexBuffer;
+		if (!out->SetData(indices, count)) {
+			delete out;
+			return nullptr;
+		}
+
+		return out;
 	}
 
 	InputLayout* OpenGLRenderer::CreateInputLayout(unsigned char *vsbytecode, unsigned vsbytecodelen)
 	{
-		(void)vsbytecode;
-		(void)vsbytecodelen;
-		return nullptr;
+		COpenGLInputLayout *inputlayout = new COpenGLInputLayout;
+
+		if (!inputlayout->Setup(vsbytecode, vsbytecodelen)) {
+			delete inputlayout;
+			return nullptr;
+		}
+
+		return inputlayout;
 	}
 
 	Shader *OpenGLRenderer::CreateShader(unsigned char *vs_bytecode, unsigned int vs_size,
 				     unsigned char *fs_bytecode, unsigned int fs_size)
 	{
-		(void)vs_bytecode;
-		(void)vs_size;
-		(void)fs_bytecode;
-		(void)fs_size;
-		return nullptr;
+		if (vs_bytecode == nullptr || vs_size == 0 || fs_bytecode == nullptr || fs_size == 0)
+			return nullptr;
+
+		COpenGLShader *shader = new COpenGLShader;
+		if (!shader->Build(vs_bytecode, vs_size, fs_bytecode, fs_size)) {
+			delete shader;
+			return nullptr;
+		}
+
+		return shader;
 	}
 
 	Texture2D *OpenGLRenderer::CreateTexture2D(unsigned char *data, unsigned width, unsigned height, SamplerStateDesc samplerstatedesc)
 	{
-		(void)data;
-		(void)width;
-		(void)height;
-		(void)samplerstatedesc;
-		return nullptr;
+		if (data == nullptr || width == 0 || height == 0)
+			return nullptr;
+
+		COpenGLTexture2D *texture2d = new COpenGLTexture2D;
+		if (!texture2d->SetData(data, width, height, samplerstatedesc)) {
+			delete texture2d;
+			return nullptr;
+		}
+
+		return texture2d;
 	}
 
 	ShaderParameterBuffer *OpenGLRenderer::CreateShaderParameterBuffer(std::vector<ShaderParameterElement> elements)
 	{
-		(void)elements;
-		return nullptr;
+		if (elements.size() == 0)
+			return nullptr;
+
+		COpenGLParameterBuffer *parambuffer = new COpenGLParameterBuffer;
+		if (!parambuffer->Setup(elements)) {
+			delete parambuffer;
+			return nullptr;
+		}
+
+		return parambuffer;
 	}
 
 	void OpenGLRenderer::SetShaders(Shader *shader)
 	{
-		(void)shader;
+		if (shader == nullptr)
+			return;
+
+		if (this->current_shader == shader)
+			return;
+
+		GLuint *pid = reinterpret_cast< GLuint * >(shader->GetProgram());
+		if (pid == nullptr)
+			return;
+
+		glUseProgram(pid[0]);
+		this->current_shader = shader;
 	}
 
 	void OpenGLRenderer::SetVertexBuffer(VertexBuffer* buffer)
 	{
-		(void)buffer;
+		GLuint vao = reinterpret_cast< GLuint * >(this->current_shader->GetInputLayout())[0];
+
+		if (this->current_vbo != buffer) {
+			this->current_vbo = buffer;
+
+			if (this->current_vbo == nullptr) {
+				glVertexArrayVertexBuffer(vao, 0, 0, 0, 0);
+				glVertexArrayVertexBuffer(vao, 1, 0, 0, 0);
+				glVertexArrayVertexBuffer(vao, 2, 0, 0, 0);
+				glBindVertexArray(0);
+			} else {
+				glVertexArrayVertexBuffer(vao, 0, reinterpret_cast< GLuint * >(this->current_vbo->GetBuffer())[0], 0, sizeof(Renderer::Vertex));
+				glVertexArrayVertexBuffer(vao, 1, reinterpret_cast< GLuint * >(this->current_vbo->GetBuffer())[0], sizeof(glm::vec3), sizeof(Renderer::Vertex));
+				glVertexArrayVertexBuffer(vao, 2, reinterpret_cast< GLuint * >(this->current_vbo->GetBuffer())[0], sizeof(glm::vec3)*2, sizeof(Renderer::Vertex));
+				glBindVertexArray(reinterpret_cast< GLuint * >(this->current_shader->GetInputLayout())[0]);
+			}
+
+		}
 	}
 
 	void OpenGLRenderer::SetIndexBuffer(IndexBuffer* buffer)
 	{
-		(void)buffer;
+		GLuint vao = reinterpret_cast< GLuint * >(this->current_shader->GetInputLayout())[0];
+
+		if (this->current_ibo != buffer) {
+			this->current_ibo = buffer;
+			if (buffer != nullptr)
+				glVertexArrayElementBuffer(vao, reinterpret_cast< GLuint * >(buffer->GetBuffer())[0]);
+			else
+				glVertexArrayElementBuffer(vao, 0);
+		}
 	}
 
 	bool OpenGLRenderer::SetVertexBuffers(const std::vector<VertexBuffer*>& buffers, const std::vector<unsigned>& elementMasks, unsigned instanceOffset)
@@ -359,15 +477,25 @@ namespace Renderer {
 
 	void OpenGLRenderer::SetTexture(unsigned index, Texture2D* texture)
 	{
-		(void)index;
-		(void)texture;
+		if (index >= MAX_TEXTURE_UNITS || texture == nullptr)
+			return;
+
+		if (this->textureviews[index] != texture) {
+			this->textureviews_dirty = true;
+			this->textureviews[index] = texture;
+		}
 	}
 
 
 	void OpenGLRenderer::SetRenderTarget(unsigned index, RenderTarget* renderTarget)
 	{
-		(void)index;
-		(void)renderTarget;
+		if (index >= MAX_RENDERTARGETS || renderTarget == nullptr)
+			return;
+
+		if (this->rendertargets[index] != renderTarget) {
+			this->rendertargets_dirty = true;
+			this->rendertargets[index] = renderTarget;
+		}
 	}
 
 	void OpenGLRenderer::SetDepthStencil(RenderTarget* depthStencil)
@@ -384,23 +512,32 @@ namespace Renderer {
 
 	void OpenGLRenderer::Draw(PrimitiveType type, unsigned vertexStart, unsigned vertexCount)
 	{
+		if (this->current_shader == nullptr || vertexCount == 0)
+			return;
+
+		this->PreDraw();
+
 		glDrawArrays(glprimtypes[type], vertexStart, vertexCount);
 	}
 
 	void OpenGLRenderer::DrawIndexed(PrimitiveType type, unsigned indexStart, unsigned indexCount)
 	{
-		(void)type;
-		(void)indexStart;
-		(void)indexCount;
-		glDrawElements(glprimtypes[type], indexCount, GL_UNSIGNED_INT, reinterpret_cast< const void * >(indexCount));
+		if (this->current_shader == nullptr || indexCount == 0)
+			return;
+
+		this->PreDraw();
+
+		glDrawElements(glprimtypes[type], indexCount, GL_UNSIGNED_SHORT, (char *)0 + indexStart);
 	}
 
 	void OpenGLRenderer::DrawInstanced(PrimitiveType type, unsigned indexStart, unsigned indexCount, unsigned instanceCount)
 	{
-		(void)type;
-		(void)indexStart;
-		(void)indexCount;
-		(void)instanceCount;
+		if (this->current_shader == nullptr || indexCount == 0)
+			return;
+
+		this->PreDraw();
+
+		glDrawElementsInstanced(glprimtypes[type], indexCount, GL_UNSIGNED_SHORT, (char *)0 + indexStart, instanceCount);
 	}
 
 	SDL_Window *OpenGLRenderer::GetWindow()

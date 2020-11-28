@@ -4,4 +4,9 @@
 #include "layer1/renderer/subsystems/required.h"
 #include "glad.h"
 
+namespace Renderer {
+	class OpenGLRenderer;
+	extern OpenGLRenderer *global_gl;
+}
+
 #endif
