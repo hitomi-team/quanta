@@ -42,8 +42,10 @@ if target_machine.system() == 'windows'
 	includes += include_directories('./inc-win')
 else
 	lib_sdl2     = compiler.find_library('SDL2')
+	lib_pthread  = compiler.find_library('pthread')
 
 	libs += lib_sdl2
+	libs += lib_pthread
 endif
 
 # tools
