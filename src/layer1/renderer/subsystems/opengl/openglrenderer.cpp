@@ -156,11 +156,19 @@ namespace Renderer {
 
 	void OpenGLRenderer::Clear(unsigned flags, const glm::vec4& color, float depth, unsigned stencil)
 	{
-		(void)flags;
+		unsigned flags_color_clear = flags & CLEAR_COLOR;
+		unsigned flags_depth_clear = flags & CLEAR_DEPTH;
+		unsigned flags_stencil_clear = flags & CLEAR_STENCIL;
+
+		GLenum clear_bits = \
+			(flags_color_clear ? GL_COLOR_BUFFER_BIT : 0) | \
+			(flags_depth_clear ? GL_DEPTH_BUFFER_BIT : 0) | \
+			(flags_stencil_clear ? GL_STENCIL_BUFFER_BIT : 0);
+
 		glClearColor(color.r, color.g, color.b, color.a);
 		glClearDepth(depth);
 		glClearStencil(stencil);
-		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT | GL_STENCIL_BUFFER_BIT);
+		glClear(clear_bits);
 	}
 
 
