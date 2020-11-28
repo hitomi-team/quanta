@@ -23,7 +23,7 @@ int main(int argc, char **argv)
 #if defined(__D3D11)
 		Renderer::RENDERER_D3D11
 #else
-		Renderer::RENDERER_OPENGL
+		Renderer::RENDERER_VULKAN
 #endif
 	};
 
@@ -32,9 +32,9 @@ int main(int argc, char **argv)
 	for (int i = 1; i < argc; i++) {
 		if (std::strcmp(argv[i], "-vulkan") == 0) {
 			options.type = Renderer::RENDERER_VULKAN;
-		} else if (std::strcmp(argv[i], "-opengl") == 0) {
-			options.type = Renderer::RENDERER_OPENGL;
-		}
+		}// else if (std::strcmp(argv[i], "-opengl") == 0) {
+		//	options.type = Renderer::RENDERER_OPENGL;
+		//}
 #if defined(__D3D11)
 		else if (std::strcmp(argv[i], "-d3d11") == 0) {
 			options.type = Renderer::RENDERER_D3D11;
@@ -52,7 +52,7 @@ int main(int argc, char **argv)
 	Renderer::D3D11Renderer d3d11renderer;
 #endif
 	Renderer::VulkanRenderer vulkanrenderer;
-	Renderer::OpenGLRenderer openglrenderer;
+	// Renderer::OpenGLRenderer openglrenderer;
 	// Renderer::NullRenderer nullrenderer;
 
 	Renderer::Runtime renderer;
@@ -62,8 +62,8 @@ int main(int argc, char **argv)
 #endif
 	if (options.type == Renderer::RENDERER_VULKAN)
 		renderer.SetRenderer(&vulkanrenderer);
-	else if (options.type == Renderer::RENDERER_OPENGL)
-		renderer.SetRenderer(&openglrenderer);
+	//else if (options.type == Renderer::RENDERER_OPENGL)
+	//	renderer.SetRenderer(&openglrenderer);
 
 	Renderer::Input input;
 
