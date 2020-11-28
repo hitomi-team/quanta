@@ -8,6 +8,12 @@
 #include <mutex>
 #include <vector>
 
+#include <atomic>
+#include <mutex>
+#include <thread>
+#include <queue>
+#include <condition_variable>
+
 #include <glm/glm.hpp>
 #include <glm/gtc/type_ptr.hpp>
 #include <glm/gtx/transform.hpp>
