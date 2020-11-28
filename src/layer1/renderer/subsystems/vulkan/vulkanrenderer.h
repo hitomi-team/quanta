@@ -88,12 +88,11 @@ namespace Renderer {
 		bool isInitialized;
 
 		// Internal cache
-		VulkanInstance instance;
-		VulkanDevice device;
-		VulkanSurface surface;
+#if 0
 		VkRenderPass imGuiRenderPass;
 		VkPipelineCache imGuiPipelineCache;
 		VkDescriptorPool imGuiDescriptorPool;
+#endif
 
 		// internal functions
 		bool UpdateSwapchain(int width, int height, int multisample);

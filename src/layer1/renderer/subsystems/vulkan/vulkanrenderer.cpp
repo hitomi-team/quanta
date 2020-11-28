@@ -1,13 +1,11 @@
 #include "pch/pch.h"
 
 #include "vulkanrenderer.h"
-#include "vk_buffer.h"
 
 namespace Renderer {
 
 	VulkanRenderer::VulkanRenderer()
 	{
-		SDL_Init(SDL_INIT_VIDEO);
 		ResetCache();
 	}
 
@@ -16,8 +14,9 @@ namespace Renderer {
 		(void)vsync;
 		(void)multisample;
 
-		if (SDL_WasInit(SDL_INIT_VIDEO) != SDL_INIT_VIDEO)
-			SDL_Init(SDL_INIT_VIDEO);
+		if (SDL_Init(SDL_INIT_VIDEO) != 0) {
+			global_log.Fatal("couldn't init SDL2!");
+		}
 
 		int x = fullscreen ? 0 : SDL_WINDOWPOS_CENTERED;
 		int y = fullscreen ? 0 : SDL_WINDOWPOS_CENTERED;
@@ -43,15 +42,7 @@ namespace Renderer {
 			return false;
 		}
 
-		// init device and other stuff
-		if (!instance.Load(window))
-			return false;
-
-		device = QueryDevice(&instance);
-		surface.Load(window, &instance, &device);
-
-		// init imgui
-		this->InitializeImGui(width, height);
+		// implement instance
 
 		return true;
 	}
@@ -61,18 +52,11 @@ namespace Renderer {
 		if (SDL_GetWindowFlags(window) & SDL_WINDOW_MINIMIZED)
 			return false;
 
-		// do prerender stuff here
-		VkCommandBufferBeginInfo beginInfo = {};
-		beginInfo.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_BEGIN_INFO;
-		vkBeginCommandBuffer(this->surface.getPresentCommandBuffer(), &beginInfo);
-
 		return true;
 	}
 
 	void VulkanRenderer::EndFrame()
 	{
-		vkEndCommandBuffer(this->surface.getPresentCommandBuffer());
-		surface.Present();
 	}
 
 	void VulkanRenderer::Clear(unsigned flags, const glm::vec4& color, float depth, unsigned stencil)
@@ -80,8 +64,7 @@ namespace Renderer {
 		(void)flags;
 		(void)depth;
 		(void)stencil;
-
-		surface.Clear(color.r, color.g, color.b, color.a);
+		(void)color;
 	}
 
 
@@ -103,15 +86,6 @@ namespace Renderer {
 
 	void VulkanRenderer::Close()
 	{
-		this->device.WaitIdle();
-
-		this->CloseImGui();
-
-		// vulkan object releasing stuff
-		this->surface.Release();
-		this->device.Release();
-		this->instance.Release();
-
 		ResetCache(); // just in case we want to initialize this renderer again
 
 		SDL_ShowCursor(SDL_TRUE);
@@ -133,7 +107,6 @@ namespace Renderer {
 
 	void VulkanRenderer::ResetCache()
 	{
-
 	}
 
 
@@ -331,16 +304,7 @@ namespace Renderer {
 	{
 		ImGui::End();
 		ImGui::Render();
-
-/*
-		VkRenderPassBeginInfo beginInfo = {};
-		beginInfo.sType = VK_STRUCTURE_TYPE_RENDER_PASS_BEGIN_INFO;
-		beginInfo.
-*/
-
-		//vkCmdBeginRenderPass(this->surface.getPresentCommandBuffer());
-		ImGui_ImplVulkan_RenderDrawData(ImGui::GetDrawData(), this->surface.getPresentCommandBuffer());
-		//vkCmdEndRenderPass(this->surface.getPresentCommandBuffer());
+		//ImGui_ImplVulkan_RenderDrawData(ImGui::GetDrawData(), this->surface.getPresentCommandBuffer());
 	}
 
 	RendererType VulkanRenderer::getRendererType()
@@ -350,6 +314,8 @@ namespace Renderer {
 
 	void VulkanRenderer::InitializeImGui(int width, int height)
 	{
+		(void)width; (void)height;
+#if 0
 		VkAttachmentDescription attachment = {};
 		attachment.format = this->surface.getSurfaceFormat().format;
 		attachment.samples = VK_SAMPLE_COUNT_1_BIT;
@@ -475,13 +441,16 @@ namespace Renderer {
 
 		this->device.fn.vkDestroyFence(this->device.get(), fence, nullptr);
 		this->device.fn.vkFreeCommandBuffers(this->device.get(), this->device.getGraphicsCommandPool(), 1, &cmdbuf);
+#endif
 	}
 
 	void VulkanRenderer::CloseImGui()
 	{
+#if 0
 		ImGui_ImplVulkan_Shutdown();
 		this->device.fn.vkDestroyPipelineCache(this->device.get(), this->imGuiPipelineCache, nullptr);
 		this->device.fn.vkDestroyDescriptorPool(this->device.get(), this->imGuiDescriptorPool, nullptr);
 		this->device.fn.vkDestroyRenderPass(this->device.get(), this->imGuiRenderPass, nullptr);
+#endif
 	}
 }
