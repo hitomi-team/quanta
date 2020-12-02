@@ -62,4 +62,4 @@ srcs += physfs_srcs
 compiler_flags += '-D__VULKAN'
 includes += src_directory
 
-binary = executable('quanta', srcs, shader_targets, dependencies : libs, include_directories : includes, c_args : compiler_flags, cpp_args : compiler_flags, cpp_pch : './src/pch/pch.h')
+binary = executable('quanta', srcs, dependencies : libs, include_directories : includes, c_args : compiler_flags, cpp_args : compiler_flags, cpp_pch : './src/pch/pch.h')
