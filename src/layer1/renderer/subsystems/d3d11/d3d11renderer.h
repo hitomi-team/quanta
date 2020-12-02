@@ -45,8 +45,8 @@ namespace Renderer {
 		bool IsDeviceLost();
 
 
-		VertexBuffer* CreateVertexBuffer(Vertex *vertices, unsigned count);
-		IndexBuffer* CreateIndexBuffer(unsigned *indices, unsigned count);
+		VertexBuffer* CreateVertexBuffer(const Vertex *vertices, unsigned count);
+		IndexBuffer* CreateIndexBuffer(const uint16_t *indices, unsigned count);
 		InputLayout* CreateInputLayout(unsigned char *vsbytecode, unsigned vsbytecodelen);
 		Shader *CreateShader(unsigned char *vs_bytecode, unsigned int vs_size,
 				     unsigned char *fs_bytecode, unsigned int fs_size);

@@ -103,14 +103,15 @@ namespace Renderer {
 
 	D3D11Renderer::D3D11Renderer()
 	{
-		SDL_Init(SDL_INIT_VIDEO);
 		ResetCache();
 	}
 
 	bool D3D11Renderer::SetGraphicsMode(int width, int height, bool fullscreen, bool borderless, bool resizable, bool vsync, int multisample)
 	{
-		if (SDL_WasInit(SDL_INIT_VIDEO) != SDL_INIT_VIDEO)
-			SDL_Init(SDL_INIT_VIDEO);
+		if (SDL_Init(SDL_INIT_VIDEO) != 0) {
+			global_log.Fatal("cannot init SDL2 D3D11");
+			return false;
+		}
 
 		int x = fullscreen ? 0 : SDL_WINDOWPOS_CENTERED;
 		int y = fullscreen ? 0 : SDL_WINDOWPOS_CENTERED;
@@ -418,7 +419,7 @@ namespace Renderer {
 		}
 	}
 
-	VertexBuffer* D3D11Renderer::CreateVertexBuffer(Vertex *vertices, unsigned count)
+	VertexBuffer* D3D11Renderer::CreateVertexBuffer(const Vertex *vertices, unsigned count)
 	{
 		if (!vertices || !count)
 			return nullptr;
@@ -433,7 +434,7 @@ namespace Renderer {
 		return vertbuf;
 	}
 
-	IndexBuffer* D3D11Renderer::CreateIndexBuffer(unsigned *indices, unsigned count)
+	IndexBuffer* D3D11Renderer::CreateIndexBuffer(const uint16_t *indices, unsigned count)
 	{
 		if (!indices || !count)
 			return nullptr;
@@ -564,7 +565,7 @@ namespace Renderer {
 
 		ID3D11Buffer *ibuf = (ID3D11Buffer *)buffer->GetBuffer();
 		if (ibuf != indexBuffer_) {
-			context->IASetIndexBuffer(ibuf, DXGI_FORMAT_R32_UINT, 0);
+			context->IASetIndexBuffer(ibuf, DXGI_FORMAT_R16_UINT, 0);
 			indexBuffer_ = ibuf;
 		}
 	}
