@@ -60,6 +60,19 @@ namespace Renderer {
 
 	void Runtime::Release()
 	{
+		for (auto &mat : materials) {
+			mat->Release();
+			delete mat;
+		}
+
+		for (auto &mesh : meshes)
+			mesh->Release();
+
+		for (auto &prop : prop_queue) {
+			prop->Release();
+			delete prop;
+		}
+
 		rhi->Close();
 	}
 

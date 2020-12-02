@@ -18,11 +18,16 @@ namespace Renderer {
 
 	void Material::Release()
 	{
-		if (!shader || !texture)
+		if (!shader || !texture || !this->paramBuffer)
 			return;
 
 		shader->Release();
 		texture->Release();
+		paramBuffer->Release();
+
+		delete shader;
+		delete texture;
+		delete paramBuffer;
 	}
 
 	void Material::Bind(RHI *rhi)

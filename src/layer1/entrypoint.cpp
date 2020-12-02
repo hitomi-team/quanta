@@ -102,14 +102,11 @@ int main(int argc, char **argv)
 	renderer.RegisterMesh(&newmesh);
 	renderer.RegisterMaterial(newmat);
 
-	Renderer::Prop *newprop = renderer.AllocateProp(0, 0);
+	Renderer::Prop *newprop = renderer.AllocateProp(0, 0); (void)newprop;
 
 	// Finally we can run the game
+	// resources will be cleaned up on exit
 	game.Run();
-
-	newprop->Release();
-	newmat->Release();
-	newmesh.Release();
 
 	return 0;
 }

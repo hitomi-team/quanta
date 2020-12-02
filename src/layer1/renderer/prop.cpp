@@ -12,7 +12,7 @@ namespace Renderer {
 
 	void Prop::Release()
 	{
-		delete this; // Don't destroy mesh or material, those are managed by the renderer.
+		// Don't destroy mesh or material, those are managed by the renderer.
 	}
 
 	void Prop::Draw(RHI *rhi)
