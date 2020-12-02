@@ -57,27 +57,9 @@ srcs = []
 subdir('src')
 srcs += physfs_srcs
 
-# shader compiler
-shader_targets = []
-
-spirvgen = generator(find_program('glslc'), output : '@BASENAME@.spv', arguments : ['@EXTRA_ARGS@', '-c', '@INPUT@', '-o', '@OUTPUT@', '-D_VULKAN', '--target-env=vulkan1.1'])
-shader_targets += spirvgen.process(vs_srcs, extra_args : ['-fshader-stage=vert'])
-shader_targets += spirvgen.process(fs_srcs, extra_args : ['-fshader-stage=frag'])
-
-glspirvgen = generator(find_program('glslc'), output : '@BASENAME@.gl.spv', arguments : ['@EXTRA_ARGS@', '-c', '@INPUT@', '-o', '@OUTPUT@', '-D_OPENGL', '--target-env=opengl4.5'])
-shader_targets += glspirvgen.process(vs_srcs, extra_args : ['-fshader-stage=vert'])
-shader_targets += glspirvgen.process(fs_srcs, extra_args : ['-fshader-stage=frag'])
-
-if target_machine.system() == 'windows'
-	dxbcgen = generator(find_program('fxc'), output : '@BASENAME@.dxbc', arguments : ['-nologo', '@INPUT@', '-Fo', '@OUTPUT@', '@EXTRA_ARGS@'])
-	shader_targets += dxbcgen.process(vs_srcs, extra_args : ['-T', 'vs_5_0'])
-	shader_targets += dxbcgen.process(fs_srcs, extra_args : ['-T', 'ps_5_0'])
-endif
-
 # libraries
 
 compiler_flags += '-D__VULKAN'
-compiler_flags += '-D__OPENGL'
 includes += src_directory
 
 binary = executable('quanta', srcs, shader_targets, dependencies : libs, include_directories : includes, c_args : compiler_flags, cpp_args : compiler_flags, cpp_pch : './src/pch/pch.h')
