@@ -1,17 +1,17 @@
 #include "common.hlsl"
 
 struct VS_INPUT {
-	float4 position : POSITION;
-	float4 normal   : NORMAL;
-	float2 texcoord : TEXCOORD0;
+	VK_LOCATION(0) float4 position : POSITION;
+	VK_LOCATION(1) float4 normal   : NORMAL;
+	VK_LOCATION(2) float2 texcoord : TEXCOORD0;
 };
 
 struct PS_INPUT {
-	float4 position : SV_POSITION;
-	float2 texcoord : TEXCOORD0;
+	VK_LOCATION(0) float4 position : SV_POSITION;
+	VK_LOCATION(1) float2 texcoord : TEXCOORD0;
 };
 
-cbuffer GlobalData : register(b0) {
+VK_BINDING(0, 0) cbuffer GlobalData : register(b0) {
 	float time;
 	float4 mvp;
 };
