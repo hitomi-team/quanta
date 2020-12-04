@@ -86,6 +86,7 @@ namespace Renderer {
 		void ImGuiEndFrame();
 
 		RendererType getRendererType();
+		void WaitForDevice();
 
 	private:
 		SDL_Window *window;

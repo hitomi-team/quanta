@@ -81,6 +81,7 @@ namespace Renderer {
 		inline unsigned getTotalDrawCallCount() { return drawCount + drawIndexedCount + drawInstancedCount; }
 
 		virtual RendererType getRendererType() = 0;
+		virtual void WaitForDevice() = 0;
 
 	protected:
 		// For Profiler

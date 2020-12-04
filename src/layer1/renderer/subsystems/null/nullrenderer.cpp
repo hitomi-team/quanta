@@ -273,4 +273,8 @@ namespace Renderer {
 		return RENDERER_NULL;
 	}
 
+	void NullRenderer::WaitForDevice()
+	{
+	}
+
 }

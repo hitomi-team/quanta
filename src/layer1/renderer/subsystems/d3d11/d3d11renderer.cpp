@@ -767,6 +767,10 @@ namespace Renderer {
 		return RENDERER_D3D11;
 	}
 
+	void D3D11Renderer::WaitForDevice()
+	{
+	}
+
 	ID3D11Device *d3d11_global_device;
 	ID3D11DeviceContext *d3d11_global_context;
 

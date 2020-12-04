@@ -79,6 +79,7 @@ namespace Renderer {
 		void ImGuiEndFrame(); // Called after ImGui commands
 
 		RendererType getRendererType();
+		void WaitForDevice();
 
 	};
 

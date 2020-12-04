@@ -60,6 +60,8 @@ namespace Renderer {
 
 	void Runtime::Release()
 	{
+		rhi->WaitForDevice();
+
 		for (auto &mat : materials) {
 			mat->Release();
 			delete mat;
