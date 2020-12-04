@@ -412,7 +412,6 @@ bool CVulkanCtx::InitSwapchain()
 	createInfo.oldSwapchain = VK_NULL_HANDLE;
 
 	VK_ASSERT(vkCreateSwapchainKHR(this->device, &createInfo, nullptr, &this->swapchain), "Failed to create VkSwapchain");
-	this->DebugSetObjectName(this->swapchain, VK_OBJECT_TYPE_SWAPCHAIN_KHR, "swapchain");
 
 	vkGetSwapchainImagesKHR(this->device, this->swapchain, &this->num_swapchain_images, nullptr);
 	this->swapchain_images.resize(this->num_swapchain_images);
@@ -460,9 +459,6 @@ bool CVulkanCtx::InitSwapchain()
 		VK_ASSERT(vkCreateFence(this->device, &fenceCreateInfo, nullptr, &this->swapchain_sync[i].fence), "Failed to create swapchain VkFence");
 		VK_ASSERT(vkCreateSemaphore(this->device, &semaphoreCreateInfo, nullptr, &this->swapchain_sync[i].wait_sync), "Failed to create swapchain VkSemaphore wait");
 		VK_ASSERT(vkCreateSemaphore(this->device, &semaphoreCreateInfo, nullptr, &this->swapchain_sync[i].wake_sync), "Failed to create swapchain VkSemaphore wake");
-		this->DebugSetObjectName(this->swapchain_sync[i].fence, VK_OBJECT_TYPE_FENCE, "swapchain sync fence");
-		this->DebugSetObjectName(this->swapchain_sync[i].wait_sync, VK_OBJECT_TYPE_SEMAPHORE, "swapchain sync semaphore wait");
-		this->DebugSetObjectName(this->swapchain_sync[i].wake_sync, VK_OBJECT_TYPE_SEMAPHORE, "swapchain sync semaphore wake");
 	}
 
 	VkCommandPoolCreateInfo cmdCreateInfo;
@@ -474,7 +470,6 @@ bool CVulkanCtx::InitSwapchain()
 	this->swapchain_command_pool.resize(this->num_swapchain_images);
 	for (i = 0; i < this->num_swapchain_images; i++) {
 		VK_ASSERT(vkCreateCommandPool(this->device, &cmdCreateInfo, nullptr, &this->swapchain_command_pool[i]), "Failed to create graphics VkCommandPool");
-		this->DebugSetObjectName(this->swapchain_command_pool[i], VK_OBJECT_TYPE_COMMAND_POOL, "graphics command pool");
 	}
 
 	VkCommandBufferAllocateInfo commandAllocInfo;
@@ -487,7 +482,6 @@ bool CVulkanCtx::InitSwapchain()
 	for (i = 0; i < this->num_swapchain_images; i++) {
 		commandAllocInfo.commandPool = this->swapchain_command_pool[i];
 		VK_ASSERT(vkAllocateCommandBuffers(this->device, &commandAllocInfo, &this->swapchain_command_bufs[i]), "Failed to allocate swapchain VkCommandBuffer");
-		this->DebugSetObjectName(this->swapchain_command_bufs[i], VK_OBJECT_TYPE_COMMAND_BUFFER, "swapchain command buffer");
 	}
 
 	VkAttachmentDescription colorAttachment;
@@ -585,6 +579,7 @@ void CVulkanCtx::CloseSwapchain()
 	this->swapchain_imageviews.clear();
 	this->swapchain_framebuffers.clear();
 	this->swapchain_command_bufs.clear();
+	this->swapchain_command_pool.clear();
 	this->swapchain_sync.clear();
 
 	this->num_swapchain_images = 0;
@@ -628,7 +623,6 @@ VkCommandBuffer CVulkanCtx::BeginSingleTimeCommands()
 	allocInfo.commandBufferCount = 1;
 
 	VK_ASSERT(vkAllocateCommandBuffers(this->device, &allocInfo, &command_buf), "failed to allocate transfer command buffer");
-	g_vulkanCtx->DebugSetObjectName(command_buf, VK_OBJECT_TYPE_COMMAND_BUFFER, "transfer command buffer");
 
 	VkCommandBufferBeginInfo beginInfo = {};
 	beginInfo.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_BEGIN_INFO;
@@ -649,7 +643,6 @@ void CVulkanCtx::EndSingleTimeCommands(VkCommandBuffer command_buf)
 	VkFence fence;
 
 	VK_ASSERT(vkCreateFence(this->device, &fenceCreateInfo, nullptr, &fence), "failed to create transfer fence");
-	this->DebugSetObjectName(fence, VK_OBJECT_TYPE_FENCE, "transfer fence");
 
 	VkSubmitInfo submitInfo = {};
 	submitInfo.sType = VK_STRUCTURE_TYPE_SUBMIT_INFO;
