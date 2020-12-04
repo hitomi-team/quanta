@@ -8,16 +8,12 @@ namespace Renderer {
 	{
 		if (!elements.size())
 			return false;
-		
+
 		this->elements = elements;
-		
+
 		mappedMemorySize = 0;
-		for (auto &i : this->elements) {
-			if (i.dataSize < 16)
-				i.dataSize = 16; // Cheaply align it to 16-bytes
-			
+		for (auto &i : this->elements)
 			mappedMemorySize += i.dataSize;
-		}
 
 		D3D11_BUFFER_DESC bufferDesc = {};
 		bufferDesc.ByteWidth = mappedMemorySize;
@@ -30,7 +26,7 @@ namespace Renderer {
 			Release();
 			return false;
 		}
-		
+
 		Map();
 		Flush();
 		Unmap();
@@ -44,8 +40,11 @@ namespace Renderer {
 			d3d11_global_context->Unmap(constantBuffer, 0);
 			mappedMemory = nullptr;
 		}
-		
+
 		D3D_SAFE_RELEASE(constantBuffer);
+
+		for (auto &i : this->elements)
+			delete[] i.data;
 	}
 
 	void D3D11ShaderParameterBuffer::Apply()
@@ -60,7 +59,7 @@ namespace Renderer {
 		d3d11_global_context->Map(constantBuffer, 0, D3D11_MAP_WRITE_DISCARD, 0, &mappedResource);
 		mappedMemory = (char *)mappedResource.pData;
 	}
-	
+
 	void D3D11ShaderParameterBuffer::Flush()
 	{
 		size_t stride = 0;
