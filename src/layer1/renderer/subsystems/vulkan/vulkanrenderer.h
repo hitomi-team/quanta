@@ -7,9 +7,13 @@
 #include "layer1/renderer/imgui/imgui_impl_sdl.h"
 #include "imgui_impl_vulkan.h"
 
-#include "vk_instance.h"
-#include "vk_device.h"
-#include "vk_surface.h"
+#include "vulkanctx.h"
+#include "vulkaninputlayout.h"
+#include "vulkanparameterbuffer.h"
+#include "vulkanindexbuffer.h"
+#include "vulkanvertexbuffer.h"
+#include "vulkantexture2d.h"
+#include "vulkanshader.h"
 
 namespace Renderer {
 
@@ -17,6 +21,9 @@ namespace Renderer {
 	public:
 		VulkanRenderer();
 		inline virtual ~VulkanRenderer() {}
+
+		// CVulkanParameterBuffer::Apply
+		inline Texture2D *GetTextureView(unsigned i) { return this->textureviews[i]; }
 
 		bool SetGraphicsMode(int width = WINDOW_DEFAULT_WIDTH, int height = WINDOW_DEFAULT_HEIGHT, bool fullscreen = false, bool borderless = false, bool resizable = false, bool vsync = true, int multisample = 0);
 		void Clear(unsigned flags, const glm::vec4& color = glm::vec4(0.0f, 0.0f, 0.0f, 0.0f), float depth = 1.0f, unsigned stencil = 0);
@@ -81,6 +88,7 @@ namespace Renderer {
 		void ImGuiEndFrame();
 
 		RendererType getRendererType();
+		void WaitForDevice();
 
 	private:
 		SDL_Window *window;
@@ -88,19 +96,31 @@ namespace Renderer {
 		bool isInitialized;
 
 		// Internal cache
-#if 0
-		VkRenderPass imGuiRenderPass;
-		VkPipelineCache imGuiPipelineCache;
-		VkDescriptorPool imGuiDescriptorPool;
-#endif
+		CVulkanCtx ctx;
+
+		Shader *current_shader;
+		VertexBuffer *current_vbo;
+		IndexBuffer *current_ibo;
+		RenderTarget *rendertargets[MAX_RENDERTARGETS];
+		Texture2D *textureviews[MAX_TEXTURE_UNITS];
+
+		VkViewport viewport;
+		VkRect2D scissor;
+
+		bool rendertargets_dirty;
+		bool textureviews_dirty;
+		bool rasterizerstate_dirty;
+
+		std::vector< CVulkanParameterBuffer * > parameter_bufs;
 
 		// internal functions
-		bool UpdateSwapchain(int width, int height, int multisample);
 		void PreDraw();
+		void ImGuiInit();
+		void ImGuiClose();
 
-		void InitializeImGui(int width, int height);
-		void CloseImGui();
 	};
+
+	extern VulkanRenderer *g_vulkanRenderer;
 
 }
 
