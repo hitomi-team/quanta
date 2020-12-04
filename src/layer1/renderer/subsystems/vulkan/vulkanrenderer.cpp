@@ -88,12 +88,10 @@ namespace Renderer {
 		VkResult res = vkAcquireNextImageKHR(this->ctx.device, this->ctx.swapchain, UINT64_MAX, this->ctx.swapchain_sync[this->ctx.current_image].wait_sync, VK_NULL_HANDLE, &this->ctx.acquire_image);
 		if (res == VK_ERROR_OUT_OF_DATE_KHR || res == VK_SUBOPTIMAL_KHR || res == VK_ERROR_SURFACE_LOST_KHR) {
 			this->WaitForDevice();
-			this->ImGuiClose();
 			this->ctx.CloseSwapchain();
 			this->ctx.InitSwapchain();
 			this->SetViewport(glm::vec4(0, 0, static_cast< float >(this->ctx.swapchain_extent.width), static_cast< float >(this->ctx.swapchain_extent.height)));
 			this->scissor.extent = this->ctx.swapchain_extent;
-			this->ImGuiInit();
 
 			return false;
 		}
@@ -154,12 +152,10 @@ namespace Renderer {
 		VkResult res = vkQueuePresentKHR(this->ctx.queues[this->ctx.present_queue], &presentInfo);
 		if (res == VK_ERROR_OUT_OF_DATE_KHR || res == VK_SUBOPTIMAL_KHR || res == VK_ERROR_SURFACE_LOST_KHR) {
 			this->WaitForDevice();
-			this->ImGuiClose();
 			this->ctx.CloseSwapchain();
 			this->ctx.InitSwapchain();
 			this->SetViewport(glm::vec4(0, 0, static_cast< float >(this->ctx.swapchain_extent.width), static_cast< float >(this->ctx.swapchain_extent.height)));
 			this->scissor.extent = this->ctx.swapchain_extent;
-			this->ImGuiInit();
 
 			return;
 		}
