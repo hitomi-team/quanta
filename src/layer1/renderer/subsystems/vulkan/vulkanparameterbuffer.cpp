@@ -10,7 +10,7 @@ bool CVulkanParameterBuffer::Setup(std::vector< Renderer::ShaderParameterElement
 	this->mem_size = 0;
 
 	for (auto &i : this->elements)
-		this->mem_size += i.dataSize;
+		this->mem_size += PCH_ALIGN(i.dataSize, 16);
 
 	this->buf.Setup(VK_BUFFER_USAGE_UNIFORM_BUFFER_BIT, VMA_MEMORY_USAGE_CPU_TO_GPU, this->mem_size);
 

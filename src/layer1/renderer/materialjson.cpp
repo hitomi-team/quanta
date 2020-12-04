@@ -32,16 +32,6 @@
 
 */
 
-constexpr uint32_t align(uint32_t what, uint32_t to)
-{
-	return (what + to - 1) & ~(to - 1);
-}
-
-constexpr uint32_t align_down(uint32_t what, uint32_t to)
-{
-	return (what / to) * to;
-}
-
 static const char *shader_exts[] = {
 	nullptr,
 	".dxbc",
@@ -172,7 +162,7 @@ namespace Renderer {
 				if (uniformValues[i].HasMember("mvp")) {
 					glm::mat4 matrix = glm::mat4(1.0f);
 
-					element.data = new char[align(sizeof(glm::mat4), 16)];
+					element.data = new char[PCH_ALIGN(sizeof(glm::mat4), 16)];
 					std::memcpy(element.data, &matrix, sizeof(glm::mat4));
 
 					element.dataSize = sizeof(glm::mat4);
@@ -180,7 +170,7 @@ namespace Renderer {
 				} else if (uniformValues[i].HasMember("time")) {
 					float time = 0.f;
 
-					element.data = new char[align(sizeof(float), 16)];
+					element.data = new char[PCH_ALIGN(sizeof(float), 16)];
 					std::memcpy(element.data, &time, sizeof(float));
 
 					element.dataSize = sizeof(float);

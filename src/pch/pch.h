@@ -39,3 +39,20 @@
 #ifndef ARRAY_SIZE
 #define ARRAY_SIZE(x) (sizeof((x)) / sizeof((x)[0]))
 #endif
+
+#ifndef PCH_ALIGN__
+#define PCH_ALIGN__
+
+template< typename T, typename U = T >
+static constexpr T PCH_ALIGN(T what, U to)
+{
+	return (what + to - 1) & ~(to - 1);
+}
+
+template< typename T, typename U = T >
+static constexpr T PCH_ALIGN_DOWN(T what, U to)
+{
+	return (what / to) * to;
+}
+
+#endif

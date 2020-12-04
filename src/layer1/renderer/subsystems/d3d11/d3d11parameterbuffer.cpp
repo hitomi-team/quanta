@@ -13,7 +13,7 @@ namespace Renderer {
 
 		mappedMemorySize = 0;
 		for (auto &i : this->elements)
-			mappedMemorySize += i.dataSize;
+			mappedMemorySize += PCH_ALIGN(i.dataSize, 16);
 
 		D3D11_BUFFER_DESC bufferDesc = {};
 		bufferDesc.ByteWidth = mappedMemorySize;
