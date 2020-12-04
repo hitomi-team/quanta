@@ -80,8 +80,8 @@ public:
 #endif
 	}
 
-	bool Init(SDL_Window *window, int width, int height);
-	bool InitSwapchain(int width, int height);
+	bool Init(SDL_Window *window);
+	bool InitSwapchain();
 	void CloseSwapchain();
 	void Close();
 

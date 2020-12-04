@@ -57,17 +57,25 @@ static VkPresentModeKHR VK_ChoosePresentMode(const std::vector< VkPresentModeKHR
 	return VK_PRESENT_MODE_FIFO_KHR;
 }
 
-static VkExtent2D VK_ChooseExtent(const VkSurfaceCapabilitiesKHR &caps, int width, int height)
+static VkExtent2D VK_ChooseExtent(const VkSurfaceCapabilitiesKHR &caps, SDL_Window *window)
 {
-	VkExtent2D extent = {
-		static_cast< uint32_t >(width),
-		static_cast< uint32_t >(height)
-	};
+	if (caps.currentExtent.width != UINT32_MAX) {
+		return caps.currentExtent;
+	} else {
+		int width, height;
 
-	extent.width = std::max(caps.minImageExtent.width, std::min(caps.maxImageExtent.width, extent.width));
-	extent.height = std::max(caps.minImageExtent.height, std::min(caps.maxImageExtent.height, extent.height));
+		SDL_Vulkan_GetDrawableSize(window, &width, &height);
 
-	return extent;
+		VkExtent2D extent = {
+			static_cast< uint32_t >(width),
+			static_cast< uint32_t >(height)
+		};
+
+		extent.width = std::max(caps.minImageExtent.width, std::min(caps.maxImageExtent.width, extent.width));
+		extent.height = std::max(caps.minImageExtent.height, std::min(caps.maxImageExtent.height, extent.height));
+
+		return extent;
+	}
 }
 
 void CVulkanSwapchainDetails::Query(VkPhysicalDevice adapter, VkSurfaceKHR surface)
@@ -338,16 +346,16 @@ bool CVulkanCtx::InitDevice()
 	return true;
 }
 
-bool CVulkanCtx::Init(SDL_Window *window, int width, int height)
+bool CVulkanCtx::Init(SDL_Window *window)
 {
 	g_vulkanCtx = this;
 
 	this->window = window;
-	return this->InitInstance() && this->InitDevice() && this->InitSwapchain(width, height);
+	return this->InitInstance() && this->InitDevice() && this->InitSwapchain();
 }
 
 // create a swapchain
-bool CVulkanCtx::InitSwapchain(int width, int height)
+bool CVulkanCtx::InitSwapchain()
 {
 	if (SDL_Vulkan_CreateSurface(this->window, this->instance, &this->surface) == SDL_FALSE) {
 		VK_ASSERT(0, "Failed to create SDL2 window vulkan surface");
@@ -359,7 +367,7 @@ bool CVulkanCtx::InitSwapchain(int width, int height)
 
 	VkSurfaceFormatKHR surfaceformat = VK_ChooseSurfaceFormat(details.formats);
 	VkPresentModeKHR presentmode = VK_ChoosePresentMode(details.presentmodes, VK_PRESENT_MODE_IMMEDIATE_KHR);
-	VkExtent2D extent = VK_ChooseExtent(details.caps, width, height);
+	VkExtent2D extent = VK_ChooseExtent(details.caps, this->window);
 
 	uint32_t imageCount = details.caps.minImageCount + 1;
 	imageCount = details.caps.maxImageCount > 0 ? std::max(imageCount, details.caps.maxImageCount) : imageCount;
@@ -537,8 +545,8 @@ bool CVulkanCtx::InitSwapchain(int width, int height)
 	framebufferCreateInfo.flags = 0;
 	framebufferCreateInfo.renderPass = this->swapchain_renderpass;
 	framebufferCreateInfo.attachmentCount = 1;
-	framebufferCreateInfo.width = width;
-	framebufferCreateInfo.height = height;
+	framebufferCreateInfo.width = this->swapchain_extent.width;
+	framebufferCreateInfo.height = this->swapchain_extent.height;
 	framebufferCreateInfo.layers = 1;
 
 	this->swapchain_framebuffers.resize(this->num_swapchain_images);
