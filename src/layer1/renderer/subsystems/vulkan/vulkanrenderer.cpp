@@ -357,7 +357,8 @@ namespace Renderer {
 
 	void VulkanRenderer::SetShaders(Shader *shader)
 	{
-		vkCmdBindPipeline(this->ctx.swapchain_command_bufs[this->ctx.current_image], VK_PIPELINE_BIND_POINT_GRAPHICS, reinterpret_cast< VkPipeline * >(shader->GetProgram())[0]);
+		if (this->current_shader != shader)
+			this->current_shader = shader;
 	}
 
 	void VulkanRenderer::SetVertexBuffer(VertexBuffer* buffer)
@@ -488,6 +489,8 @@ namespace Renderer {
 			return;
 
 		this->PreDraw();
+
+		vkCmdBindPipeline(this->ctx.swapchain_command_bufs[this->ctx.current_image], VK_PIPELINE_BIND_POINT_GRAPHICS, reinterpret_cast< VkPipeline * >(this->current_shader->GetProgram())[0]);
 
 		VkBuffer vbo = reinterpret_cast< VkBuffer * >(this->current_vbo->GetBuffer())[0];
 		VkDeviceSize offset = 0;
