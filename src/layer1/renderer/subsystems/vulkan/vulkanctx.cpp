@@ -131,7 +131,6 @@ bool CVulkanCtx::InitInstance()
 	debugCreateInfo.pNext = nullptr;
 	debugCreateInfo.flags = 0;
 	debugCreateInfo.messageSeverity = \
-		VK_DEBUG_UTILS_MESSAGE_SEVERITY_INFO_BIT_EXT | \
 		VK_DEBUG_UTILS_MESSAGE_SEVERITY_WARNING_BIT_EXT |
 		VK_DEBUG_UTILS_MESSAGE_SEVERITY_ERROR_BIT_EXT;
 	debugCreateInfo.messageType = \
@@ -599,6 +598,7 @@ void CVulkanCtx::Close()
 	vkDestroyDescriptorPool(this->device, this->desc_pool, nullptr);
 	vkDestroyDescriptorSetLayout(this->device, this->desc_layout, nullptr);
 
+	vkDestroyCommandPool(this->device, this->graphics_command_pool, nullptr);
 	vkDestroyCommandPool(this->device, this->transfer_command_pool, nullptr);
 	vkDestroyCommandPool(this->device, this->compute_command_pool, nullptr);
 
