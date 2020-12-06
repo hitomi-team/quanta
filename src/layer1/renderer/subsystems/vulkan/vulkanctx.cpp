@@ -372,8 +372,11 @@ bool CVulkanCtx::InitSwapchain()
 	VkPresentModeKHR presentmode = VK_ChoosePresentMode(details.presentmodes, VK_PRESENT_MODE_IMMEDIATE_KHR);
 	VkExtent2D extent = VK_ChooseExtent(details.caps, this->window);
 
+	this->min_num_swapchain_images = details.caps.minImageCount;
+
 	uint32_t imageCount = details.caps.minImageCount + 1;
-	imageCount = details.caps.maxImageCount > 0 ? std::max(imageCount, details.caps.maxImageCount) : imageCount;
+	if (details.caps.maxImageCount > 0 && imageCount > details.caps.maxImageCount)
+		imageCount = details.caps.maxImageCount;
 
 	for (auto &i : this->queue_family_indices) {
 		VkBool32 present_support;

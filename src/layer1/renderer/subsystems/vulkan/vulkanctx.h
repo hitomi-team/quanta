@@ -39,6 +39,7 @@ public:
 	std::vector< VkCommandPool > swapchain_command_pool;
 	std::vector< VkCommandBuffer > swapchain_command_bufs;
 	std::vector< CVulkanSwapchainSync > swapchain_sync;
+	uint32_t min_num_swapchain_images;
 	uint32_t num_swapchain_images;
 	uint32_t current_image;
 	uint32_t acquire_image;

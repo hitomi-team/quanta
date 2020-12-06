@@ -546,7 +546,7 @@ namespace Renderer {
 		initInfo.QueueFamily = this->ctx.queue_family_indices[0];
 		initInfo.Queue = this->ctx.queues[0];
 		initInfo.DescriptorPool = this->ctx.desc_pool;
-		initInfo.MinImageCount = this->ctx.num_swapchain_images - 1;
+		initInfo.MinImageCount = this->ctx.min_num_swapchain_images;
 		initInfo.ImageCount = this->ctx.num_swapchain_images;
 
 		ImGui_ImplVulkan_Init(&initInfo, this->ctx.swapchain_renderpass);
