@@ -283,8 +283,12 @@ bool CVulkanCtx::InitDevice()
 	VkCommandPoolCreateInfo cmdCreateInfo;
 	cmdCreateInfo.sType = VK_STRUCTURE_TYPE_COMMAND_POOL_CREATE_INFO;
 	cmdCreateInfo.pNext = nullptr;
-
 	cmdCreateInfo.flags = VK_COMMAND_POOL_CREATE_TRANSIENT_BIT;
+
+	cmdCreateInfo.queueFamilyIndex = this->queue_family_indices[0];
+	VK_ASSERT(vkCreateCommandPool(this->device, &cmdCreateInfo, nullptr, &this->graphics_command_pool), "Failed to create graphics VkCommandPool");
+	this->DebugSetObjectName(this->graphics_command_pool, VK_OBJECT_TYPE_COMMAND_POOL, "graphics command pool");
+
 	cmdCreateInfo.queueFamilyIndex = this->queue_family_indices[1];
 	VK_ASSERT(vkCreateCommandPool(this->device, &cmdCreateInfo, nullptr, &this->transfer_command_pool), "Failed to create transfer VkCommandPool");
 	this->DebugSetObjectName(this->transfer_command_pool, VK_OBJECT_TYPE_COMMAND_POOL, "transfer command pool");
@@ -611,14 +615,14 @@ void CVulkanCtx::Close()
 	g_vulkanCtx = nullptr;
 }
 
-VkCommandBuffer CVulkanCtx::BeginSingleTimeCommands()
+VkCommandBuffer CVulkanCtx::BeginSingleTimeCommands(VkCommandPool pool)
 {
 	VkCommandBuffer command_buf;
 
 	VkCommandBufferAllocateInfo allocInfo;
 	allocInfo.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_ALLOCATE_INFO;
 	allocInfo.pNext = nullptr;
-	allocInfo.commandPool = this->transfer_command_pool;
+	allocInfo.commandPool = pool;
 	allocInfo.level = VK_COMMAND_BUFFER_LEVEL_PRIMARY;
 	allocInfo.commandBufferCount = 1;
 
@@ -633,7 +637,7 @@ VkCommandBuffer CVulkanCtx::BeginSingleTimeCommands()
 	return command_buf;
 }
 
-void CVulkanCtx::EndSingleTimeCommands(VkCommandBuffer command_buf)
+void CVulkanCtx::EndSingleTimeCommands(VkCommandPool pool, VkQueue queue, VkCommandBuffer command_buf)
 {
 	vkEndCommandBuffer(command_buf);
 
@@ -649,11 +653,11 @@ void CVulkanCtx::EndSingleTimeCommands(VkCommandBuffer command_buf)
 	submitInfo.commandBufferCount = 1;
 	submitInfo.pCommandBuffers = &command_buf;
 
-	vkQueueSubmit(this->queues[1], 1, &submitInfo, fence);
+	vkQueueSubmit(queue, 1, &submitInfo, fence);
 	vkWaitForFences(this->device, 1, &fence, VK_TRUE, UINT64_MAX);
 
 	vkDestroyFence(this->device, fence, nullptr);
-	vkFreeCommandBuffers(this->device, this->transfer_command_pool, 1, &command_buf);
+	vkFreeCommandBuffers(this->device, pool, 1, &command_buf);
 }
 
 #ifdef __DEBUG

@@ -12,7 +12,13 @@ bool CVulkanParameterBuffer::Setup(std::vector< Renderer::ShaderParameterElement
 	for (auto &i : this->elements)
 		this->mem_size += PCH_ALIGN(i.dataSize, 16);
 
-	this->buf.Setup(VK_BUFFER_USAGE_UNIFORM_BUFFER_BIT, VMA_MEMORY_USAGE_CPU_TO_GPU, this->mem_size);
+	CVulkanBufferInitInfo initInfo = {};
+	initInfo.usage = VK_BUFFER_USAGE_UNIFORM_BUFFER_BIT;
+	initInfo.reqMemFlags = VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT;
+	initInfo.prefMemFlags = VK_MEMORY_PROPERTY_HOST_CACHED_BIT;
+	initInfo.vmaUsage = VMA_MEMORY_USAGE_CPU_TO_GPU;
+
+	this->buf.Setup(initInfo, this->mem_size);
 
 	VkDescriptorSetAllocateInfo allocInfo;
 	allocInfo.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_SET_ALLOCATE_INFO;

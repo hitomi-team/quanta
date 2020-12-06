@@ -5,17 +5,17 @@
 
 void CVulkanBuffer::CopyBuffer(VkBuffer src, VkBuffer dst, uint64_t size, uint64_t offset)
 {
-	VkCommandBuffer transfer = g_vulkanCtx->BeginSingleTimeCommands();
+	VkCommandBuffer transfer = g_vulkanCtx->BeginSingleTimeCommands(g_vulkanCtx->transfer_command_pool);
 
 	VkBufferCopy region = {};
 	region.size = size;
 	region.dstOffset = offset;
 	vkCmdCopyBuffer(transfer, src, dst, 1, &region);
 
-	g_vulkanCtx->EndSingleTimeCommands(transfer);
+	g_vulkanCtx->EndSingleTimeCommands(g_vulkanCtx->transfer_command_pool, g_vulkanCtx->queues[1], transfer);
 }
 
-bool CVulkanBuffer::Setup(VkBufferUsageFlags usage, VmaMemoryUsage mem_usage, uint64_t size)
+bool CVulkanBuffer::Setup(CVulkanBufferInitInfo &initInfo, uint64_t size)
 {
 	this->buf_size = size;
 	this->mem_usage = mem_usage;
@@ -23,10 +23,14 @@ bool CVulkanBuffer::Setup(VkBufferUsageFlags usage, VmaMemoryUsage mem_usage, ui
 	VkBufferCreateInfo bufCreateInfo = {};
 	bufCreateInfo.sType = VK_STRUCTURE_TYPE_BUFFER_CREATE_INFO;
 	bufCreateInfo.size = size;
-	bufCreateInfo.usage = usage | VK_BUFFER_USAGE_TRANSFER_SRC_BIT | VK_BUFFER_USAGE_TRANSFER_DST_BIT;
+	bufCreateInfo.usage = initInfo.usage;
+	bufCreateInfo.sharingMode = VK_SHARING_MODE_EXCLUSIVE;
 
 	VmaAllocationCreateInfo allocCreateInfo = {};
-	allocCreateInfo.usage = mem_usage;
+	allocCreateInfo.usage = initInfo.vmaUsage;
+	allocCreateInfo.flags = initInfo.vmaFlags;
+	allocCreateInfo.requiredFlags = initInfo.reqMemFlags;
+	allocCreateInfo.preferredFlags = initInfo.prefMemFlags;
 
 	vmaCreateBuffer(g_vulkanCtx->allocator, &bufCreateInfo, &allocCreateInfo, &this->buf, &this->alloc, nullptr);
 
@@ -53,10 +57,13 @@ void CVulkanBuffer::Upload(const void *data, uint64_t size, uint64_t offset)
 		createInfo.sType = VK_STRUCTURE_TYPE_BUFFER_CREATE_INFO;
 		createInfo.size = size;
 		createInfo.usage = VK_BUFFER_USAGE_TRANSFER_SRC_BIT;
+		createInfo.sharingMode = VK_SHARING_MODE_EXCLUSIVE;
 
 		VmaAllocationCreateInfo allocCreateInfo = {};
 		allocCreateInfo.usage = VMA_MEMORY_USAGE_CPU_ONLY;
 		allocCreateInfo.flags = VMA_ALLOCATION_CREATE_MAPPED_BIT;
+		allocCreateInfo.requiredFlags = VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT;
+		allocCreateInfo.preferredFlags = VK_MEMORY_PROPERTY_HOST_CACHED_BIT;
 
 		vmaCreateBuffer(g_vulkanCtx->allocator, &createInfo, &allocCreateInfo, &staging_buf, &staging_alloc, &staging_alloc_info);
 		std::memcpy(staging_alloc_info.pMappedData, data, size);

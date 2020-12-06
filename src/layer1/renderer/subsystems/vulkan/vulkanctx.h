@@ -53,6 +53,7 @@ public:
 
 	VkPipelineLayout pipeline_layout;
 
+	VkCommandPool graphics_command_pool;
 	VkCommandPool transfer_command_pool;
 	VkCommandPool compute_command_pool;
 
@@ -71,6 +72,7 @@ public:
 		this->device = VK_NULL_HANDLE;
 		this->swapchain = VK_NULL_HANDLE;
 		this->desc_pool = VK_NULL_HANDLE;
+		this->graphics_command_pool = VK_NULL_HANDLE;
 		this->transfer_command_pool = VK_NULL_HANDLE;
 		this->compute_command_pool = VK_NULL_HANDLE;
 		this->current_image = 0;
@@ -85,8 +87,8 @@ public:
 	void CloseSwapchain();
 	void Close();
 
-	VkCommandBuffer BeginSingleTimeCommands();
-	void EndSingleTimeCommands(VkCommandBuffer command_buf);
+	VkCommandBuffer BeginSingleTimeCommands(VkCommandPool pool);
+	void EndSingleTimeCommands(VkCommandPool pool, VkQueue queue, VkCommandBuffer command_buf);
 
 	// these get disabled and turned into dummy inline functions during release - should hopefully be optimized out.
 #ifdef __DEBUG

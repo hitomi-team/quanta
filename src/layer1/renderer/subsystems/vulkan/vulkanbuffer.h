@@ -3,6 +3,14 @@
 
 #include "vulkanrequired.h"
 
+struct CVulkanBufferInitInfo {
+	VkBufferUsageFlags usage;
+	VkMemoryPropertyFlags reqMemFlags;
+	VkMemoryPropertyFlags prefMemFlags;
+	VmaMemoryUsage vmaUsage;
+	VmaAllocationCreateFlags vmaFlags;
+};
+
 class CVulkanBuffer {
 public:
 	inline CVulkanBuffer() { this->ResetCache(); }
@@ -15,7 +23,7 @@ public:
 		this->host_mem = nullptr;
 	}
 
-	bool Setup(VkBufferUsageFlags usage, VmaMemoryUsage mem_usage, uint64_t size);
+	bool Setup(CVulkanBufferInitInfo &initInfo, uint64_t size);
 	void Release();
 
 	void Upload(const void *data, uint64_t size, uint64_t offset);

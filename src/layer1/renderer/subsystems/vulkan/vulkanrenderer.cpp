@@ -139,7 +139,7 @@ namespace Renderer {
 		submitInfo.commandBufferCount = 1;
 		submitInfo.pCommandBuffers = &this->ctx.swapchain_command_bufs[this->ctx.current_image];
 
-		vkQueueSubmit(this->ctx.queues[0], 1, &submitInfo, this->ctx.swapchain_sync[this->ctx.current_image].fence);
+		VK_ASSERT(vkQueueSubmit(this->ctx.queues[0], 1, &submitInfo, this->ctx.swapchain_sync[this->ctx.current_image].fence), "Failed to submit to graphics queue");
 
 		VkPresentInfoKHR presentInfo = {};
 		presentInfo.sType = VK_STRUCTURE_TYPE_PRESENT_INFO_KHR;
@@ -548,9 +548,9 @@ namespace Renderer {
 
 		ImGui_ImplVulkan_Init(&initInfo, this->ctx.swapchain_renderpass);
 
-		VkCommandBuffer transfer = this->ctx.BeginSingleTimeCommands();
+		VkCommandBuffer transfer = this->ctx.BeginSingleTimeCommands(this->ctx.graphics_command_pool);
 		ImGui_ImplVulkan_CreateFontsTexture(transfer);
-		this->ctx.EndSingleTimeCommands(transfer);
+		this->ctx.EndSingleTimeCommands(this->ctx.graphics_command_pool, this->ctx.queues[0], transfer);
 	}
 
 	void VulkanRenderer::ImGuiClose()

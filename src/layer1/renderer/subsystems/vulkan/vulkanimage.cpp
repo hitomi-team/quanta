@@ -58,7 +58,7 @@ void CVulkanImage::Release()
 
 void CVulkanImage::TransitionLayout(VkAccessFlags src_access, VkAccessFlags dst_access, VkImageLayout old_layout, VkImageLayout new_layout, VkPipelineStageFlags src_stage, VkPipelineStageFlags dst_stage)
 {
-	VkCommandBuffer transfer = g_vulkanCtx->BeginSingleTimeCommands();
+	VkCommandBuffer transfer = g_vulkanCtx->BeginSingleTimeCommands(g_vulkanCtx->graphics_command_pool);
 
 	VkImageMemoryBarrier barrier = {};
 	barrier.sType = VK_STRUCTURE_TYPE_IMAGE_MEMORY_BARRIER;
@@ -77,12 +77,12 @@ void CVulkanImage::TransitionLayout(VkAccessFlags src_access, VkAccessFlags dst_
 
 	vkCmdPipelineBarrier(transfer, src_stage, dst_stage, 0, 0, nullptr, 0, nullptr, 1, &barrier);
 
-	g_vulkanCtx->EndSingleTimeCommands(transfer);
+	g_vulkanCtx->EndSingleTimeCommands(g_vulkanCtx->graphics_command_pool, g_vulkanCtx->queues[0], transfer);
 }
 
 void CVulkanImage::CopyBufferToImage(CVulkanBuffer &buf)
 {
-	VkCommandBuffer transfer = g_vulkanCtx->BeginSingleTimeCommands();
+	VkCommandBuffer transfer = g_vulkanCtx->BeginSingleTimeCommands(g_vulkanCtx->transfer_command_pool);
 
 	VkBufferImageCopy region = {};
 	region.bufferOffset = 0;
@@ -97,5 +97,5 @@ void CVulkanImage::CopyBufferToImage(CVulkanBuffer &buf)
 
 	vkCmdCopyBufferToImage(transfer, buf.GetBuffer(), this->image, VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL, 1, &region);
 
-	g_vulkanCtx->EndSingleTimeCommands(transfer);
+	g_vulkanCtx->EndSingleTimeCommands(g_vulkanCtx->transfer_command_pool, g_vulkanCtx->queues[1], transfer);
 }

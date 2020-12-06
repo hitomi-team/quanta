@@ -29,7 +29,13 @@ bool CVulkanTexture2D::SetData(unsigned char *data, unsigned width, unsigned hei
 
 	uint64_t imgsize = 4*width*height;
 
-	buf.Setup(0, VMA_MEMORY_USAGE_CPU_ONLY, imgsize);
+	CVulkanBufferInitInfo initInfo = {};
+	initInfo.usage = VK_BUFFER_USAGE_TRANSFER_SRC_BIT;
+	initInfo.reqMemFlags = VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT;
+	initInfo.prefMemFlags = VK_MEMORY_PROPERTY_HOST_CACHED_BIT;
+	initInfo.vmaUsage = VMA_MEMORY_USAGE_CPU_ONLY;
+
+	buf.Setup(initInfo, imgsize);
 	buf.Upload(data, imgsize, 0);
 
 	image = new CVulkanImage;
