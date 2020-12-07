@@ -20,7 +20,9 @@ static VkBool32 vkdbgcallback(VkDebugUtilsMessageSeverityFlagBitsEXT message_sev
 	(void)message_severity;
 	(void)message_types;
 
-	global_log.Debug(FMT_STRING("[vulkan : ctx 0x{:016X}] {}"), reinterpret_cast< uintptr_t >(user_data), callback_data->pMessage);
+	CVulkanCtx *ctx = reinterpret_cast< CVulkanCtx * >(user_data);
+
+	global_log.Debug(FMT_STRING("[Frame: {}] {}"), ctx->frame_counter, callback_data->pMessage);
 
 	return vkdbgcallback_fin();
 }
@@ -510,7 +512,7 @@ bool CVulkanCtx::InitSwapchain()
 	colorAttachment.flags = 0;
 	colorAttachment.format = this->swapchain_format;
 	colorAttachment.samples = VK_SAMPLE_COUNT_1_BIT;
-	colorAttachment.loadOp = VK_ATTACHMENT_LOAD_OP_CLEAR;
+	colorAttachment.loadOp = VK_ATTACHMENT_LOAD_OP_DONT_CARE;
 	colorAttachment.storeOp = VK_ATTACHMENT_STORE_OP_STORE;
 	colorAttachment.stencilLoadOp = VK_ATTACHMENT_LOAD_OP_DONT_CARE;
 	colorAttachment.stencilStoreOp = VK_ATTACHMENT_STORE_OP_DONT_CARE;
@@ -607,6 +609,7 @@ void CVulkanCtx::CloseSwapchain()
 	this->num_swapchain_images = 0;
 	this->current_image = 0;
 	this->acquire_image = 0;
+	this->frame_counter = 0;
 	this->present_queue = VK_NULL_HANDLE;
 }
 

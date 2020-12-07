@@ -103,15 +103,11 @@ namespace Renderer {
 		beginInfo.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_BEGIN_INFO;
 		beginInfo.flags = VK_COMMAND_BUFFER_USAGE_ONE_TIME_SUBMIT_BIT;
 
-		static const VkClearValue default_clear = {};
-
 		VkRenderPassBeginInfo renderPassBegin = {};
 		renderPassBegin.sType = VK_STRUCTURE_TYPE_RENDER_PASS_BEGIN_INFO;
 		renderPassBegin.renderPass = this->ctx.swapchain_renderpass;
 		renderPassBegin.framebuffer = this->ctx.swapchain_framebuffers[this->ctx.current_image];
 		renderPassBegin.renderArea.extent = this->ctx.swapchain_extent;
-		renderPassBegin.clearValueCount = 1;
-		renderPassBegin.pClearValues = &default_clear;
 
 		vkResetCommandPool(this->ctx.device, this->ctx.swapchain_command_pool[this->ctx.current_image], 0);
 		vkBeginCommandBuffer(this->ctx.swapchain_command_bufs[this->ctx.current_image], &beginInfo);
@@ -174,9 +170,7 @@ namespace Renderer {
 		submitInfo.commandBufferCount = 1;
 		submitInfo.pCommandBuffers = &this->ctx.swapchain_command_bufs[this->ctx.current_image];
 
-
 		VK_ASSERT(vkQueueSubmit(this->ctx.queues[0], 1, &submitInfo, this->ctx.swapchain_sync[this->ctx.current_image].fence), "Failed to submit to graphics queue");
-
 
 		VkPresentInfoKHR presentInfo = {};
 		presentInfo.sType = VK_STRUCTURE_TYPE_PRESENT_INFO_KHR;
@@ -198,6 +192,7 @@ namespace Renderer {
 		}
 
 		this->ctx.current_image = (this->ctx.current_image + 1) % this->ctx.num_swapchain_images;
+		this->ctx.frame_counter++;
 	}
 
 	void VulkanRenderer::Clear(unsigned flags, const glm::vec4& color, float depth, unsigned stencil)

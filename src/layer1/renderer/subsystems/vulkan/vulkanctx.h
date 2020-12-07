@@ -44,6 +44,7 @@ public:
 	uint32_t current_image;
 	uint32_t acquire_image;
 	uint32_t present_queue;
+	uint64_t frame_counter;
 
 	// [0] - graphics; [1] - transfer; [2] - compute
 	uint32_t queue_family_indices[3];
@@ -78,6 +79,7 @@ public:
 		this->compute_command_pool = VK_NULL_HANDLE;
 		this->current_image = 0;
 		this->acquire_image = 0;
+		this->frame_counter = 0;
 #ifdef __DEBUG
 		this->debug_messenger = VK_NULL_HANDLE;
 #endif
