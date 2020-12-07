@@ -19,7 +19,7 @@ public:
 	bool Setup(unsigned w, unsigned h, VkFormat format, VkImageUsageFlags usage, VkImageAspectFlags aspect_mask);
 	void Release();
 
-	void TransitionLayout(VkAccessFlags src_access, VkAccessFlags dst_access, VkImageLayout old_layout, VkImageLayout new_layout, VkPipelineStageFlags src_stage, VkPipelineStageFlags dst_stage);
+	void TransitionLayout(VkAccessFlags src_access, VkAccessFlags dst_access, VkImageLayout old_layout, VkImageLayout new_layout, VkPipelineStageFlags src_stage, VkPipelineStageFlags dst_stage, uint32_t src_queue, uint32_t dst_queue);
 	void CopyBufferToImage(CVulkanBuffer &buf);
 
 	inline VkImage GetImage() { return this->image; }

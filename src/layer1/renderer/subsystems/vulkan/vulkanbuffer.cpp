@@ -12,13 +12,25 @@ void CVulkanBuffer::CopyBuffer(VkBuffer src, VkBuffer dst, uint64_t size, uint64
 	region.dstOffset = offset;
 	vkCmdCopyBuffer(transfer, src, dst, 1, &region);
 
+	VkBufferMemoryBarrier barrier1;
+	barrier1.sType = VK_STRUCTURE_TYPE_BUFFER_MEMORY_BARRIER;
+	barrier1.pNext = nullptr;
+	barrier1.srcAccessMask = VK_ACCESS_TRANSFER_WRITE_BIT;
+	barrier1.dstAccessMask = VK_ACCESS_MEMORY_READ_BIT;
+	barrier1.srcQueueFamilyIndex = g_vulkanCtx->queue_family_indices[1];
+	barrier1.dstQueueFamilyIndex = g_vulkanCtx->queue_family_indices[0];
+	barrier1.buffer = dst;
+	barrier1.offset = offset;
+	barrier1.size = size;
+	vkCmdPipelineBarrier(transfer, VK_PIPELINE_STAGE_TRANSFER_BIT, VK_PIPELINE_STAGE_ALL_COMMANDS_BIT, 0, 0, nullptr, 1, &barrier1, 0, nullptr);
+
 	g_vulkanCtx->EndSingleTimeCommands(g_vulkanCtx->transfer_command_pool, g_vulkanCtx->queues[1], transfer);
 }
 
 bool CVulkanBuffer::Setup(CVulkanBufferInitInfo &initInfo, uint64_t size)
 {
 	this->buf_size = size;
-	this->mem_usage = mem_usage;
+	this->mem_usage = initInfo.vmaUsage;
 
 	VkBufferCreateInfo bufCreateInfo = {};
 	bufCreateInfo.sType = VK_STRUCTURE_TYPE_BUFFER_CREATE_INFO;

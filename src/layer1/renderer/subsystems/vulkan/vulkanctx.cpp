@@ -26,7 +26,7 @@ static VkBool32 vkdbgcallback(VkDebugUtilsMessageSeverityFlagBitsEXT message_sev
 }
 #endif
 
-static uint32_t VK_FindQueueFamily(const std::vector< VkQueueFamilyProperties > &queueFamilies, VkQueueFlags flags, VkQueueFlags mask)
+static uint32_t VK_FindQueueFamily(const std::vector< VkQueueFamilyProperties > &queueFamilies, VkQueueFlags mask, VkQueueFlags flags)
 {
 	for (uint32_t i = 0; i < queueFamilies.size(); i++) {
 		if ((queueFamilies[i].queueFlags & mask) == flags)
@@ -210,7 +210,7 @@ bool CVulkanCtx::InitDevice()
 	qcreateInfo.pQueuePriorities = &priority;
 
 	if (graphics_qfam == VK_QUEUE_FAMILY_IGNORED) {
-		global_log.Error(FMT_STRING("VulkanDevice {:04X}:{:04X} \"{}\" - does not support graphics queue!"), this->adapter_props.vendorID, this->adapter_props.deviceID, this->adapter_props.deviceName);
+		global_log.Error(FMT_STRING("Vulkan device does not support graphics queue!"), this->adapter_props.vendorID, this->adapter_props.deviceID, this->adapter_props.deviceName);
 		return false;
 	} else {
 		qcreateInfo.queueFamilyIndex = graphics_qfam;
@@ -218,6 +218,7 @@ bool CVulkanCtx::InitDevice()
 	}
 
 	if (compute_qfam == VK_QUEUE_FAMILY_IGNORED) {
+		global_log.Warn(FMT_STRING("Vulkan device does not support transfer queue!"), this->adapter_props.vendorID, this->adapter_props.deviceID, this->adapter_props.deviceName);
 		compute_qfam = graphics_qfam;
 	} else {
 		qcreateInfo.queueFamilyIndex = compute_qfam;
@@ -225,6 +226,7 @@ bool CVulkanCtx::InitDevice()
 	}
 
 	if (transfer_qfam == VK_QUEUE_FAMILY_IGNORED) {
+		global_log.Warn(FMT_STRING("Vulkan device does not support compute queue!"), this->adapter_props.vendorID, this->adapter_props.deviceID, this->adapter_props.deviceName);
 		transfer_qfam = compute_qfam;
 	} else {
 		qcreateInfo.queueFamilyIndex = transfer_qfam;
@@ -399,18 +401,9 @@ bool CVulkanCtx::InitSwapchain()
 	createInfo.imageExtent = extent;
 	createInfo.imageArrayLayers = 1;
 	createInfo.imageUsage = VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT;
-
-	uint32_t families[] = { this->queue_family_indices[0], this->present_queue };
-	if (this->queue_family_indices[0] != this->present_queue) {
-		createInfo.imageSharingMode = VK_SHARING_MODE_CONCURRENT;
-		createInfo.queueFamilyIndexCount = 2;
-		createInfo.pQueueFamilyIndices = families;
-	} else {
-		createInfo.imageSharingMode = VK_SHARING_MODE_EXCLUSIVE;
-		createInfo.queueFamilyIndexCount = 1;
-		createInfo.pQueueFamilyIndices = &this->queue_family_indices[0];
-	}
-
+	createInfo.imageSharingMode = VK_SHARING_MODE_EXCLUSIVE;
+	createInfo.queueFamilyIndexCount = 0;
+	createInfo.pQueueFamilyIndices = nullptr;
 	createInfo.preTransform = details.caps.currentTransform;
 	createInfo.compositeAlpha = VK_COMPOSITE_ALPHA_OPAQUE_BIT_KHR;
 	createInfo.presentMode = presentmode;
@@ -422,6 +415,30 @@ bool CVulkanCtx::InitSwapchain()
 	vkGetSwapchainImagesKHR(this->device, this->swapchain, &this->num_swapchain_images, nullptr);
 	this->swapchain_images.resize(this->num_swapchain_images);
 	vkGetSwapchainImagesKHR(this->device, this->swapchain, &this->num_swapchain_images, this->swapchain_images.data());
+
+	VkCommandBuffer buffer = this->BeginSingleTimeCommands(this->graphics_command_pool);
+
+	uint32_t i;
+	for (i = 0; i < this->num_swapchain_images; i++) {
+		VkImageMemoryBarrier swapchainImageBarrier = {};
+		swapchainImageBarrier.sType = VK_STRUCTURE_TYPE_IMAGE_MEMORY_BARRIER;
+		swapchainImageBarrier.srcAccessMask = 0;
+		swapchainImageBarrier.dstAccessMask = VK_ACCESS_MEMORY_READ_BIT;
+		swapchainImageBarrier.oldLayout = VK_IMAGE_LAYOUT_UNDEFINED;
+		swapchainImageBarrier.newLayout = VK_IMAGE_LAYOUT_PRESENT_SRC_KHR;
+		swapchainImageBarrier.srcQueueFamilyIndex = this->queue_family_indices[0];
+		swapchainImageBarrier.dstQueueFamilyIndex = this->present_queue;
+		swapchainImageBarrier.image = this->swapchain_images[i];
+		swapchainImageBarrier.subresourceRange.aspectMask = VK_IMAGE_ASPECT_COLOR_BIT;
+		swapchainImageBarrier.subresourceRange.baseMipLevel = 0;
+		swapchainImageBarrier.subresourceRange.layerCount = 1;
+		swapchainImageBarrier.subresourceRange.baseArrayLayer = 0;
+		swapchainImageBarrier.subresourceRange.levelCount = 1;
+
+		vkCmdPipelineBarrier(buffer, VK_PIPELINE_STAGE_TOP_OF_PIPE_BIT, VK_PIPELINE_STAGE_TOP_OF_PIPE_BIT, 0, 0, nullptr, 0, nullptr, 1, &swapchainImageBarrier);
+	}
+
+	this->EndSingleTimeCommands(this->graphics_command_pool, this->queues[0], buffer);
 
 	this->swapchain_format = surfaceformat.format;
 	this->swapchain_extent = extent;
@@ -444,7 +461,6 @@ bool CVulkanCtx::InitSwapchain()
 	viewCreateInfo.subresourceRange.baseArrayLayer = 0;
 	viewCreateInfo.subresourceRange.layerCount = 1;
 
-	uint32_t i;
 	for (i = 0; i < this->num_swapchain_images; i++) {
 		viewCreateInfo.image = this->swapchain_images[i];
 		VK_ASSERT(vkCreateImageView(this->device, &viewCreateInfo, nullptr, &this->swapchain_imageviews[i]), "Failed to create swapchain VkImageView");
@@ -498,8 +514,8 @@ bool CVulkanCtx::InitSwapchain()
 	colorAttachment.storeOp = VK_ATTACHMENT_STORE_OP_STORE;
 	colorAttachment.stencilLoadOp = VK_ATTACHMENT_LOAD_OP_DONT_CARE;
 	colorAttachment.stencilStoreOp = VK_ATTACHMENT_STORE_OP_DONT_CARE;
-	colorAttachment.initialLayout = VK_IMAGE_LAYOUT_UNDEFINED;
-	colorAttachment.finalLayout = VK_IMAGE_LAYOUT_PRESENT_SRC_KHR;
+	colorAttachment.initialLayout = VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL;
+	colorAttachment.finalLayout = VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL;
 
 	VkAttachmentReference colorAttachmentRef;
 	colorAttachmentRef.attachment = 0;

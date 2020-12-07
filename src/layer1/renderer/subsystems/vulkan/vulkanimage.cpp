@@ -56,7 +56,7 @@ void CVulkanImage::Release()
 	this->ResetCache();
 }
 
-void CVulkanImage::TransitionLayout(VkAccessFlags src_access, VkAccessFlags dst_access, VkImageLayout old_layout, VkImageLayout new_layout, VkPipelineStageFlags src_stage, VkPipelineStageFlags dst_stage)
+void CVulkanImage::TransitionLayout(VkAccessFlags src_access, VkAccessFlags dst_access, VkImageLayout old_layout, VkImageLayout new_layout, VkPipelineStageFlags src_stage, VkPipelineStageFlags dst_stage, uint32_t src_queue, uint32_t dst_queue)
 {
 	VkCommandBuffer transfer = g_vulkanCtx->BeginSingleTimeCommands(g_vulkanCtx->graphics_command_pool);
 
@@ -66,8 +66,8 @@ void CVulkanImage::TransitionLayout(VkAccessFlags src_access, VkAccessFlags dst_
 	barrier.dstAccessMask = dst_access;
 	barrier.oldLayout = old_layout;
 	barrier.newLayout = new_layout;
-	barrier.srcQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED;
-	barrier.dstQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED;
+	barrier.srcQueueFamilyIndex = src_queue;
+	barrier.dstQueueFamilyIndex = dst_queue;
 	barrier.image = this->image;
 	barrier.subresourceRange.aspectMask = VK_IMAGE_ASPECT_COLOR_BIT;
 	barrier.subresourceRange.baseMipLevel = 0;

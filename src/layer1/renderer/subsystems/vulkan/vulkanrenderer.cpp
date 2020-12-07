@@ -116,6 +116,23 @@ namespace Renderer {
 		vkResetCommandPool(this->ctx.device, this->ctx.swapchain_command_pool[this->ctx.current_image], 0);
 		vkBeginCommandBuffer(this->ctx.swapchain_command_bufs[this->ctx.current_image], &beginInfo);
 
+		VkImageMemoryBarrier swapchainImageBarrier = {};
+		swapchainImageBarrier.sType = VK_STRUCTURE_TYPE_IMAGE_MEMORY_BARRIER;
+		swapchainImageBarrier.srcAccessMask = VK_ACCESS_MEMORY_READ_BIT;
+		swapchainImageBarrier.dstAccessMask = VK_ACCESS_COLOR_ATTACHMENT_WRITE_BIT;
+		swapchainImageBarrier.oldLayout = VK_IMAGE_LAYOUT_PRESENT_SRC_KHR;
+		swapchainImageBarrier.newLayout = VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL;
+		swapchainImageBarrier.srcQueueFamilyIndex = this->ctx.present_queue;
+		swapchainImageBarrier.dstQueueFamilyIndex = this->ctx.queue_family_indices[0];
+		swapchainImageBarrier.image = this->ctx.swapchain_images[this->ctx.current_image];
+		swapchainImageBarrier.subresourceRange.aspectMask = VK_IMAGE_ASPECT_COLOR_BIT;
+		swapchainImageBarrier.subresourceRange.baseMipLevel = 0;
+		swapchainImageBarrier.subresourceRange.layerCount = 1;
+		swapchainImageBarrier.subresourceRange.baseArrayLayer = 0;
+		swapchainImageBarrier.subresourceRange.levelCount = 1;
+
+		vkCmdPipelineBarrier(this->ctx.swapchain_command_bufs[this->ctx.current_image], VK_PIPELINE_STAGE_TOP_OF_PIPE_BIT, VK_PIPELINE_STAGE_ALL_COMMANDS_BIT, 0, 0, nullptr, 0, nullptr, 1, &swapchainImageBarrier);
+
 		vkCmdBeginRenderPass(this->ctx.swapchain_command_bufs[this->ctx.current_image], &renderPassBegin, VK_SUBPASS_CONTENTS_INLINE);
 		vkCmdSetViewport(this->ctx.swapchain_command_bufs[this->ctx.current_image], 0, 1, &this->viewport);
 		vkCmdSetScissor(this->ctx.swapchain_command_bufs[this->ctx.current_image], 0, 1, &this->scissor);
@@ -126,6 +143,24 @@ namespace Renderer {
 	void VulkanRenderer::EndFrame()
 	{
 		vkCmdEndRenderPass(this->ctx.swapchain_command_bufs[this->ctx.current_image]);
+
+		VkImageMemoryBarrier swapchainImageBarrier = {};
+		swapchainImageBarrier.sType = VK_STRUCTURE_TYPE_IMAGE_MEMORY_BARRIER;
+		swapchainImageBarrier.srcAccessMask = VK_ACCESS_COLOR_ATTACHMENT_WRITE_BIT;
+		swapchainImageBarrier.dstAccessMask = VK_ACCESS_MEMORY_READ_BIT;
+		swapchainImageBarrier.oldLayout = VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL;
+		swapchainImageBarrier.newLayout = VK_IMAGE_LAYOUT_PRESENT_SRC_KHR;
+		swapchainImageBarrier.srcQueueFamilyIndex = this->ctx.queue_family_indices[0];
+		swapchainImageBarrier.dstQueueFamilyIndex = this->ctx.present_queue;
+		swapchainImageBarrier.image = this->ctx.swapchain_images[this->ctx.current_image];
+		swapchainImageBarrier.subresourceRange.aspectMask = VK_IMAGE_ASPECT_COLOR_BIT;
+		swapchainImageBarrier.subresourceRange.baseMipLevel = 0;
+		swapchainImageBarrier.subresourceRange.layerCount = 1;
+		swapchainImageBarrier.subresourceRange.baseArrayLayer = 0;
+		swapchainImageBarrier.subresourceRange.levelCount = 1;
+
+		vkCmdPipelineBarrier(this->ctx.swapchain_command_bufs[this->ctx.current_image], VK_PIPELINE_STAGE_ALL_COMMANDS_BIT, VK_PIPELINE_STAGE_TOP_OF_PIPE_BIT, 0, 0, nullptr, 0, nullptr, 1, &swapchainImageBarrier);
+
 		vkEndCommandBuffer(this->ctx.swapchain_command_bufs[this->ctx.current_image]);
 
 		VkPipelineStageFlags wait_stages = VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT;
@@ -139,7 +174,9 @@ namespace Renderer {
 		submitInfo.commandBufferCount = 1;
 		submitInfo.pCommandBuffers = &this->ctx.swapchain_command_bufs[this->ctx.current_image];
 
+
 		VK_ASSERT(vkQueueSubmit(this->ctx.queues[0], 1, &submitInfo, this->ctx.swapchain_sync[this->ctx.current_image].fence), "Failed to submit to graphics queue");
+
 
 		VkPresentInfoKHR presentInfo = {};
 		presentInfo.sType = VK_STRUCTURE_TYPE_PRESENT_INFO_KHR;
