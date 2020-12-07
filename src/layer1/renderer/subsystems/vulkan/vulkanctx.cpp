@@ -220,7 +220,7 @@ bool CVulkanCtx::InitDevice()
 	}
 
 	if (compute_qfam == VK_QUEUE_FAMILY_IGNORED) {
-		global_log.Warn(FMT_STRING("Vulkan device does not support transfer queue!"), this->adapter_props.vendorID, this->adapter_props.deviceID, this->adapter_props.deviceName);
+		global_log.Warn(FMT_STRING("Vulkan device does not support compute queue!"), this->adapter_props.vendorID, this->adapter_props.deviceID, this->adapter_props.deviceName);
 		compute_qfam = graphics_qfam;
 	} else {
 		qcreateInfo.queueFamilyIndex = compute_qfam;
@@ -228,7 +228,7 @@ bool CVulkanCtx::InitDevice()
 	}
 
 	if (transfer_qfam == VK_QUEUE_FAMILY_IGNORED) {
-		global_log.Warn(FMT_STRING("Vulkan device does not support compute queue!"), this->adapter_props.vendorID, this->adapter_props.deviceID, this->adapter_props.deviceName);
+		global_log.Warn(FMT_STRING("Vulkan device does not support transfer queue!"), this->adapter_props.vendorID, this->adapter_props.deviceID, this->adapter_props.deviceName);
 		transfer_qfam = compute_qfam;
 	} else {
 		qcreateInfo.queueFamilyIndex = transfer_qfam;
