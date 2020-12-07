@@ -92,9 +92,6 @@ void CVulkanBuffer::Upload(const void *data, uint64_t size, uint64_t offset)
 
 void *CVulkanBuffer::Map()
 {
-	if (host_mem != nullptr)
-		return host_mem;
-
 	vmaMapMemory(g_vulkanCtx->allocator, this->alloc, &this->host_mem);
 	return this->host_mem;
 }
@@ -103,4 +100,14 @@ void CVulkanBuffer::Unmap()
 {
 	vmaUnmapMemory(g_vulkanCtx->allocator, this->alloc);
 	this->host_mem = nullptr;
+}
+
+void CVulkanBuffer::Invalidate()
+{
+	vmaInvalidateAllocation(g_vulkanCtx->allocator, this->alloc, 0, this->buf_size);
+}
+
+void CVulkanBuffer::Flush()
+{
+	vmaFlushAllocation(g_vulkanCtx->allocator, this->alloc, 0, this->buf_size);
 }

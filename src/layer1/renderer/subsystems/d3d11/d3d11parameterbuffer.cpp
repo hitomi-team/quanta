@@ -55,6 +55,9 @@ namespace Renderer {
 
 	void D3D11ShaderParameterBuffer::Map()
 	{
+		if (this->mappedMemory != nullptr)
+			return;
+
 		D3D11_MAPPED_SUBRESOURCE mappedResource = {};
 		d3d11_global_context->Map(constantBuffer, 0, D3D11_MAP_WRITE_DISCARD, 0, &mappedResource);
 		mappedMemory = (char *)mappedResource.pData;

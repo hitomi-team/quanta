@@ -30,6 +30,9 @@ public:
 	void *Map();
 	void Unmap();
 
+	void Invalidate();
+	void Flush();
+
 	inline VkBuffer GetBuffer() { return this->buf; }
 	inline void *GetMappedMem() { return this->host_mem; }
 

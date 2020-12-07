@@ -14,7 +14,7 @@ bool CVulkanParameterBuffer::Setup(std::vector< Renderer::ShaderParameterElement
 
 	CVulkanBufferInitInfo initInfo = {};
 	initInfo.usage = VK_BUFFER_USAGE_UNIFORM_BUFFER_BIT;
-	initInfo.reqMemFlags = VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT;
+	initInfo.reqMemFlags = VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT;
 	initInfo.prefMemFlags = VK_MEMORY_PROPERTY_HOST_CACHED_BIT;
 	initInfo.vmaUsage = VMA_MEMORY_USAGE_CPU_TO_GPU;
 
@@ -51,6 +51,10 @@ void CVulkanParameterBuffer::Apply()
 
 void CVulkanParameterBuffer::Map()
 {
+	if (this->map_mem != nullptr)
+		return;
+
+	this->buf.Invalidate();
 	this->map_mem = reinterpret_cast< char * >(this->buf.Map());
 }
 
@@ -67,6 +71,7 @@ void CVulkanParameterBuffer::Flush()
 void CVulkanParameterBuffer::Unmap()
 {
 	if (this->map_mem != nullptr) {
+		this->buf.Flush();
 		this->buf.Unmap();
 		this->map_mem = nullptr;
 	}

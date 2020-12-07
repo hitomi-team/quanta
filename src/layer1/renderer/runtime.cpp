@@ -43,7 +43,6 @@ namespace Renderer {
 		for (auto &mat : materials) { // update materials
 			mat->getParamBuffer()->Map();
 			mat->getParamBuffer()->SetShaderParameter(SHADER_PARAM_TIME, time);
-			mat->getParamBuffer()->Unmap();
 		}
 
 		for (auto &prop : prop_queue) // TODO: Instancing. We need better perf
