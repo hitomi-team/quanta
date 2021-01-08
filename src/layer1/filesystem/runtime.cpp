@@ -234,7 +234,7 @@ namespace Filesystem {
 
 		PHYSFS_permitSymbolicLinks(0);
 
-		if (PHYSFS_mount("data.7z", nullptr, 1) == 0) {
+		if (PHYSFS_mount("data.zip", nullptr, 1) == 0) {
 			global_log.Error("data.7z not found");
 			PHYSFS_deinit();
 			return false;
