@@ -7,11 +7,12 @@ if (WIN32)
 	add_definitions(-D__D3D11)
 	set(SYSTEM_LIBS d3d11 dxgi dxguid windowscodecs)
 	include_directories(inc-win)
-	link_directories({CMAKE_SOURCE_DIR}/lib/win64release)
-	set(SDL2_LIB ${CMAKE_SOURCE_DIR}/lib/win64release/SDL2.lib)
-	set(SDL2MAIN_LIB ${CMAKE_SOURCE_DIR}/lib/win64release/SDL2main.lib)
+	find_library(SDL2_LIBRARY NAMES SDL2 HINTS "${CMAKE_PREFIX_PATH}/lib/win64release")
+	find_library(SDL2MAIN_LIBRARY NAMES SDL2main HINTS "${CMAKE_PREFIX_PATH}/lib/win64release")
+else()
+	find_library(SDL2_LIBRARY NAMES SDL2)
+	find_library(SDL2MAIN_LIBRARY NAMES SDL2main)
 endif()
-
 add_definitions(-D__VULKAN)
 
 # TODO: fix this
@@ -134,5 +135,5 @@ else (UNIX)
 endif()
 
 add_executable(quanta WIN32 ${SRCS})
-target_link_libraries(quanta ${SYSTEM_LIBS} ${SDL2_LIB} ${SDL2MAIN_LIB})
+target_link_libraries(quanta ${SYSTEM_LIBS} ${SDL2_LIBRARY} ${SDL2MAIN_LIBRARY})
 target_precompile_headers(quanta PUBLIC "$<$<COMPILE_LANGUAGE:CXX>:${CMAKE_CURRENT_SOURCE_DIR}/${PCH_FILE}>")
