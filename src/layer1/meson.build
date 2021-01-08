@@ -1,3 +1,4 @@
+subdir('dep')
 subdir('filesystem')
 subdir('graph')
 subdir('renderer')

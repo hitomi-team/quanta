@@ -49,8 +49,7 @@ else
 endif
 
 # tools
-subdir('src/physfs')
-subdir('tools')
+#subdir('tools')
 
 # get source files
 srcs = []

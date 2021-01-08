@@ -29,7 +29,6 @@
 #define SDL_MAIN_HANDLED
 #include <SDL2/SDL.h>
 
-#define FMT_HEADER_ONLY
 #include <fmt/core.h>
 #include <fmt/format.h>
 #include <fmt/os.h>
@@ -53,6 +52,12 @@ template< typename T, typename U = T >
 static constexpr T PCH_ALIGN_DOWN(T what, U to)
 {
 	return (what / to) * to;
+}
+
+template< typename T >
+static constexpr void PCH_ERASE_VECTOR(T &vec)
+{
+	T().swap(vec);
 }
 
 #endif
