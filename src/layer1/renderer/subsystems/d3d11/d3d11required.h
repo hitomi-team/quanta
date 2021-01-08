@@ -11,7 +11,7 @@
 #define _UNICODE
 #endif
 
-#include <SDL2/SDL_syswm.h>
+#include <SDL_syswm.h>
 #include <d3d11.h>
 #include <dxgi.h>
 

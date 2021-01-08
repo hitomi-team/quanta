@@ -26,8 +26,7 @@
 #include <cstdlib>
 #include <cstdint>
 
-#define SDL_MAIN_HANDLED
-#include <SDL2/SDL.h>
+#include <SDL.h>
 
 #include <fmt/core.h>
 #include <fmt/format.h>

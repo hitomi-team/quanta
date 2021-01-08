@@ -6,7 +6,7 @@
 #define VMA_DYNAMIC_VULKAN_FUNCTIONS 0
 #include "vk_mem_alloc.h"
 
-#include <SDL2/SDL_vulkan.h>
+#include <SDL_vulkan.h>
 
 #include "../required.h"
 

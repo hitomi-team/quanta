@@ -20,7 +20,6 @@ cmake .
 ```
 ├── data: Default game assets
 ├── inc: Include headers
-├── inc-win: Include headers for Windows targets
 ├── lib: Library dependencies
 ├── tools: Source code for tools used in this project
 └── src: Quanta Engine source code
