@@ -3,7 +3,7 @@
 # this must be ran in the root dir of the project
 
 import os
-import py7zr
+import zipfile
 
 dir_path = os.path.dirname(os.path.realpath(__file__))
 
@@ -12,9 +12,14 @@ try:
 except:
     print("build dir already exists...")
 
-z = py7zr.SevenZipFile(os.path.join(dir_path, "build/data.7z"), "w", filters=[{"id": py7zr.FILTER_LZMA2, "preset": 0}])
+print("building data pack")
 
-print("creating build/data.7z")
+z = zipfile.ZipFile(os.path.join(dir_path, "build/data.zip"), "w", compression=zipfile.ZIP_STORED) 
 os.chdir(os.path.join(dir_path, "data"))
-z.writeall('.')
+
+for root, dirs, files in os.walk("."):
+    for file in files:
+        print("adding: data/" + os.path.join(root, file))
+        z.write(os.path.join(root, file))
+
 z.close()
