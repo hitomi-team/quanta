@@ -18,17 +18,19 @@ include(FindPackageHandleStandardArgs)
 find_package_handle_standard_args(SDL2 DEFAULT_MSG SDL2_LIBRARY SDL2_INCLUDE_DIR)
 include_directories(${SDL2_INCLUDE_DIR})
 
-# TODO: fix this
-add_definitions(-D__DEBUG)
-if (CMAKE_BUILD_TYPE MATCHES Debug)
+if (NOT CMAKE_BUILD_TYPE)
+	set(CMAKE_BUILD_TYPE Debug CACHE STRING "Choose the type of build, options are: Debug Release RelWithDebInfo MinSizeRel." FORCE)
+endif()
+
+if (CMAKE_BUILD_TYPE MATCHES "Debug")
 	add_definitions(-D__DEBUG)
-elseif (CMAKE_BUILD_TYPE MATCHES Rel)
+else()
 	add_definitions(-D__RELEASE)
 endif()
 
 if (MSVC)
 	set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} /EHsc")
-	set(CMAKE_EXE_LINKER_FLAGS "/ENTRY:mainCRTStartup")
+#	set(CMAKE_EXE_LINKER_FLAGS "/ENTRY:mainCRTStartup")
 endif()
 
 add_definitions(-D_CRT_SECURE_NO_WARNINGS)
@@ -128,6 +130,10 @@ set(DEP_SRCS
 	src/layer1/dep/physfs/physfs_platform_windows.c
 	src/layer1/dep/physfs/physfs_platform_winrt.cpp
 )
+
+if (APPLE)
+	set(DEP_SRCS ${DEP_SRCS} src/layer1/dep/physfs/phyfs_platform_apple.m)
+endif()
 
 set(SRCS ${DEP_SRCS} ${GAME_SRCS})
 
