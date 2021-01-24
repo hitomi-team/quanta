@@ -38,6 +38,7 @@ namespace Renderer {
 		bool Setup();
 		bool Update();
 		void Release();
+		inline void Destroy() {}
 
 		void SetRenderer(RHI *rhi);
 		inline RHI *GetRenderer() { return rhi; }

@@ -27,8 +27,6 @@ int main(int argc, char **argv)
 #endif
 	};
 
-	SDL_SetMainReady();
-
 	for (int i = 1; i < argc; i++) {
 		if (std::strcmp(argv[i], "-vulkan") == 0) {
 			options.type = Renderer::RENDERER_VULKAN;
@@ -68,6 +66,8 @@ int main(int argc, char **argv)
 	Renderer::Input input;
 
 	Graph::Game game;
+	Graph::g_gamePtr = &game;
+
 	game.registerService(&filesystem);
 	game.registerService(&renderer);
 	game.registerService(&input);

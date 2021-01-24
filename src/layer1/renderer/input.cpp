@@ -6,7 +6,7 @@
 
 namespace Graph {
 
-	extern bool _game_shouldClose;
+extern Game *g_gamePtr;
 
 }
 
@@ -54,7 +54,7 @@ namespace Renderer {
 				mouse_buttons_processed[event.button.button-1] = 0;
 				break;
 			case SDL_QUIT:
-				Graph::_game_shouldClose = 1;
+				Graph::g_gamePtr->Destroy();
 				break;
 			default:
 				break;

@@ -22,6 +22,7 @@ namespace Filesystem {
 
 		bool Setup();
 		void Release();
+		inline void Destroy() {}
 
 /*
 		int FindFile(const std::string &path);

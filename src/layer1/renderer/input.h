@@ -11,6 +11,7 @@ namespace Renderer {
 
 		bool Setup();
 		bool Update();
+		inline void Destroy() {}
 
 		bool isKeyPressed(int keycode);
 		bool isKeyPressedOnce(int keycode); // useful for gui

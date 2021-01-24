@@ -4,6 +4,8 @@
 
 #include "runtime.h"
 
+#define DATA_PACK_NAME "data.zip"
+
 namespace Filesystem {
 
 	Runtime::Runtime()
@@ -234,8 +236,8 @@ namespace Filesystem {
 
 		PHYSFS_permitSymbolicLinks(0);
 
-		if (PHYSFS_mount("data.zip", nullptr, 1) == 0) {
-			global_log.Error("data.7z not found");
+		if (PHYSFS_mount(DATA_PACK_NAME, nullptr, 1) == 0) {
+			global_log.Error(FMT_COMPILE("{} not found"), DATA_PACK_NAME);
 			PHYSFS_deinit();
 			return false;
 		}
