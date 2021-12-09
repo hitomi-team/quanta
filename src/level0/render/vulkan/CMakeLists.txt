@@ -1,0 +1,24 @@
+add_sources(
+	api.cpp
+	api_allocator.cpp
+	api_buffer.cpp
+	api_commandbuffer.cpp
+	api_commandpool.cpp
+	api_computepipeline.cpp
+	api_descriptorpool.cpp
+	api_descriptorset.cpp
+	api_descriptorsetlayout.cpp
+	api_device.cpp
+	api_fence.cpp
+	api_framebuffer.cpp
+	api_graphicspipeline.cpp
+	api_image.cpp
+	api_physicaldevice.cpp
+	api_pipelinelayout.cpp
+	api_renderpass.cpp
+	api_sampler.cpp
+	api_semaphore.cpp
+	api_swapchain.cpp
+	vk_mem_alloc.cpp
+	volk.c
+)
