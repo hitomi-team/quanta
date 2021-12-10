@@ -2,6 +2,8 @@
 
 #include "api.h"
 
+static const VkMemoryPropertyFlags supportSAM = VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT | VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT;
+
 VulkanPhysicalDevice::VulkanPhysicalDevice(VkPhysicalDevice _handle)
 {
 	static const std::array< EPhysicalDeviceType, 5 > deviceTypes {
@@ -38,8 +40,8 @@ VulkanPhysicalDevice::VulkanPhysicalDevice(VkPhysicalDevice _handle)
 	VkPhysicalDeviceMemoryProperties memoryProperties;
 	vkGetPhysicalDeviceMemoryProperties(this->handle, &memoryProperties);
 
-	for (uint32_t i = 0; i < memoryProperties.memoryHeapCount; i++) {
-		if (memoryProperties.memoryTypes[i].propertyFlags & (VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT)) {
+	for (uint32_t i = 0; i < memoryProperties.memoryTypeCount; i++) {
+		if ((memoryProperties.memoryTypes[i].propertyFlags & supportSAM) == supportSAM) {
 			if (memoryProperties.memoryHeaps[memoryProperties.memoryTypes[i].heapIndex].flags & (VK_MEMORY_HEAP_DEVICE_LOCAL_BIT | VK_MEMORY_HEAP_MULTI_INSTANCE_BIT))
 				this->apiFeatures.hasSmartAccessMemory = true;
 		}
