@@ -70,6 +70,7 @@ class ShaderBuildSystem():
     tools = ['glslc', 'dxc']
     shaderStages = ['vert', 'frag', 'geom', 'tess', 'comp']
 
+    dryRun: bool
     recompileEverything: bool
 
     cwd: Path
@@ -89,6 +90,7 @@ class ShaderBuildSystem():
 
     def __init__(self, args):
         self.recompileEverything = args.recompile
+        self.dryRun = args.dryRun
 
         self.cwd = Path(os.getcwd())
         self.sourceDir = self.cwd / Path(args.sourceDir)
@@ -133,53 +135,51 @@ class ShaderBuildSystem():
         self.log('Info', 'Compiler: ' + str(self.shaderCompiler.compilerPath))
         self.log('Info', 'Target: ' + self.target)
 
-        try:
-            # scrub to only find the files with shader stages
-            shaderPaths = []
-            for path in list(self.sourceDir.glob('*.hlsl')):
-                parts = path.name.split('.')
-                if parts[1] == 'hlsl':
-                    continue
-                shaderPaths.append(path)
+        # scrub to only find the files with shader stages
+        shaderPaths = []
+        for path in list(self.sourceDir.glob('*.hlsl')):
+            parts = path.name.split('.')
+            if parts[1] == 'hlsl':
+                continue
+            shaderPaths.append(path)
 
-            # then scrub again to only find modified files or recompile
-            shaderPathsToCompile = []
-            for shaderPath in shaderPaths:
-                parts = shaderPath.name.split('.')
-                shaderName = parts[0]
-                shaderStage = parts[1]
-                outputPath = self.outputDir / Path(shaderName + "." + shaderStage + self.fileExt)
+        # then scrub again to only find modified files or recompile
+        shaderPathsToCompile = []
+        for shaderPath in shaderPaths:
+            parts = shaderPath.name.split('.')
+            shaderName = parts[0]
+            shaderStage = parts[1]
+            outputPath = self.outputDir / Path(shaderName + "." + shaderStage + self.fileExt)
 
-                if outputPath.exists() and not self.recompileEverything:
-                    if os.path.getmtime(outputPath) < os.path.getmtime(shaderPath):
-                        shaderPathsToCompile.append(shaderPath)
-                else:
+            if outputPath.exists() and not self.recompileEverything:
+                if os.path.getmtime(outputPath) < os.path.getmtime(shaderPath):
                     shaderPathsToCompile.append(shaderPath)
+            else:
+                shaderPathsToCompile.append(shaderPath)
 
-            numShaderPaths = len(shaderPathsToCompile)
-            x = 1
+        numShaderPaths = len(shaderPathsToCompile)
+        x = 1
 
-            if numShaderPaths == 0:
-                self.log('Info', 'Everything up-to-date.')
+        if numShaderPaths == 0:
+            self.log('Info', 'Everything up-to-date.')
 
-            # then start compiling
-            for shaderPath in shaderPathsToCompile:
-                # Grab various info from filename
-                parts = shaderPath.name.split('.')
-                shaderName = parts[0]
-                shaderStage = parts[1]
+        # then start compiling
+        for shaderPath in shaderPathsToCompile:
+            # Grab various info from filename
+            parts = shaderPath.name.split('.')
+            shaderName = parts[0]
+            shaderStage = parts[1]
 
-                outputPath = self.outputDir / Path(shaderName + "." + shaderStage + self.fileExt)
+            outputPath = self.outputDir / Path(shaderName + "." + shaderStage + self.fileExt)
 
-                # Display counter
-                print('[{}/{}] {} -> {}'.format(x, numShaderPaths, str(shaderPath.relative_to(self.sourceDir)), str(outputPath.relative_to(self.sourceDir))))
-                x += 1
+            # Display counter
+            print('[{}/{}] {} -> {}'.format(x, numShaderPaths, str(shaderPath.relative_to(self.sourceDir)), str(outputPath.relative_to(self.outputDir))))
+            x += 1
 
+            if not self.dryRun:
                 if not self.shaderCompiler.compile(shaderPath, outputPath, shaderStage):
                     self.logError('Error', 'Could not compile shader: ' + shaderPath.name)
-                    raise Exception()
-        except:
-            self.logError('Error', 'Failure occurred while compiling shaders!')
+                    sys.exit(1)
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser(description='HLSL Shader Build System. Required tools must be in PATH!')
@@ -189,6 +189,7 @@ if __name__ == '__main__':
     parser.add_argument('--dxil', dest='useDXIL', help='Output DXIL for D3D12 (dxc only)', action='store_true')
     parser.add_argument('--spirv', dest='useSPIRV', help='Output SPIR-V for Vulkan (dxc only)', action='store_true')
     parser.add_argument('--recompile', dest='recompile', help='Recompile everything', action='store_true')
+    parser.add_argument('--dry_run', dest='dryRun', help='Do not modify any files on disk', action='store_true')
     args = parser.parse_args()
 
     buildSystem = ShaderBuildSystem(args)
