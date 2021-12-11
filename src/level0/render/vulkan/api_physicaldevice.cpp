@@ -53,8 +53,8 @@ VulkanPhysicalDevice::VulkanPhysicalDevice(VkPhysicalDevice _handle)
 			// now check if the heap is device local
 			if (heap.flags & (VK_MEMORY_HEAP_DEVICE_LOCAL_BIT | VK_MEMORY_HEAP_MULTI_INSTANCE_BIT)) {
 				// determine SAM support by checking that BAR heap size is over 256 MiB
-				// * Assume that 256 MiB unified (CPU-GPU/Device) memory devices do not exist
-				if (heap.size > 0x10000000)
+				// for SoC / integrated solutions we may toggle this always on
+				if (heap.size > 0x10000000 || this->cachedInfo.hardware.type == PHYSICAL_DEVICE_TYPE_INTEGRATED)
 					this->apiFeatures.hasSmartAccessMemory = true;
 			}
 		}
