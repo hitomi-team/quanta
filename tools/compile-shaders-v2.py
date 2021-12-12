@@ -12,6 +12,19 @@ import sys
 def checkForProgram(programName: str):
     return which(programName) is not None
 
+class MakeDependencyParser():
+    dependencies : list = []
+
+    def __init__(self, blob : str):
+        separator = blob.index(':') + 2
+        newline = blob.index('\n')
+
+        fileListStr = blob[separator:newline]
+        dependencies = fileListStr.split()
+
+        for i in dependencies:
+            self.dependencies.append(Path(i))
+
 class ShaderCompiler():
     target: str
     compilerPath: Path
@@ -21,10 +34,27 @@ class ShaderCompiler():
         self.compilerPath = Path(which(compilerPath))
         self.compilerPath.resolve()
 
+    def getDependencies(self, sourceFilePath: Path, shaderStage: str):
+        return []
+
     def compile(self, sourceFilePath: Path, outputFilePath: Path, shaderStage: str):
         return False
 
 class glslcCompiler(ShaderCompiler):
+    def getDependencies(self, sourceFilePath: Path, shaderStage: str):
+        try:
+            stdout = subprocess.check_output([self.compilerPath,
+                '-fshader-stage=' + shaderStage,
+                '-M', sourceFilePath,
+                '-D_VULKAN'
+            ], stderr=subprocess.STDOUT, universal_newlines=True)
+        except subprocess.CalledProcessError as exc:
+            print(exc.output, file=sys.stderr)
+            print(' ** Failed with error code:', exc.returncode, file=sys.stderr)
+            return []
+
+        return MakeDependencyParser(stdout).dependencies
+
     def compile(self, sourceFilePath: Path, outputFilePath: Path, shaderStage: str):
         try:
             subprocess.check_output([self.compilerPath,
@@ -40,12 +70,12 @@ class glslcCompiler(ShaderCompiler):
             print(' ** Failed with error code:', exc.returncode, file=sys.stderr)
             return False
         else:
-            print(stdout)
             return False
 
 class dxcCompiler(ShaderCompiler):
     shaderStages = ['vert', 'frag', 'geom', 'tess', 'comp']
     profiles = ['vs_6_0', 'ps_6_0', 'gs_6_0', 'ts_6_0', 'cs_6_0']
+
     def compile(self, sourceFilePath: Path, outputFilePath: Path, shaderStage: str):
         try:
             profile = profiles[shaderStages.index(shaderStage)]
@@ -62,7 +92,6 @@ class dxcCompiler(ShaderCompiler):
             print(' ** Failed with error code:', exc.returncode, file=sys.stderr)
             return False
         else:
-            print(stdout)
             return False
 
 class ShaderBuildSystem():
@@ -143,17 +172,26 @@ class ShaderBuildSystem():
                 continue
             shaderPaths.append(path)
 
+        self.log('Info', 'Build dependency list')
+
         # then scrub again to only find modified files or recompile
         shaderPathsToCompile = []
         for shaderPath in shaderPaths:
             parts = shaderPath.name.split('.')
             shaderName = parts[0]
             shaderStage = parts[1]
-            outputPath = self.outputDir / Path(shaderName + "." + shaderStage + self.fileExt)
+            outputPath = self.outputDir / Path(shaderName + '.' + shaderStage + self.fileExt)
 
             if outputPath.exists() and not self.recompileEverything:
-                if os.path.getmtime(outputPath) < os.path.getmtime(shaderPath):
+                if os.path.getmtime(shaderPath) > os.path.getmtime(outputPath):
                     shaderPathsToCompile.append(shaderPath)
+                    continue
+
+                makeDependencies = self.shaderCompiler.getDependencies(shaderPath, shaderStage)
+                for i in makeDependencies:
+                    if os.path.getmtime(i) > os.path.getmtime(outputPath) and not shaderPath in shaderPathsToCompile:
+                        shaderPathsToCompile.append(shaderPath)
+                        continue
             else:
                 shaderPathsToCompile.append(shaderPath)
 
@@ -170,7 +208,7 @@ class ShaderBuildSystem():
             shaderName = parts[0]
             shaderStage = parts[1]
 
-            outputPath = self.outputDir / Path(shaderName + "." + shaderStage + self.fileExt)
+            outputPath = self.outputDir / Path(shaderName + '.' + shaderStage + self.fileExt)
 
             # Display counter
             print('[{}/{}] {} -> {}'.format(x, numShaderPaths, str(shaderPath.relative_to(self.sourceDir)), str(outputPath.relative_to(self.outputDir))))
