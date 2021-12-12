@@ -25,7 +25,7 @@ git clone https://github.com/koukuno/interspace
 cd interspace
 cmake .
 python3 tools/compile-shaders.py
-python3 tools/build-data-pack.py
+python3 tools/build-data-pack.py -o .
 ```
 
 ### Project Structure
