@@ -36,6 +36,7 @@ macro (add_sources)
 endmacro()
 
 find_package(Vulkan REQUIRED)
+include_directories(${Vulkan_INCLUDE_DIR})
 
 add_subdirectory(src)
 if (WIN32)
