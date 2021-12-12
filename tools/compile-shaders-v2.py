@@ -78,7 +78,7 @@ class dxcCompiler(ShaderCompiler):
 
     def compile(self, sourceFilePath: Path, outputFilePath: Path, shaderStage: str):
         try:
-            profile = profiles[shaderStages.index(shaderStage)]
+            profile = self.profiles[self.shaderStages.index(shaderStage)]
             subprocess.check_output([self.compilerPath,
                 '-nologo',
                 sourceFilePath,
@@ -126,26 +126,26 @@ class ShaderBuildSystem():
         self.outputDir = self.cwd / Path(args.outputDir)
 
         if not self.sourceDir.exists():
-            self.logError('Error', 'sourceDir not found: ' + self.sourceDir)
+            self.logError('Error', 'sourceDir not found: ' + str(self.sourceDir))
             sys.exit(1)
 
         if not self.outputDir.exists():
-            self.logError('Error', 'outputDir not found: ' + self.sourceDir)
+            self.logError('Error', 'outputDir not found: ' + str(self.sourceDir))
             sys.exit(1)
 
         if not args.tool in self.tools:
-            self.logError('Error', 'Unsupported tool: ' + args.tool)
+            self.logError('Error', 'Unsupported tool: ' + str(args.tool))
             sys.exit(1)
 
         if not checkForProgram(args.tool):
-            self.logError('Error', 'Shader compiler tool not found: ' + args.tool)
+            self.logError('Error', 'Shader compiler tool not found: ' + str(args.tool))
             sys.exit(1)
 
         # Always SPIR-V
         if args.tool == 'glslc':
             self.target = 'spirv'
             self.fileExt = '.spv'
-            self.shaderCompiler = glslcCompiler(Path(args.tool), self.target)
+            self.shaderCompiler = glslcCompiler(args.tool, self.target)
         elif args.tool == 'dxc':
             if args.useDXIL:
                 self.target = 'dxil'
@@ -156,7 +156,7 @@ class ShaderBuildSystem():
             else:
                 self.logError('Error', 'Choose a backend with dxc Compiler.')
 
-            self.shaderCompiler = dxcCompiler(Path(args.tool), self.target)
+            self.shaderCompiler = dxcCompiler(args.tool, self.target)
 
     def run(self):
         self.log('Info', 'Source Directory: ' + str(self.sourceDir))
