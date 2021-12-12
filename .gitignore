@@ -4,3 +4,4 @@
 /out*/*
 /data.*
 /data/shaders*/*
+__pycache__
