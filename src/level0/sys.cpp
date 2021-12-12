@@ -87,7 +87,7 @@ char *Sys_GetConsoleInput(char *buf, size_t bufsize)
 {
 #ifdef _WIN32
 	DWORD dummy;
-	std::wstring rc(bufsize);
+	std::vector< WCHAR > rc(bufsize);
 
 	if (!ReadConsoleW(GetStdHandle(STD_INPUT_HANDLE), rc.data(), (DWORD)bufsize, &dummy, nullptr))
 		return nullptr;
