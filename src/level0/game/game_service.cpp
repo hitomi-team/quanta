@@ -6,5 +6,4 @@
 GameService::GameService(const char *_name) : name(_name)
 {
 //	g_Log.Info(FMT_COMPILE("Init Service: {}"), _name);
-	asm("nop");
 }

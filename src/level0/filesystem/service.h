@@ -9,7 +9,7 @@ public:
 	FilesystemService(const char *argv0);
 	~FilesystemService();
 
-	inline void Update() { asm("nop"); }
+	inline void Update() {}
 
 private:
 
