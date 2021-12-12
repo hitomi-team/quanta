@@ -81,9 +81,11 @@ class dxcCompiler(ShaderCompiler):
     def getDependencies(self, sourceFilePath: Path, shaderStage: str):
         try:
             profile = self.profiles[self.shaderStages.index(shaderStage)]
+            spirvFlag = '-spirv' if self.target == 'spirv' else ''
+            apiMacro = '-D_VULKAN' if self.target == 'spirv' else '-D_D3D12'
             stdout = subprocess.check_output([self.compilerPath,
                 '-nologo',
-                sourceFilePath,
+                sourceFilePath, spirvFlag,
                 '-Vi', '-Fo', '/dev/null',
                 '-D_D3D12',
                 '-T', profile
@@ -93,11 +95,11 @@ class dxcCompiler(ShaderCompiler):
             print(' ** Failed with error code:', exc.returncode, file=sys.stderr)
             return []
 
-        strs = stdout.split()
+        strs = stdout.split('\n')
         makedeps = ': ' + str(sourceFilePath) + ' '
 
         for i in strs:
-            if '.hlsl' in i:
+            if '.hlsl' in i and '[' in i and ']' in i:
                 makedeps += i[(i.index('[') + 1):i.index(']')] + ' '
 
         makedeps += '\n'
@@ -106,11 +108,13 @@ class dxcCompiler(ShaderCompiler):
     def compile(self, sourceFilePath: Path, outputFilePath: Path, shaderStage: str):
         try:
             profile = self.profiles[self.shaderStages.index(shaderStage)]
-            subprocess.check_output([self.compilerPath,
+            spirvFlag = '-spirv' if self.target == 'spirv' else ''
+            apiMacro = '-D_VULKAN' if self.target == 'spirv' else '-D_D3D12'
+            stdout = subprocess.check_output([self.compilerPath,
                 '-nologo',
-                sourceFilePath,
+                sourceFilePath, spirvFlag,
                 '-Fo', outputFilePath,
-                '-D_D3D12',
+                apiMacro,
                 '-T', profile
             ], stderr=subprocess.STDOUT, universal_newlines=True)
             return True
@@ -120,6 +124,8 @@ class dxcCompiler(ShaderCompiler):
             return False
         else:
             return False
+
+        print(stdout)
 
 class ShaderBuildSystem():
     # Supported tools and targets
