@@ -76,6 +76,33 @@ class dxcCompiler(ShaderCompiler):
     shaderStages = ['vert', 'frag', 'geom', 'tess', 'comp']
     profiles = ['vs_6_0', 'ps_6_0', 'gs_6_0', 'ts_6_0', 'cs_6_0']
 
+    # make a fake makedeps
+    # this is ugly, but it will have to do for now
+    def getDependencies(self, sourceFilePath: Path, shaderStage: str):
+        try:
+            profile = self.profiles[self.shaderStages.index(shaderStage)]
+            stdout = subprocess.check_output([self.compilerPath,
+                '-nologo',
+                sourceFilePath,
+                '-Vi', '-Fo', '/dev/null',
+                '-D_D3D12',
+                '-T', profile
+            ], stderr=subprocess.STDOUT, universal_newlines=True)
+        except subprocess.CalledProcessError as exc:
+            print(exc.output, file=sys.stderr)
+            print(' ** Failed with error code:', exc.returncode, file=sys.stderr)
+            return []
+
+        strs = stdout.split()
+        makedeps = ': ' + str(sourceFilePath) + ' '
+
+        for i in strs:
+            if '.hlsl' in i:
+                makedeps += i[(i.index('[') + 1):i.index(']')] + ' '
+
+        makedeps += '\n'
+        return MakeDependencyParser(makedeps).dependencies
+
     def compile(self, sourceFilePath: Path, outputFilePath: Path, shaderStage: str):
         try:
             profile = self.profiles[self.shaderStages.index(shaderStage)]
