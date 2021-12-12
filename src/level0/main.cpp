@@ -8,14 +8,6 @@
 
 #include "cmd.h"
 
-class TestService : public GameService {
-public:
-	TestService() : GameService("TestService") { g_Log.Debug("TestService::TestService()"); }
-	~TestService() { g_Log.Debug("TestService::~TestService()"); }
-
-	void Update() { asm("nop"); }
-};
-
 int main(int argc, char **argv)
 {
 	(void)argc;
@@ -30,7 +22,6 @@ int main(int argc, char **argv)
 		Game game;
 		g_Game = &game;
 
-		game.RegisterService(std::make_unique< TestService >());
 		game.RegisterService(std::make_unique< FilesystemService >(argv[0]));
 		game.RegisterService(std::make_unique< RenderService >());
 		game.RegisterService(std::make_unique< InputService >());
