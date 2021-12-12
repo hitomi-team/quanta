@@ -57,7 +57,7 @@ class glslcCompiler(ShaderCompiler):
 
     def compile(self, sourceFilePath: Path, outputFilePath: Path, shaderStage: str):
         try:
-            subprocess.check_output([self.compilerPath,
+            stdout = subprocess.check_output([self.compilerPath,
                 '-fshader-stage=' + shaderStage,
                 '-c', sourceFilePath,
                 '-o', outputFilePath,
@@ -71,6 +71,8 @@ class glslcCompiler(ShaderCompiler):
             return False
         else:
             return False
+
+        print(stdout)
 
 class dxcCompiler(ShaderCompiler):
     shaderStages = ['vert', 'frag', 'geom', 'tess', 'comp']
