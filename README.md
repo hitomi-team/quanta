@@ -24,7 +24,9 @@ This section is a WIP, but essentially:
 git clone https://github.com/koukuno/interspace
 cd interspace
 cmake .
-python3 tools/compile-shaders.py
+For DXC-DXIL: python3 tools/gen-shader-dxc-dxil.py
+For DXC-SPIRV: python3 tools/gen-shader-dxc-spirv.py
+For GLSLC-SPIRV: python3 tools/gen-shader-glslc-spirv.py
 python3 tools/build-data-pack.py -o .
 ```
 
