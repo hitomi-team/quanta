@@ -2,7 +2,5 @@
 /*.vs*
 *.*~
 /out*/*
-/data.*
-/data/shaders*/*
 __pycache__
 data.zip

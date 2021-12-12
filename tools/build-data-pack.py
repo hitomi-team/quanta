@@ -23,6 +23,9 @@ os.chdir(data_path)
 print('writing data.zip to:', os.path.join(open_path, "data.zip"))
 for root, dirs, files in os.walk("."):
     for file in files:
+        if file == '.gitignore':
+            continue
+
         path = os.path.normpath(os.path.join(root, file))
         print("adding: " + path)
         z.write(path)
