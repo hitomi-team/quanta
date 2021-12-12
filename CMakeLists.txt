@@ -36,37 +36,6 @@ macro (add_sources)
 endmacro()
 
 find_package(Vulkan REQUIRED)
-find_program(GLSLC_EXECUTABLE NAMES glslc PATHS $ENV{VULKAN_SDK}/bin NO_CMAKE_FIND_ROOT_PATH)
-message(STATUS "Found glslc: ${GLSLC_EXECUTABLE}")
-
-macro(compile_shader SHADERSRC)
-	set(SHADERSRC_PATH ${CMAKE_CURRENT_SOURCE_DIR}/shaders/${SHADERSRC})
-
-	get_filename_component(SHADERSRC_NAME ${SHADERSRC} NAME)
-	set(SHADER_HEX_FILE ${CMAKE_BINARY_DIR}/dep/${SHADERSRC}.spv.h)
-
-	add_custom_command(OUTPUT ${SHADER_HEX_FILE}
-		COMMAND ${GLSLC_EXECUTABLE}
-		ARGS -mfmt=c -c -o ${SHADER_HEX_FILE} -c ${SHADERSRC_PATH}
-		DEPENDS ${SHADERSRC_PATH}
-		COMMENT "Building SPIR-V module header ${SHADERSRC}.spv.h"
-		VERBATIM
-	)
-
-	set_source_files_properties(${SHADER_HEX_FILE} PROPERTIES GENERATED TRUE)
-	list(APPEND SHADER_FILES ${SHADER_HEX_FILE})
-endmacro()
-
-macro (add_shaders)
-	file (RELATIVE_PATH _relPath "${PROJECT_SOURCE_DIR}" "${CMAKE_CURRENT_SOURCE_DIR}")
-	foreach (_src ${ARGN})
-		compile_shader("${_relPath}/${_src}")
-	endforeach()
-	if (_relPath)
-		# propagate SRCS to parent directory
-		set (SRCS ${SRCS} PARENT_SCOPE)
-	endif()
-endmacro()
 
 add_subdirectory(src)
 if (WIN32)
@@ -75,7 +44,6 @@ else()
 	set(SYSTEM_LIBRARIES m rt pthread)
 endif()
 
-add_custom_target(shaders ALL DEPENDS ${SHADER_FILES})
 add_executable(interspace ${SRCS} ${SHADER_FILES})
 
 target_link_libraries(interspace
