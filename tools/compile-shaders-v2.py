@@ -88,7 +88,7 @@ class dxcCompiler(ShaderCompiler):
             stdout = subprocess.check_output([self.compilerPath,
                 '-nologo',
                 sourceFilePath, spirvFlag,
-                '-Vi', '-Fo', '/dev/null',
+                '-Vi', '-Fo', '/dev/null' if os.name == 'posix' else 'nul',
                 '-D_D3D12',
                 '-T', profile
             ], stderr=subprocess.STDOUT, universal_newlines=True)
