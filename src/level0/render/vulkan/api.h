@@ -48,7 +48,7 @@ public:
 	VkSurfaceKHR surface = VK_NULL_HANDLE;
 	std::vector< const char * > requiredExtensions;
 
-	VulkanAPI();
+	VulkanAPI(const char *titleName);
 	~VulkanAPI();
 
 #ifndef NDEBUG

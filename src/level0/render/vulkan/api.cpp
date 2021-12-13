@@ -29,10 +29,10 @@ VkBool32 g_DebugUtilsMessenger(
 }
 #endif
 
-VulkanAPI::VulkanAPI() : RenderAPI("Vulkan")
+VulkanAPI::VulkanAPI(const char *titleName) : RenderAPI("Vulkan")
 {
 	m_window = SDL_CreateWindow(
-		"RenderService",
+		titleName,
 		SDL_WINDOWPOS_CENTERED,
 		SDL_WINDOWPOS_CENTERED,
 		1280,
@@ -53,9 +53,9 @@ VulkanAPI::VulkanAPI() : RenderAPI("Vulkan")
 	VkApplicationInfo appInfo;
 	appInfo.sType = VK_STRUCTURE_TYPE_APPLICATION_INFO;
 	appInfo.pNext = nullptr;
-	appInfo.pApplicationName = "interspace";
+	appInfo.pApplicationName = titleName;
 	appInfo.applicationVersion = VK_MAKE_VERSION(0, 0, 1);
-	appInfo.pEngineName = "interspace";
+	appInfo.pEngineName = "quanta";
 	appInfo.engineVersion = VK_MAKE_VERSION(0, 0, 1);
 	appInfo.apiVersion = VK_MAKE_VERSION(1, 2, 0);
 

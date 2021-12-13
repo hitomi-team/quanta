@@ -21,8 +21,8 @@ Ninja build tool recommended
 
 This section is a WIP, but essentially:
 ```
-git clone https://github.com/koukuno/interspace
-cd interspace
+git clone https://github.com/hitomi-team/quanta
+cd quanta
 cmake .
 For DXC-DXIL: python3 tools/gen-shader-dxc-dxil.py
 For DXC-SPIRV: python3 tools/gen-shader-dxc-spirv.py

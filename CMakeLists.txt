@@ -1,5 +1,5 @@
 cmake_minimum_required(VERSION 3.1)
-project(interspace VERSION 0.1 LANGUAGES C CXX)
+project(quanta VERSION 0.1 LANGUAGES C CXX)
 
 macro (propagate_sources)
 	set (SRCS ${SRCS} PARENT_SCOPE)
@@ -45,28 +45,28 @@ else()
 	set(SYSTEM_LIBRARIES m rt pthread)
 endif()
 
-add_executable(interspace ${SRCS} ${SHADER_FILES})
+add_executable(quanta ${SRCS} ${SHADER_FILES})
 
-target_link_libraries(interspace
+target_link_libraries(quanta
 	${SYSTEM_LIBRARIES}
 	${SDL2_LIBRARY}
 	${SDL2MAIN_LIBRARY}
 )
 
 if (MSVC)
-	target_compile_definitions(interspace PRIVATE -D_CRT_SECURE_NO_WARNINGS)
+	target_compile_definitions(quanta PRIVATE -D_CRT_SECURE_NO_WARNINGS)
 endif()
 
-target_compile_definitions(interspace PRIVATE -DGLM_DEPTH_ZERO_TO_ONE -DGLM_FORCE_RADIANS)
-target_precompile_headers(interspace PUBLIC "$<$<COMPILE_LANGUAGE:CXX>:${PCH_FILE}>")
+target_compile_definitions(quanta PRIVATE -DGLM_DEPTH_ZERO_TO_ONE -DGLM_FORCE_RADIANS)
+target_precompile_headers(quanta PUBLIC "$<$<COMPILE_LANGUAGE:CXX>:${PCH_FILE}>")
 
-target_include_directories(interspace PUBLIC
+target_include_directories(quanta PUBLIC
 	${CMAKE_CURRENT_SOURCE_DIR}/include
 	${CMAKE_CURRENT_SOURCE_DIR}/src
 	${CMAKE_BINARY_DIR}/dep
 )
 
-target_link_directories(interspace PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}/lib)
+target_link_directories(quanta PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}/lib)
 
-set_property(TARGET interspace PROPERTY CXX_STANDARD 17)
-set_property(TARGET interspace PROPERTY C_STANDARD 99)
+set_property(TARGET quanta PROPERTY CXX_STANDARD 17)
+set_property(TARGET quanta PROPERTY C_STANDARD 99)

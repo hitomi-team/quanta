@@ -15,7 +15,7 @@ RenderService::RenderService() : GameService("RenderService")
 {
 	CVar_Add(&CVAR_VAR(r_fpsmax));
 
-	this->renderAPI = std::make_unique< VulkanAPI >();
+	this->renderAPI = std::make_unique< VulkanAPI >(GAME_TITLE_NAME);
 	g_VulkanAPI = dynamic_cast< VulkanAPI * >(this->renderAPI.get());
 
 	m_device = g_VulkanAPI->physicalDevices[0]->CreateLogicalDevice();

@@ -3,6 +3,8 @@
 
 #include "game_service.h"
 
+#define GAME_TITLE_NAME "Quanta Engine"
+
 class Game {
 public:
 	Game();
