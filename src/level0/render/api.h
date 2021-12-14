@@ -396,14 +396,14 @@ class IRenderSwapchain {
 public:
 	inline virtual ~IRenderSwapchain() {}
 
-	virtual bool GetAvailableImage(std::shared_ptr< IRenderSemaphore > semaphore, std::shared_ptr< IRenderFence > fence, uint64_t timeout, uint32_t &index) = 0;
+	virtual ESwapchainResult GetAvailableImage(std::shared_ptr< IRenderSemaphore > semaphore, std::shared_ptr< IRenderFence > fence, uint64_t timeout, uint32_t &index) = 0;
 	virtual RenderExtent2D GetExtent() = 0;
 	virtual std::shared_ptr< IRenderImage > GetImage(uint32_t index) = 0;
 	virtual std::vector< std::shared_ptr< IRenderImage > > GetImages() = 0;
 	virtual uint32_t GetMaxImages() = 0;
 	virtual EDeviceQueue GetPresentingQueue() = 0;
 
-	virtual bool PresentImage(std::shared_ptr< IRenderSemaphore > waitSemaphore, uint32_t index) = 0;
+	virtual ESwapchainResult PresentImage(std::shared_ptr< IRenderSemaphore > waitSemaphore, uint32_t index) = 0;
 	virtual void Recreate(ESwapchainPresentMode presentMode, EDeviceQueue preferPresentQueue) = 0;
 };
 

@@ -30,17 +30,19 @@ VulkanSwapchain::~VulkanSwapchain()
 	this->numImages = 0;
 }
 
-bool VulkanSwapchain::GetAvailableImage(std::shared_ptr< IRenderSemaphore > semaphore, std::shared_ptr< IRenderFence > fence, uint64_t timeout, uint32_t &index)
+ESwapchainResult VulkanSwapchain::GetAvailableImage(std::shared_ptr< IRenderSemaphore > semaphore, std::shared_ptr< IRenderFence > fence, uint64_t timeout, uint32_t &index)
 {
 	VkFence fenceHandle = fence != nullptr ? std::dynamic_pointer_cast< VulkanFence >(fence)->handle : VK_NULL_HANDLE;
 	VkResult result = this->device->ftbl.vkAcquireNextImageKHR(this->device->handle, this->handle, timeout, std::dynamic_pointer_cast< VulkanSemaphore >(semaphore)->handle, fenceHandle, &index);
 
 	if (result == VK_SUBOPTIMAL_KHR || result == VK_ERROR_OUT_OF_DATE_KHR)
-		return false;
+		return SWAPCHAIN_RESULT_SUBOPTIMAL;
+	else if (result == VK_NOT_READY)
+		return SWAPCHAIN_RESULT_NOT_READY;
 	else if (result != VK_SUCCESS)
-		throw std::runtime_error("VulkanSwapchain: Cannot acquire next image!");
+		return SWAPCHAIN_RESULT_DEVICE_ERROR;
 
-	return true;
+	return SWAPCHAIN_RESULT_SUCCESS;
 }
 
 RenderExtent2D VulkanSwapchain::GetExtent()
@@ -69,7 +71,7 @@ EDeviceQueue VulkanSwapchain::GetPresentingQueue()
 	return m_presentingQueue;
 }
 
-bool VulkanSwapchain::PresentImage(std::shared_ptr< IRenderSemaphore > waitSemaphore, uint32_t index)
+ESwapchainResult VulkanSwapchain::PresentImage(std::shared_ptr< IRenderSemaphore > waitSemaphore, uint32_t index)
 {
 	VkPresentInfoKHR presentInfo;
 	presentInfo.sType = VK_STRUCTURE_TYPE_PRESENT_INFO_KHR;
@@ -82,14 +84,12 @@ bool VulkanSwapchain::PresentImage(std::shared_ptr< IRenderSemaphore > waitSemap
 	presentInfo.pResults = nullptr;
 
 	VkResult result = this->device->ftbl.vkQueuePresentKHR(this->device->GetQueue(m_presentingQueue), &presentInfo);
-	if (result == VK_SUBOPTIMAL_KHR || result == VK_ERROR_OUT_OF_DATE_KHR) {
-		g_Log.Debug("Surface Out Of Date!");
-		return false;
-	} else if (result != VK_SUCCESS) {
-		throw std::runtime_error("VulkanSwapchain: Cannot present image!");
-	}
+	if (result == VK_SUBOPTIMAL_KHR || result == VK_ERROR_OUT_OF_DATE_KHR)
+		return SWAPCHAIN_RESULT_SUBOPTIMAL;
+	else if (result != VK_SUCCESS)
+		return SWAPCHAIN_RESULT_DEVICE_ERROR;
 
-	return true;
+	return SWAPCHAIN_RESULT_SUCCESS;
 }
 
 void VulkanSwapchain::Recreate(ESwapchainPresentMode presentMode, EDeviceQueue preferPresentQueue)

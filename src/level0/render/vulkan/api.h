@@ -259,14 +259,14 @@ public:
 
 	~VulkanSwapchain();
 
-	bool GetAvailableImage(std::shared_ptr< IRenderSemaphore > semaphore, std::shared_ptr< IRenderFence > fence, uint64_t timeout, uint32_t &index);
+	ESwapchainResult GetAvailableImage(std::shared_ptr< IRenderSemaphore > semaphore, std::shared_ptr< IRenderFence > fence, uint64_t timeout, uint32_t &index);
 	RenderExtent2D GetExtent();
 	std::shared_ptr< IRenderImage > GetImage(uint32_t index);
 	std::vector< std::shared_ptr< IRenderImage > > GetImages();
 	uint32_t GetMaxImages();
 	EDeviceQueue GetPresentingQueue();
 
-	bool PresentImage(std::shared_ptr< IRenderSemaphore > waitSemaphore, uint32_t index);
+	ESwapchainResult PresentImage(std::shared_ptr< IRenderSemaphore > waitSemaphore, uint32_t index);
 	void Recreate(ESwapchainPresentMode presentMode, EDeviceQueue preferPresentQueue);
 private:
 	void Init(ESwapchainPresentMode presentMode, bool useOldSwapchain, EDeviceQueue preferPresentQueue);
