@@ -46,6 +46,7 @@ class glslcCompiler(ShaderCompiler):
             stdout = subprocess.check_output([self.compilerPath,
                 '-fshader-stage=' + shaderStage,
                 '-M', sourceFilePath,
+                '--target-env=vulkan1.2',
                 '-D_VULKAN'
             ], stderr=subprocess.STDOUT, universal_newlines=True)
         except subprocess.CalledProcessError as exc:
@@ -62,6 +63,7 @@ class glslcCompiler(ShaderCompiler):
                 '-c', sourceFilePath,
                 '-o', outputFilePath,
                 '-D_VULKAN',
+                '--target-env=vulkan1.2',
                 '-O'
             ], stderr=subprocess.STDOUT, universal_newlines=True)
             return True
@@ -76,7 +78,7 @@ class glslcCompiler(ShaderCompiler):
 
 class dxcCompiler(ShaderCompiler):
     shaderStages = ['vert', 'frag', 'geom', 'tess', 'comp']
-    profiles = ['vs_6_0', 'ps_6_0', 'gs_6_0', 'ts_6_0', 'cs_6_0']
+    profiles = ['vs_6_2', 'ps_6_2', 'gs_6_2', 'ts_6_2', 'cs_6_2']
 
     # make a fake makedeps
     # this is ugly, but it will have to do for now
@@ -84,10 +86,11 @@ class dxcCompiler(ShaderCompiler):
         try:
             profile = self.profiles[self.shaderStages.index(shaderStage)]
             spirvFlag = '-spirv' if self.target == 'spirv' else ''
+            spirvEnvFlag = '-fspv-target-env=vulkan1.2' if self.target == 'spirv' else ''
             apiMacro = '-D_VULKAN' if self.target == 'spirv' else '-D_D3D12'
             stdout = subprocess.check_output([self.compilerPath,
                 '-nologo',
-                sourceFilePath, spirvFlag,
+                sourceFilePath, spirvFlag, spirvEnvFlag,
                 '-Vi', '-Fo', '/dev/null' if os.name == 'posix' else 'nul',
                 '-D_D3D12',
                 '-T', profile
@@ -111,10 +114,11 @@ class dxcCompiler(ShaderCompiler):
         try:
             profile = self.profiles[self.shaderStages.index(shaderStage)]
             spirvFlag = '-spirv' if self.target == 'spirv' else ''
+            spirvEnvFlag = '-fspv-target-env=vulkan1.2' if self.target == 'spirv' else ''
             apiMacro = '-D_VULKAN' if self.target == 'spirv' else '-D_D3D12'
             stdout = subprocess.check_output([self.compilerPath,
                 '-nologo',
-                sourceFilePath, spirvFlag,
+                sourceFilePath, spirvFlag, spirvEnvFlag,
                 '-Fo', outputFilePath,
                 apiMacro,
                 '-T', profile
