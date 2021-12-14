@@ -30,8 +30,6 @@ private:
 	PerfClock m_pc;
 	double m_lag = 0.;
 
-	size_t m_frameCounter = 0;
-
 	void RedoCommandBuffers();
 };
 
