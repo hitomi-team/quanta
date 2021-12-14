@@ -266,28 +266,36 @@ void VulkanDevice::Submit(EDeviceQueue queue, std::shared_ptr< IRenderCommandBuf
 		throw std::runtime_error("VulkanDevice: Failed to submit command buffer!");
 }
 
-void VulkanDevice::SubmitBulk(EDeviceQueue queue, const std::vector< std::shared_ptr< IRenderCommandBuffer > > &_commandBuffers, std::shared_ptr< IRenderSemaphore > _waitSemaphore, EPipelineStage waitPipelineStage, std::shared_ptr< IRenderSemaphore > _signalSemaphore, std::shared_ptr< IRenderFence > _fence)
+void VulkanDevice::SubmitBulk(EDeviceQueue queue, const std::vector< std::shared_ptr< IRenderCommandBuffer > > &_commandBuffers, const std::vector< std::shared_ptr< IRenderSemaphore > > &_waitSemaphores, const std::vector< EPipelineStage > &_waitPipelineStages, const std::vector< std::shared_ptr< IRenderSemaphore > > &_signalSemaphores, std::shared_ptr< IRenderFence > _fence)
 {
 	VkQueue queueObject = m_queues[queue];
 
 	std::vector< VkCommandBuffer > commandBuffers(_commandBuffers.size());
-	auto waitSemaphore = std::dynamic_pointer_cast< VulkanSemaphore >(_waitSemaphore);
-	auto signalSemaphore = std::dynamic_pointer_cast< VulkanSemaphore >(_signalSemaphore);
+	std::vector< VkSemaphore > waitSemaphores(_waitSemaphores.size()), signalSemaphores(_signalSemaphores.size());
+	std::vector< VkPipelineStageFlags > waitPipelineStages(_waitPipelineStages.size());
 	auto fence = std::dynamic_pointer_cast< VulkanFence >(_fence);
 
 	for (size_t i = 0; i < _commandBuffers.size(); i++)
 		commandBuffers[i] = std::dynamic_pointer_cast< VulkanCommandBuffer >(_commandBuffers[i])->handle;
 
+	for (size_t i = 0; i < _waitSemaphores.size(); i++) {
+		waitSemaphores[i] = std::dynamic_pointer_cast< VulkanSemaphore >(_waitSemaphores[i])->handle;
+		waitPipelineStages[i] = static_cast< VkPipelineStageFlags >(_waitPipelineStages[i]);
+	}
+
+	for (size_t i = 0; i < _signalSemaphores.size(); i++)
+		signalSemaphores[i] = std::dynamic_pointer_cast< VulkanSemaphore >(_signalSemaphores[i])->handle;
+
 	VkSubmitInfo submitInfo;
 	submitInfo.sType = VK_STRUCTURE_TYPE_SUBMIT_INFO;
 	submitInfo.pNext = nullptr;
-	submitInfo.waitSemaphoreCount = waitSemaphore != nullptr ? 1 : 0;
-	submitInfo.pWaitSemaphores = waitSemaphore != nullptr ? &waitSemaphore->handle : nullptr;
-	submitInfo.pWaitDstStageMask = reinterpret_cast< VkPipelineStageFlags * >(&waitPipelineStage);
+	submitInfo.waitSemaphoreCount = static_cast< uint32_t >(waitSemaphores.size());
+	submitInfo.pWaitSemaphores = waitSemaphores.data();
+	submitInfo.pWaitDstStageMask = waitPipelineStages.data();
 	submitInfo.commandBufferCount = static_cast< uint32_t >(commandBuffers.size());
 	submitInfo.pCommandBuffers = commandBuffers.data();
-	submitInfo.signalSemaphoreCount = signalSemaphore != nullptr ? 1 : 0;
-	submitInfo.pSignalSemaphores = signalSemaphore != nullptr ? &signalSemaphore->handle : nullptr;
+	submitInfo.signalSemaphoreCount = static_cast< uint32_t >(signalSemaphores.size());
+	submitInfo.pSignalSemaphores = signalSemaphores.data();
 
 	if (this->ftbl.vkQueueSubmit(queueObject, 1, &submitInfo, fence->handle) != VK_SUCCESS)
 		throw std::runtime_error("VulkanDevice: Failed to submit command buffer!");
