@@ -1,9 +1,8 @@
 #include "common.hlsl"
 
 struct VS_INPUT {
-	VK_LOCATION(0) float4 position : POSITION;
-	VK_LOCATION(1) float4 normal   : NORMAL;
-	VK_LOCATION(2) float2 texcoord : TEXCOORD0;
+	VK_LOCATION(0) float2 position : POSITION;
+	VK_LOCATION(1) float2 texcoord : TEXCOORD0;
 };
 
 struct PS_INPUT {
@@ -20,7 +19,7 @@ PS_INPUT main(VS_INPUT input)
 {
 	PS_INPUT outps;
 
-	outps.position = input.position;
+	outps.position = float4(input.position, 0.0f, 1.0f);
 	outps.texcoord = input.texcoord;
 
 	return outps;
