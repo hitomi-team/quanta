@@ -18,8 +18,14 @@ void InputService::Update()
 	SDL_Event event;
 	bool recoverFromWait = false;
 
-	while (SDL_PollEvent(&event) > 0 || recoverFromWait) {
-		recoverFromWait = false;
+	while (true) {
+		if (recoverFromWait) {
+			recoverFromWait = false;
+		} else {
+			if (SDL_PollEvent(&event) <= 0)
+				break;
+		}
+
 		switch (event.type) {
 		case SDL_QUIT:
 			g_Game->RequestClose();
@@ -32,7 +38,7 @@ void InputService::Update()
 			case SDL_WINDOWEVENT_MINIMIZED:
 				recoverFromWait = true;
 				SDL_WaitEvent(&event);
-				continue;
+				break;
 			}
 			break;
 		}
