@@ -68,7 +68,10 @@ void Presenter::Recreate(ESwapchainPresentMode presentMode)
 
 	m_framebuffers.resize(m_images.size());
 	for (size_t i = 0; i < m_images.size(); i++)
-		m_framebuffers[i] = m_device->CreateFramebuffer(m_renderpass, m_images[i], m_images[i]->GetExtent());
+		m_framebuffers[i] = m_device->CreateFramebuffer(m_renderpass, m_images[i], [&]() -> RenderExtent2D {
+			auto extent = m_images[i]->GetExtent();
+			return RenderExtent2D { extent.width, extent.height };
+		}());
 
 	m_presenterSync.resize(m_images.size());
 	for (size_t i = 0; i < m_images.size(); i++) {

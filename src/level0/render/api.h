@@ -315,9 +315,8 @@ public:
 
 	// Render
 	virtual std::shared_ptr< IRenderPass > CreateRenderPass(const std::vector< RenderAttachmentDescription > &attachments, const std::vector< RenderSubpassDescription > &subpasses, const std::vector< RenderSubpassDependency > &subpassDependencies) = 0;
-
-	virtual std::shared_ptr< IRenderFramebuffer > CreateFramebuffer(std::shared_ptr< IRenderPass > renderPass, const std::vector< std::shared_ptr< IRenderImage > > &images, const RenderExtent3D &extent) = 0;
-	virtual std::shared_ptr< IRenderFramebuffer > CreateFramebuffer(std::shared_ptr< IRenderPass > renderPass, std::shared_ptr< IRenderImage > image, const RenderExtent3D &extent) = 0;
+	virtual std::shared_ptr< IRenderFramebuffer > CreateFramebuffer(std::shared_ptr< IRenderPass > renderPass, const std::vector< std::shared_ptr< IRenderImage > > &images, const RenderExtent2D &extent) = 0;
+	virtual std::shared_ptr< IRenderFramebuffer > CreateFramebuffer(std::shared_ptr< IRenderPass > renderPass, std::shared_ptr< IRenderImage > image, const RenderExtent2D &extent) = 0;
 	virtual std::shared_ptr< IRenderSwapchain > CreateSwapchain(ESwapchainPresentMode presentMode, EDeviceQueue preferPresentQueue) = 0; // will handle image counts, etc...
 
 	// Samplers
@@ -343,7 +342,7 @@ public:
 	inline virtual ~IRenderAllocator() {}
 
 	virtual std::shared_ptr< IRenderBuffer > AllocateBuffer(EBufferUsage usage, uint64_t size) = 0;
-	virtual std::shared_ptr< IRenderImage > AllocateImage(EImageType type, EImageFormat format, EImageUsage usage, RenderExtent3D extent3d, const RenderImageSubresourceRange &subresourceRange) = 0;
+	virtual std::shared_ptr< IRenderImage > AllocateImage(EImageType type, EImageFormat format, EImageUsage usage, const RenderExtent3D &extent3d, const RenderImageSubresourceRange &subresourceRange) = 0;
 
 	virtual EResourceMemoryUsage GetResourceMemoryUsage() = 0;
 
@@ -392,7 +391,7 @@ public:
 
 	virtual std::vector< std::shared_ptr< IRenderImage > > GetImages() = 0;
 	virtual std::shared_ptr< IRenderPass > GetRenderPass() = 0;
-	virtual RenderExtent3D GetExtent() = 0;
+	virtual RenderExtent2D GetExtent() = 0;
 	virtual bool IsMultiView() = 0;
 };
 

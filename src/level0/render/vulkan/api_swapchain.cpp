@@ -236,7 +236,7 @@ void VulkanSwapchain::Init(ESwapchainPresentMode _presentMode, bool useOldSwapch
 					return IMAGE_FORMAT_UNKNOWN;
 				}
 			}(),
-			RenderExtent3D { m_extent.width, m_extent.height, 0 },
+			m_extent,
 			range
 		));
 }

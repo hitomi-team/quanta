@@ -2,7 +2,7 @@
 
 #include "api.h"
 
-VulkanFramebuffer::VulkanFramebuffer(VulkanDevice *device, std::shared_ptr< IRenderPass > renderPass, const std::vector< std::shared_ptr< IRenderImage > > &images, const RenderExtent3D &extent)
+VulkanFramebuffer::VulkanFramebuffer(VulkanDevice *device, std::shared_ptr< IRenderPass > renderPass, const std::vector< std::shared_ptr< IRenderImage > > &images, const RenderExtent2D &extent)
 {
 	this->device = device;
 
@@ -34,7 +34,7 @@ VulkanFramebuffer::VulkanFramebuffer(VulkanDevice *device, std::shared_ptr< IRen
 		throw std::runtime_error("VulkanFramebuffer: Failed to create framebuffer!");
 }
 
-VulkanFramebuffer::VulkanFramebuffer(VulkanDevice *device, std::shared_ptr< IRenderPass > renderPass, std::shared_ptr< IRenderImage > image, const RenderExtent3D &extent)
+VulkanFramebuffer::VulkanFramebuffer(VulkanDevice *device, std::shared_ptr< IRenderPass > renderPass, std::shared_ptr< IRenderImage > image, const RenderExtent2D &extent)
 {
 	this->device = device;
 
@@ -80,7 +80,7 @@ std::shared_ptr< IRenderPass > VulkanFramebuffer::GetRenderPass()
 	return std::dynamic_pointer_cast< IRenderPass >(this->renderPass);
 }
 
-RenderExtent3D VulkanFramebuffer::GetExtent()
+RenderExtent2D VulkanFramebuffer::GetExtent()
 {
 	return m_extent;
 }

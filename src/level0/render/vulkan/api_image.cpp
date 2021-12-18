@@ -60,7 +60,7 @@ const std::array< VulkanFormatAlphaProperties, MAX_IMAGE_FORMAT_ENUM > g_VulkanI
 	VulkanFormatAlphaProperties { VK_FORMAT_D32_SFLOAT_S8_UINT, false },
 };
 
-VulkanImage::VulkanImage(VulkanDevice *device, VmaPool pool, EResourceMemoryUsage memoryUsage, EImageType type, EImageFormat format, EImageUsage usage, RenderExtent3D extent, const RenderImageSubresourceRange &subresourceRange)
+VulkanImage::VulkanImage(VulkanDevice *device, VmaPool pool, EResourceMemoryUsage memoryUsage, EImageType type, EImageFormat format, EImageUsage usage, const RenderExtent3D &extent, const RenderImageSubresourceRange &subresourceRange)
 {
 	this->device = device;
 
@@ -115,7 +115,7 @@ VulkanImage::VulkanImage(VulkanDevice *device, VmaPool pool, EResourceMemoryUsag
 		throw std::runtime_error("VulkanImage: Cannot create image view!");
 }
 
-VulkanImage::VulkanImage(VulkanDevice *device, VkImage image, EImageFormat format, RenderExtent3D extent, const RenderImageSubresourceRange &subresourceRange)
+VulkanImage::VulkanImage(VulkanDevice *device, VkImage image, EImageFormat format, const RenderExtent2D &extent, const RenderImageSubresourceRange &subresourceRange)
 {
 	this->device = device;
 	this->handle = image;
@@ -124,7 +124,7 @@ VulkanImage::VulkanImage(VulkanDevice *device, VkImage image, EImageFormat forma
 	m_type = IMAGE_TYPE_2D;
 	m_format = format;
 	m_usage = IMAGE_USAGE_COLOR_ATTACHMENT;
-	m_extent = extent;
+	m_extent = { extent.width, extent.height, 1 };
 	m_subresourceRange = subresourceRange;
 
 	VkImageViewCreateInfo imageViewCreateInfo;

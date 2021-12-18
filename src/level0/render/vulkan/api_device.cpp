@@ -213,12 +213,12 @@ std::shared_ptr< IRenderPass > VulkanDevice::CreateRenderPass(const std::vector<
 	return std::dynamic_pointer_cast< IRenderPass >(std::make_shared< VulkanRenderPass >(this, attachments, subpasses, subpassDependencies));
 }
 
-std::shared_ptr< IRenderFramebuffer > VulkanDevice::CreateFramebuffer(std::shared_ptr< IRenderPass > renderPass, const std::vector< std::shared_ptr< IRenderImage > > &images, const RenderExtent3D &extent)
+std::shared_ptr< IRenderFramebuffer > VulkanDevice::CreateFramebuffer(std::shared_ptr< IRenderPass > renderPass, const std::vector< std::shared_ptr< IRenderImage > > &images, const RenderExtent2D &extent)
 {
 	return std::dynamic_pointer_cast< IRenderFramebuffer >(std::make_shared< VulkanFramebuffer >(this, renderPass, images, extent));
 }
 
-std::shared_ptr< IRenderFramebuffer > VulkanDevice::CreateFramebuffer(std::shared_ptr< IRenderPass > renderPass, std::shared_ptr< IRenderImage > image, const RenderExtent3D &extent)
+std::shared_ptr< IRenderFramebuffer > VulkanDevice::CreateFramebuffer(std::shared_ptr< IRenderPass > renderPass, std::shared_ptr< IRenderImage > image, const RenderExtent2D &extent)
 {
 	return std::dynamic_pointer_cast< IRenderFramebuffer >(std::make_shared< VulkanFramebuffer >(this, renderPass, image, extent));
 }
