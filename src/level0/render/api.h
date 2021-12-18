@@ -329,7 +329,11 @@ public:
 
 	// Command Submission
 	virtual void Submit(EDeviceQueue queue, std::shared_ptr< IRenderCommandBuffer > commandBuffer, std::shared_ptr< IRenderSemaphore > waitSemaphore, EPipelineStage waitPipelineStage, std::shared_ptr< IRenderSemaphore > signalSemaphore, std::shared_ptr< IRenderFence > fence) = 0;
-	virtual void SubmitBulk(EDeviceQueue queue, const std::vector< std::shared_ptr< IRenderCommandBuffer > > &commandBuffers, const std::vector< std::shared_ptr< IRenderSemaphore > > &waitSemaphores, const std::vector< EPipelineStage > &waitPipelineStages, const std::vector< std::shared_ptr< IRenderSemaphore > > &signalSemaphore, std::shared_ptr< IRenderFence > fence) = 0;
+	virtual void Submit(EDeviceQueue queue, std::shared_ptr< IRenderCommandBuffer > commandBuffer, const std::vector< std::shared_ptr< IRenderSemaphore > > &waitSemaphores, const std::vector< EPipelineStage > &waitPipelineStages, std::shared_ptr< IRenderSemaphore > signalSemaphore, std::shared_ptr< IRenderFence > fence) = 0;
+	virtual void Submit(EDeviceQueue queue, std::shared_ptr< IRenderCommandBuffer > commandBuffer, const std::vector< std::shared_ptr< IRenderSemaphore > > &waitSemaphores, const std::vector< EPipelineStage > &waitPipelineStages, const std::vector< std::shared_ptr< IRenderSemaphore > > &signalSemaphores, std::shared_ptr< IRenderFence > fence) = 0;
+	virtual void Submit(EDeviceQueue queue, const std::vector< std::shared_ptr< IRenderCommandBuffer > > &commandBuffers, std::shared_ptr< IRenderSemaphore > waitSemaphore, EPipelineStage waitPipelineStage, std::shared_ptr< IRenderSemaphore > signalSemaphore, std::shared_ptr< IRenderFence > fence) = 0;
+	virtual void Submit(EDeviceQueue queue, const std::vector< std::shared_ptr< IRenderCommandBuffer > > &commandBuffers, const std::vector< std::shared_ptr< IRenderSemaphore > > &waitSemaphores, const std::vector< EPipelineStage > &waitPipelineStages, std::shared_ptr< IRenderSemaphore > signalSemaphore, std::shared_ptr< IRenderFence > fence) = 0;
+	virtual void Submit(EDeviceQueue queue, const std::vector< std::shared_ptr< IRenderCommandBuffer > > &commandBuffers, const std::vector< std::shared_ptr< IRenderSemaphore > > &waitSemaphores, const std::vector< EPipelineStage > &waitPipelineStages, const std::vector< std::shared_ptr< IRenderSemaphore > > &signalSemaphores, std::shared_ptr< IRenderFence > fence) = 0;
 };
 
 class IRenderAllocator {
