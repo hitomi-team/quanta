@@ -92,7 +92,7 @@ class dxcCompiler(ShaderCompiler):
                 '-nologo',
                 sourceFilePath, spirvFlag, spirvEnvFlag,
                 '-Vi', '-Fo', '/dev/null' if os.name == 'posix' else 'nul',
-                '-D_D3D12',
+                apiMacro,
                 '-T', profile
             ], stderr=subprocess.STDOUT, universal_newlines=True)
         except subprocess.CalledProcessError as exc:
