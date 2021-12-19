@@ -1,33 +1,97 @@
 #!/usr/bin/env python3
-# build the data pack for the game
-# this must be ran in the root dir of the project
+# build the data archive for the game
 
+from pathlib import Path
+from shutil import which
+
+import argparse
 import os
 import zipfile
-import argparse
 
-parser = argparse.ArgumentParser(description='build data pack')
-parser.add_argument('-o', type=str, help='output directory', required=True)
-args = parser.parse_args()
+class DataArchiver():
+    dryRun: bool
+    compressed: bool
+    rebuild: bool
 
-dir_path = os.getcwd()
-open_path = args.o
+    cwd: Path
+    sourceDir: Path
+    outputDir: Path
 
-z = zipfile.ZipFile(os.path.join(open_path, "data.zip"), "w", compression=zipfile.ZIP_STORED)
+    filesUnarchivable = [
+        '.gitignore'
+    ]
 
-# this is done so the zip shows the inlined content of data
-data_path = os.path.normpath(os.path.join(dir_path, 'data'))
-print('chdir into:', data_path)
-os.chdir(data_path)
+    def log(self, prefix, msg):
+        print('DataArchiver ** {}: {}'.format(prefix, msg))
 
-print('writing data.zip to:', os.path.join(open_path, "data.zip"))
-for root, dirs, files in os.walk("."):
-    for file in files:
-        if file == '.gitignore':
-            continue
+    def logError(self, prefix, msg):
+        print('DataArchiver ** {}: {}'.format(prefix, msg), file=sys.stderr)
 
-        path = os.path.normpath(os.path.join(root, file))
-        print("adding: " + path)
-        z.write(path)
+    def __init__(self, args):
+        self.dryRun = args.dryRun
+        self.compressed = args.compressed
+        self.rebuild = args.rebuild
 
-z.close()
+        self.cwd = Path(os.getcwd())
+        self.sourceDir = self.cwd / Path(args.sourceDir)
+        self.outputDir = self.cwd / Path(args.outputDir)
+
+        if not self.sourceDir.exists():
+            self.logError('Error', 'sourceDir not found: ' + str(self.sourceDir))
+            sys.exit(1)
+
+        if not self.outputDir.exists():
+            self.logError('Error', 'outputDir not found: ' + str(self.sourceDir))
+            sys.exit(1)
+
+        os.chdir(str(self.sourceDir))
+
+    def __del__(self):
+        if not self.dryRun and self.rebuild:
+            self.zipFile.close()
+
+    def run(self):
+        fileList = sorted(Path('.').glob('**/*'))
+        popIndices = []
+
+        # preprocess fileList
+        for path in self.filesUnarchivable:
+            try:
+                fileList.pop(fileList.index(Path(path)))
+            except ValueError as exc:
+                pass
+
+        outputPath = self.outputDir / Path('data.zip')
+
+        # check for new files
+        if not self.rebuild:
+            for path in fileList:
+                if os.path.getmtime(path) > os.path.getmtime(outputPath):
+                    self.rebuild = True
+                    break
+
+        if not self.rebuild:
+            self.log('Info', 'Data archive up to date.')
+            return
+
+        if not self.dryRun:
+            self.zipFile = zipfile.ZipFile(self.outputDir / 'data.zip', 'w', compression=zipfile.ZIP_STORED if not self.compressed else zipfile.ZIP_DEFLATED)
+
+        # start archiving
+        for path in fileList:
+            self.log('Info', 'Archiving: {}'.format(str(path)))
+
+            if not self.dryRun:
+                self.zipFile.write(str(path))
+
+if __name__ == '__main__':
+    parser = argparse.ArgumentParser(description='Data Archiver')
+    parser.add_argument('-c', type=str, dest='sourceDir', metavar='DIRECTORY', help='Path to directory of data', required=True)
+    parser.add_argument('-o', type=str, dest='outputDir', metavar='DIRECTORY', help='Path to directory for output', required=True)
+    parser.add_argument('--dry_run', dest='dryRun', help='Do not modify any files on disk', action='store_true')
+    parser.add_argument('--compressed', dest='compressed', help='Compress data (use for testing or no delta patching capability)', action='store_true')
+    parser.add_argument('--rebuild', dest='rebuild', help='Rebuild archive', action='store_true')
+    args = parser.parse_args()
+
+    buildSystem = DataArchiver(args)
+    buildSystem.run()
