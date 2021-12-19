@@ -18,8 +18,7 @@ void Presenter::Recreate(ESwapchainPresentMode presentMode)
 	if (m_init)
 		m_swapchain->Recreate(presentMode, DEVICE_QUEUE_GRAPHICS);
 
-	for (auto &sync : m_presenterSync)
-		sync.fence->Wait(UINT64_MAX);
+	m_device->WaitIdle();
 
 	IO_EraseCPPVector(m_imagesInFlight);
 	IO_EraseCPPVector(m_presenterSync);

@@ -64,7 +64,6 @@ void RenderService::Update()
 			g_Game->Abort("RenderService: Unable to acquire next image!");
 		}
 
-
 		m_device->Submit(DEVICE_QUEUE_GRAPHICS, m_commandbufs[imageIndex], sync.imageAvailable, PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT, sync.renderFinished, sync.fence);
 
 		result = m_presenter->QueuePresent();
