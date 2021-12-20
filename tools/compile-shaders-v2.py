@@ -169,7 +169,7 @@ class ShaderBuildSystem():
             sys.exit(1)
 
         if not self.outputDir.exists():
-            self.logError('Error', 'outputDir not found: ' + str(self.sourceDir))
+            self.logError('Error', 'outputDir not found: ' + str(self.outputDir))
             sys.exit(1)
 
         if not args.tool in self.tools:
