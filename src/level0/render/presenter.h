@@ -3,21 +3,21 @@
 
 #include "api.h"
 
-struct PresenterSync {
+struct RenderPresenterSync {
 	std::shared_ptr< IRenderSemaphore > imageAvailable, renderFinished;
 	std::shared_ptr< IRenderFence > fence;
 };
 
-class Presenter {
+class RenderPresenter {
 public:
-	Presenter() = delete;
+	RenderPresenter() = delete;
 
-	Presenter(std::shared_ptr< IRenderDevice > device, ESwapchainPresentMode presentMode);
-	~Presenter();
+	RenderPresenter(std::shared_ptr< IRenderDevice > device, ESwapchainPresentMode presentMode);
+	~RenderPresenter();
 
 	void Recreate(ESwapchainPresentMode presentMode);
 
-	ESwapchainResult AcquireNextImage(PresenterSync &sync, uint32_t &imageIndex);
+	ESwapchainResult AcquireNextImage(RenderPresenterSync &sync, uint32_t &imageIndex);
 	ESwapchainResult QueuePresent();
 	inline void IncrementFrameCounter() { m_frameCounter = (m_frameCounter + 1) % m_maxImages; }
 
@@ -33,7 +33,7 @@ private:
 	std::vector< std::shared_ptr< IRenderImage > > m_images;
 	std::vector< std::shared_ptr< IRenderFramebuffer > > m_framebuffers;
 	std::vector< std::shared_ptr< IRenderFence > > m_imagesInFlight;
-	std::vector< PresenterSync > m_presenterSync;
+	std::vector< RenderPresenterSync > m_presenterSync;
 	uint32_t m_maxImages = 0, m_frameCounter = 0, m_imageIndex = 0;
 	bool m_init = false;
 };

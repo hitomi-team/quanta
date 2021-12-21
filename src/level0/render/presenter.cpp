@@ -2,18 +2,18 @@
 
 #include "presenter.h"
 
-Presenter::Presenter(std::shared_ptr< IRenderDevice > device, ESwapchainPresentMode presentMode)
+RenderPresenter::RenderPresenter(std::shared_ptr< IRenderDevice > device, ESwapchainPresentMode presentMode)
 {
 	m_device = device;
 	m_swapchain = m_device->CreateSwapchain(presentMode, DEVICE_QUEUE_GRAPHICS);
 	this->Recreate(presentMode);
 }
 
-Presenter::~Presenter()
+RenderPresenter::~RenderPresenter()
 {
 }
 
-void Presenter::Recreate(ESwapchainPresentMode presentMode)
+void RenderPresenter::Recreate(ESwapchainPresentMode presentMode)
 {
 	if (m_init)
 		m_swapchain->Recreate(presentMode, DEVICE_QUEUE_GRAPHICS);
@@ -87,7 +87,7 @@ void Presenter::Recreate(ESwapchainPresentMode presentMode)
 	m_init = true;
 }
 
-ESwapchainResult Presenter::AcquireNextImage(PresenterSync &sync, uint32_t &imageIndex)
+ESwapchainResult RenderPresenter::AcquireNextImage(RenderPresenterSync &sync, uint32_t &imageIndex)
 {
 	m_presenterSync[m_frameCounter].fence->Wait(UINT64_MAX);
 
@@ -105,7 +105,7 @@ ESwapchainResult Presenter::AcquireNextImage(PresenterSync &sync, uint32_t &imag
 	return result;
 }
 
-ESwapchainResult Presenter::QueuePresent()
+ESwapchainResult RenderPresenter::QueuePresent()
 {
 	ESwapchainResult result = m_swapchain->PresentImage(m_presenterSync[m_frameCounter].renderFinished, m_imageIndex);
 	return result;

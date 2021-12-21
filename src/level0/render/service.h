@@ -23,7 +23,7 @@ private:
 
 	std::shared_ptr< IRenderDevice > m_device;
 
-	std::unique_ptr< Presenter > m_presenter;
+	std::unique_ptr< RenderPresenter > m_presenter;
 	std::shared_ptr< IRenderCommandPool > m_commandpool;
 	std::vector< std::shared_ptr< IRenderCommandBuffer > > m_commandbufs;
 

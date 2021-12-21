@@ -21,7 +21,7 @@ RenderService::RenderService() : GameService("RenderService")
 	m_device = g_VulkanAPI->physicalDevices[0]->CreateLogicalDevice();
 	m_commandpool = m_device->CreateCommandPool(DEVICE_QUEUE_GRAPHICS, COMMAND_POOL_USAGE_NORMAL);
 
-	m_presenter = std::make_unique< Presenter >(m_device, PRESENT_MODE_FIFO_VSYNC);
+	m_presenter = std::make_unique< RenderPresenter >(m_device, PRESENT_MODE_FIFO_VSYNC);
 	this->RedoCommandBuffers();
 
 	m_init = true;
@@ -52,7 +52,7 @@ void RenderService::Update()
 
 	while (m_lag >= limit) {
 		uint32_t imageIndex;
-		PresenterSync sync;
+		RenderPresenterSync sync;
 
 		ESwapchainResult result = m_presenter->AcquireNextImage(sync, imageIndex);
 		if (result == SWAPCHAIN_RESULT_SUBOPTIMAL) {
