@@ -64,6 +64,7 @@ class DataArchiver():
         outputPath = self.outputDir / Path('data.zip')
 
         # check for new files
+        self.rebuild = not outputPath.exists()
         if not self.rebuild:
             for path in fileList:
                 if os.path.getmtime(path) > os.path.getmtime(outputPath):
