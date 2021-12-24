@@ -3,7 +3,6 @@
 #include "log.h"
 
 static std::vector< CVar * > CVarList;
-static std::mutex CVarList_mtx;
 
 CVar::CVar(const std::string &name, const std::string &default_value, const std::string &value)
 {
@@ -55,8 +54,6 @@ bool CVar::GetBool()
 
 void CVar_Add(CVar *var)
 {
-	std::lock_guard< std::mutex > lock(CVarList_mtx);
-
 	for (auto &ivar : CVarList) {
 		if (var->GetName() == ivar->GetName())
 			return;
@@ -68,8 +65,6 @@ void CVar_Add(CVar *var)
 
 CVar *CVar_Find(const std::string &name)
 {
-	std::lock_guard< std::mutex > lock(CVarList_mtx);
-
 	for (CVar *var : CVarList) { 
 		if (var->GetName() == name)
 			return var;
@@ -80,13 +75,11 @@ CVar *CVar_Find(const std::string &name)
 
 void CVar_SaveToFile()
 {
-	std::lock_guard< std::mutex > lock(CVarList_mtx);
 	throw std::runtime_error("CVar_SaveToFile unimplemented");
 }
 
 void CVar_CleanAll()
 {
-	std::lock_guard< std::mutex > lock(CVarList_mtx);
 	for (CVar *var : CVarList)
 		var->Cleanup();
 }
