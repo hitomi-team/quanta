@@ -77,7 +77,10 @@ VulkanDevice::VulkanDevice(VulkanPhysicalDevice *physicalDevice)
 	if (!deviceFeatures.features.samplerAnisotropy)
 		throw std::runtime_error("VulkanDevice: Does not support Anisotropic Filtering!");
 
-	static const std::array< const char *, 1 > extensionNames {
+	static const std::array< const char *, 4 > extensionNames {
+		"VK_KHR_bind_memory2",
+		"VK_KHR_dedicated_allocation",
+		"VK_KHR_get_memory_requirements2",
 		VK_KHR_SWAPCHAIN_EXTENSION_NAME,
 	};
 

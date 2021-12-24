@@ -48,6 +48,8 @@ VulkanAPI::VulkanAPI(const char *titleName) : RenderAPI("Vulkan")
 	requiredExtensions.resize(numExtensions);
 	SDL_Vulkan_GetInstanceExtensions(m_window, &numExtensions, requiredExtensions.data());
 
+	requiredExtensions.push_back("VK_KHR_get_physical_device_properties2");
+
 	volkInitializeCustom(reinterpret_cast< PFN_vkGetInstanceProcAddr >(SDL_Vulkan_GetVkGetInstanceProcAddr()));
 
 	VkApplicationInfo appInfo;

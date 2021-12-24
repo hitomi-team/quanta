@@ -1,7 +1,6 @@
 #ifndef LEVEL0_RENDERER_VULKAN_API_H
 #define LEVEL0_RENDERER_VULKAN_API_H
 
-#define VMA_STATIC_VULKAN_FUNCTIONS 0
 #include "volk.h"
 #include "vk_mem_alloc.h"
 #include <SDL2/SDL_vulkan.h>
