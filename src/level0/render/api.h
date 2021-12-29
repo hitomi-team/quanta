@@ -267,11 +267,6 @@ struct RenderImageCopy {
 	RenderExtent3D extent;
 };
 
-struct RenderPipelineShaderInfo {
-	EShaderType type;
-	std::string_view filePath;
-};
-
 struct RenderDrawIndirectParameter {
 	uint32_t vertexCount;
 	uint32_t instanceCount;
