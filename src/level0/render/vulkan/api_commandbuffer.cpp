@@ -226,6 +226,16 @@ void VulkanCommandBuffer::DrawIndexed(uint32_t indexCount, uint32_t instanceCoun
 	this->device->ftbl.vkCmdDrawIndexed(this->handle, indexCount, instanceCount, firstIndex, vertexOffset, firstInstance);
 }
 
+void VulkanCommandBuffer::DrawIndexedIndirect(std::shared_ptr< IRenderBuffer > buffer, uint64_t offset, uint32_t drawCount, uint32_t stride)
+{
+	this->device->ftbl.vkCmdDrawIndexedIndirect(this->handle, std::dynamic_pointer_cast< VulkanBuffer >(buffer)->handle, offset, drawCount, stride);
+}
+
+void VulkanCommandBuffer::DrawIndirect(std::shared_ptr< IRenderBuffer > buffer, uint64_t offset, uint32_t drawCount, uint32_t stride)
+{
+	this->device->ftbl.vkCmdDrawIndirect(this->handle, std::dynamic_pointer_cast< VulkanBuffer >(buffer)->handle, offset, drawCount, stride);
+}
+
 void VulkanCommandBuffer::EndRenderPass()
 {
 	this->device->ftbl.vkCmdEndRenderPass(this->handle);

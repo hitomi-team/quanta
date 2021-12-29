@@ -271,6 +271,21 @@ struct RenderPipelineShaderInfo {
 	std::string_view filePath;
 };
 
+struct RenderDrawIndirectParameter {
+	uint32_t vertexCount;
+	uint32_t instanceCount;
+	uint32_t firstIndex;
+	uint32_t firstInstance;
+};
+
+struct RenderDrawIndexedIndirectParameter {
+	uint32_t indexCount;
+	uint32_t instanceCount;
+	uint32_t firstIndex;
+	int32_t vertexOffset;
+	uint32_t firstInstance;
+};
+
 class RenderAPI {
 public:
 	const char *apiName = nullptr;
@@ -441,6 +456,8 @@ public:
 	virtual void ClearDepthStencilImage(std::shared_ptr< IRenderImage > image, EImageLayout imageLayout, const RenderDepthStencilClearValue &clearValue, const RenderImageSubresourceRange &subresourceRange) = 0;
 	virtual void Draw(uint32_t vertexCount, uint32_t instanceCount, uint32_t firstVertex, uint32_t firstInstance) = 0;
 	virtual void DrawIndexed(uint32_t indexCount, uint32_t instanceCount, uint32_t firstIndex, int32_t vertexOffset, uint32_t firstInstance) = 0;
+	virtual void DrawIndexedIndirect(std::shared_ptr< IRenderBuffer > buffer, uint64_t offset, uint32_t drawCount, uint32_t stride) = 0;
+	virtual void DrawIndirect(std::shared_ptr< IRenderBuffer > buffer, uint64_t offset, uint32_t drawCount, uint32_t stride) = 0;
 	virtual void EndRenderPass() = 0;
 
 	// compute
