@@ -7,7 +7,7 @@ public:
 
 	GameService() = delete;
 	GameService(const char *_name);
-	inline virtual ~GameService() {};
+	virtual ~GameService() = default;
 
 	virtual void Update() = 0;
 
