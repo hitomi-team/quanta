@@ -18,6 +18,7 @@ add_sources(
 	api_renderpass.cpp
 	api_sampler.cpp
 	api_semaphore.cpp
+	api_shadermodule.cpp
 	api_swapchain.cpp
 	vk_mem_alloc.cpp
 	volk.c

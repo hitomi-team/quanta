@@ -21,6 +21,7 @@ class IRenderDescriptorSetLayout;
 class IRenderDescriptorPool;
 class IRenderDescriptorSet;
 class IRenderPipelineLayout;
+class IRenderShaderModule;
 class IRenderComputePipeline;
 class IRenderGraphicsPipeline;
 // class IRenderRaytracingPipeline;
@@ -338,8 +339,9 @@ public:
 	virtual std::shared_ptr< IRenderSampler > CreateSampler(const RenderSamplerStateDescription &state) = 0;
 
 	// Pipelines
-	virtual std::shared_ptr< IRenderComputePipeline > CreateComputePipeline(const RenderPipelineShaderInfo &shader, std::shared_ptr< IRenderPipelineLayout > pipelineLayout, std::shared_ptr< IRenderComputePipeline > basePipeline) = 0;
-	virtual std::shared_ptr< IRenderGraphicsPipeline > CreateGraphicsPipeline(const std::vector< RenderPipelineShaderInfo > &shaders, std::shared_ptr< IRenderPipelineLayout > pipelineLayout, std::shared_ptr< IRenderGraphicsPipeline > basePipeline, std::shared_ptr< IRenderPass > renderPass, uint32_t subpass) = 0;
+	virtual std::shared_ptr< IRenderShaderModule > CreateShaderModule(EShaderType type, const void *blob, size_t blobSize) = 0;
+	virtual std::shared_ptr< IRenderComputePipeline > CreateComputePipeline(std::shared_ptr< IRenderShaderModule > shaderModule, std::shared_ptr< IRenderPipelineLayout > pipelineLayout, std::shared_ptr< IRenderComputePipeline > basePipeline) = 0;
+	virtual std::shared_ptr< IRenderGraphicsPipeline > CreateGraphicsPipeline(const std::vector< std::shared_ptr< IRenderShaderModule > > &shaderModules, std::shared_ptr< IRenderPipelineLayout > pipelineLayout, std::shared_ptr< IRenderGraphicsPipeline > basePipeline, std::shared_ptr< IRenderPass > renderPass, uint32_t subpass) = 0;
 
 	// Command Submission
 	virtual void Submit(EDeviceQueue queue, std::shared_ptr< IRenderCommandBuffer > commandBuffer, std::shared_ptr< IRenderSemaphore > waitSemaphore, EPipelineStage waitPipelineStage, std::shared_ptr< IRenderSemaphore > signalSemaphore, std::shared_ptr< IRenderFence > fence) = 0;
@@ -531,11 +533,16 @@ public:
 	virtual ~IRenderPipelineLayout() = default;
 };
 
+class IRenderShaderModule {
+public:
+	virtual ~IRenderShaderModule() = default;
+
+	virtual EShaderType GetType() = 0;
+};
+
 class IRenderComputePipeline {
 public:
 	virtual ~IRenderComputePipeline() = default;
-
-	virtual void Compile() = 0;
 };
 
 class IRenderGraphicsPipeline {

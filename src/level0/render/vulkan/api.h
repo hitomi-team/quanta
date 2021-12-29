@@ -115,8 +115,9 @@ public:
 
 	std::shared_ptr< IRenderSampler > CreateSampler(const RenderSamplerStateDescription &state);
 
-	std::shared_ptr< IRenderComputePipeline > CreateComputePipeline(const RenderPipelineShaderInfo &shader, std::shared_ptr< IRenderPipelineLayout > pipelineLayout, std::shared_ptr< IRenderComputePipeline > basePipeline);
-	std::shared_ptr< IRenderGraphicsPipeline > CreateGraphicsPipeline(const std::vector< RenderPipelineShaderInfo > &shaders, std::shared_ptr< IRenderPipelineLayout > pipelineLayout, std::shared_ptr< IRenderGraphicsPipeline > basePipeline, std::shared_ptr< IRenderPass > renderPass, uint32_t subpass);
+	std::shared_ptr< IRenderShaderModule > CreateShaderModule(EShaderType type, const void *blob, size_t blobSize);
+	std::shared_ptr< IRenderComputePipeline > CreateComputePipeline(std::shared_ptr< IRenderShaderModule > shaderModule, std::shared_ptr< IRenderPipelineLayout > pipelineLayout, std::shared_ptr< IRenderComputePipeline > basePipeline);
+	std::shared_ptr< IRenderGraphicsPipeline > CreateGraphicsPipeline(const std::vector< std::shared_ptr< IRenderShaderModule > > &shaderModules, std::shared_ptr< IRenderPipelineLayout > pipelineLayout, std::shared_ptr< IRenderGraphicsPipeline > basePipeline, std::shared_ptr< IRenderPass > renderPass, uint32_t subpass);
 
 	void Submit(EDeviceQueue queue, std::shared_ptr< IRenderCommandBuffer > commandBuffer, std::shared_ptr< IRenderSemaphore > waitSemaphore, EPipelineStage waitPipelineStage, std::shared_ptr< IRenderSemaphore > signalSemaphore, std::shared_ptr< IRenderFence > fence);
 	void Submit(EDeviceQueue queue, std::shared_ptr< IRenderCommandBuffer > commandBuffer, const std::vector< std::shared_ptr< IRenderSemaphore > > &waitSemaphores, const std::vector< EPipelineStage > &waitPipelineStages, std::shared_ptr< IRenderSemaphore > signalSemaphore, std::shared_ptr< IRenderFence > fence);
@@ -435,20 +436,29 @@ public:
 	~VulkanPipelineLayout();
 };
 
+class VulkanShaderModule : public IRenderShaderModule {
+public:
+	VulkanDevice *device;
+	VkShaderModule handle = VK_NULL_HANDLE;
+
+	VulkanShaderModule() = delete;
+
+	VulkanShaderModule(VulkanDevice *device, EShaderType type, const void *blob, size_t blobSize);
+	~VulkanShaderModule();
+
+	EShaderType GetType();
+private:
+	EShaderType m_type;
+};
+
 class VulkanComputePipeline : public IRenderComputePipeline {
 public:
 	VulkanDevice *device;
 	VkPipeline handle = VK_NULL_HANDLE;
 
 	VulkanComputePipeline() = delete;
-	VulkanComputePipeline(VulkanDevice *device, const RenderPipelineShaderInfo &shader, std::shared_ptr< IRenderPipelineLayout > pipelineLayout, std::shared_ptr< IRenderComputePipeline > basePipeline);
+	VulkanComputePipeline(VulkanDevice *device, std::shared_ptr< IRenderShaderModule > shaderModule, std::shared_ptr< IRenderPipelineLayout > pipelineLayout, std::shared_ptr< IRenderComputePipeline > basePipeline);
 	~VulkanComputePipeline();
-
-	void Compile();
-private:
-	VkShaderModule m_shaderModule;
-	std::shared_ptr< VulkanPipelineLayout > m_pipelineLayout;
-	std::shared_ptr< VulkanComputePipeline > m_basePipeline;
 };
 
 // compute the hash for all states
@@ -463,13 +473,13 @@ public:
 	VkPipeline handle = VK_NULL_HANDLE;
 
 	VulkanGraphicsPipeline() = delete;
-	VulkanGraphicsPipeline(VulkanDevice *device, const std::vector< RenderPipelineShaderInfo > &shaders, std::shared_ptr< IRenderPipelineLayout > pipelineLayout, std::shared_ptr< IRenderGraphicsPipeline > basePipeline, std::shared_ptr< IRenderPass > renderPass, uint32_t subpass);
+	VulkanGraphicsPipeline(VulkanDevice *device, const std::vector< std::shared_ptr< IRenderShaderModule > > &shaders, std::shared_ptr< IRenderPipelineLayout > pipelineLayout, std::shared_ptr< IRenderGraphicsPipeline > basePipeline, std::shared_ptr< IRenderPass > renderPass, uint32_t subpass);
 
 	~VulkanGraphicsPipeline();
 
 	void Compile();
 private:
-	std::vector< VkPipelineShaderStageCreateInfo > m_shaderModules;
+	std::vector< std::shared_ptr< VulkanShaderModule > > m_shaderModules;
 	std::vector< VulkanGraphicsPipelineHash > m_hashmap;
 	std::shared_ptr< VulkanPipelineLayout > m_pipelineLayout;
 	std::shared_ptr< VulkanGraphicsPipeline > m_basePipeline;

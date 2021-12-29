@@ -236,14 +236,19 @@ std::shared_ptr< IRenderSampler > VulkanDevice::CreateSampler(const RenderSample
 	return std::dynamic_pointer_cast< IRenderSampler >(std::make_shared< VulkanSampler >(this, state));
 }
 
-std::shared_ptr< IRenderComputePipeline > VulkanDevice::CreateComputePipeline(const RenderPipelineShaderInfo &shader, std::shared_ptr< IRenderPipelineLayout > pipelineLayout, std::shared_ptr< IRenderComputePipeline > basePipeline)
+std::shared_ptr< IRenderShaderModule > VulkanDevice::CreateShaderModule(EShaderType type, const void *blob, size_t blobSize)
 {
-	return std::dynamic_pointer_cast< IRenderComputePipeline >(std::make_shared< VulkanComputePipeline >(this, shader, pipelineLayout, basePipeline));
+	return std::dynamic_pointer_cast< IRenderShaderModule >(std::make_shared< VulkanShaderModule >(this, type, blob, blobSize));
 }
 
-std::shared_ptr< IRenderGraphicsPipeline > VulkanDevice::CreateGraphicsPipeline(const std::vector< RenderPipelineShaderInfo > &shaders, std::shared_ptr< IRenderPipelineLayout > pipelineLayout, std::shared_ptr< IRenderGraphicsPipeline > basePipeline, std::shared_ptr< IRenderPass > renderPass, uint32_t subpass)
+std::shared_ptr< IRenderComputePipeline > VulkanDevice::CreateComputePipeline(std::shared_ptr< IRenderShaderModule > shaderModule, std::shared_ptr< IRenderPipelineLayout > pipelineLayout, std::shared_ptr< IRenderComputePipeline > basePipeline)
 {
-	return std::dynamic_pointer_cast< IRenderGraphicsPipeline >(std::make_shared< VulkanGraphicsPipeline >(this, shaders, pipelineLayout, basePipeline, renderPass, subpass));
+	return std::dynamic_pointer_cast< IRenderComputePipeline >(std::make_shared< VulkanComputePipeline >(this, shaderModule, pipelineLayout, basePipeline));
+}
+
+std::shared_ptr< IRenderGraphicsPipeline > VulkanDevice::CreateGraphicsPipeline(const std::vector< std::shared_ptr< IRenderShaderModule > > &shaderModules, std::shared_ptr< IRenderPipelineLayout > pipelineLayout, std::shared_ptr< IRenderGraphicsPipeline > basePipeline, std::shared_ptr< IRenderPass > renderPass, uint32_t subpass)
+{
+	return std::dynamic_pointer_cast< IRenderGraphicsPipeline >(std::make_shared< VulkanGraphicsPipeline >(this, shaderModules, pipelineLayout, basePipeline, renderPass, subpass));
 }
 
 void VulkanDevice::Submit(EDeviceQueue queue, std::shared_ptr< IRenderCommandBuffer > _commandBuffer, std::shared_ptr< IRenderSemaphore > _waitSemaphore, EPipelineStage waitPipelineStage, std::shared_ptr< IRenderSemaphore > _signalSemaphore, std::shared_ptr< IRenderFence > _fence)

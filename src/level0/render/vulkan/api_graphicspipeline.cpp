@@ -3,7 +3,6 @@
 #include "api.h"
 
 #include "level0/crypto/md5.h"
-#include "physfs.h"
 
 const std::array< VkBlendFactor, MAX_BLEND_FACTORS > g_VulkanBlendFactors {
 	VK_BLEND_FACTOR_ZERO,
@@ -151,41 +150,14 @@ const std::array< VkVertexInputRate, MAX_VERTEX_INPUT_RATE_ENUM > g_VulkanVertex
 	VK_VERTEX_INPUT_RATE_INSTANCE
 };
 
-VulkanGraphicsPipeline::VulkanGraphicsPipeline(VulkanDevice *device, const std::vector< RenderPipelineShaderInfo > &shaders, std::shared_ptr< IRenderPipelineLayout > pipelineLayout, std::shared_ptr< IRenderGraphicsPipeline > basePipeline, std::shared_ptr< IRenderPass > renderPass, uint32_t subpass)
+VulkanGraphicsPipeline::VulkanGraphicsPipeline(VulkanDevice *device, const std::vector< std::shared_ptr< IRenderShaderModule > > &shaderModules, std::shared_ptr< IRenderPipelineLayout > pipelineLayout, std::shared_ptr< IRenderGraphicsPipeline > basePipeline, std::shared_ptr< IRenderPass > renderPass, uint32_t subpass)
 {
 	this->device = device;
 
-	m_shaderModules.resize(shaders.size());
+	m_shaderModules.resize(shaderModules.size());
 
-	for (size_t i = 0; i < shaders.size(); i++) {
-		std::unique_ptr< PHYSFS_File, decltype(&PHYSFS_close) > file(PHYSFS_openRead(shaders[i].filePath.data()), PHYSFS_close);
-		if (file == nullptr)
-			throw std::runtime_error(fmt::format(FMT_COMPILE("VulkanGraphicsPipeline: Cannot open file \"{}\"!"), shaders[i].filePath));
-
-		std::vector< uint8_t > shaderBinary(static_cast< size_t >(PHYSFS_fileLength(file.get())));
-		if (PHYSFS_readBytes(file.get(), shaderBinary.data(), shaderBinary.size()) == -1)
-			throw std::runtime_error(fmt::format(FMT_COMPILE("VulkanGraphicsPipeline: Cannot read file \"{}\" into memory!"), shaders[i].filePath));
-
-		VkShaderModuleCreateInfo createInfo;
-		createInfo.sType = VK_STRUCTURE_TYPE_SHADER_MODULE_CREATE_INFO;
-		createInfo.pNext = nullptr;
-		createInfo.flags = 0;
-		createInfo.codeSize = static_cast< uint32_t >(shaderBinary.size());
-		createInfo.pCode = reinterpret_cast< const uint32_t * >(shaderBinary.data());
-
-		VkPipelineShaderStageCreateInfo shaderStageCreateInfo;
-		shaderStageCreateInfo.sType = VK_STRUCTURE_TYPE_PIPELINE_SHADER_STAGE_CREATE_INFO;
-		shaderStageCreateInfo.pNext = nullptr;
-		shaderStageCreateInfo.flags = 0;
-		shaderStageCreateInfo.stage = g_VulkanShaderTypes[shaders[i].type];
-		shaderStageCreateInfo.pName = "main";
-		shaderStageCreateInfo.pSpecializationInfo = nullptr;
-
-		if (this->device->ftbl.vkCreateShaderModule(this->device->handle, &createInfo, nullptr, &shaderStageCreateInfo.module) != VK_SUCCESS)
-			throw std::runtime_error(fmt::format(FMT_COMPILE("VulkanGraphicsPipeline: Cannot create shader module from file \"{}\"!"), shaders[i].filePath));
-
-		m_shaderModules[i] = shaderStageCreateInfo;
-	}
+	for (size_t i = 0; i < m_shaderModules.size(); i++)
+		m_shaderModules[i] = std::dynamic_pointer_cast< VulkanShaderModule >(shaderModules[i]);
 
 	m_pipelineLayout = std::dynamic_pointer_cast< VulkanPipelineLayout >(pipelineLayout);
 	m_basePipeline = std::dynamic_pointer_cast< VulkanGraphicsPipeline >(basePipeline);
@@ -204,13 +176,6 @@ VulkanGraphicsPipeline::~VulkanGraphicsPipeline()
 
 	if (this->handle != VK_NULL_HANDLE)
 		this->handle = VK_NULL_HANDLE;
-
-	for (auto &shaderModule : m_shaderModules) {
-		if (shaderModule.module != VK_NULL_HANDLE) {
-			this->device->ftbl.vkDestroyShaderModule(this->device->handle, shaderModule.module, nullptr);
-			shaderModule.module = VK_NULL_HANDLE;
-		}
-	}
 }
 
 #define SizeInBytesVector(x) (x.size()*sizeof(decltype(x)::value_type))
@@ -288,6 +253,18 @@ void VulkanGraphicsPipeline::Compile()
 		blendAttachmentStates[i].dstAlphaBlendFactor = g_VulkanBlendFactors[this->colorBlendAttachments[i].destAlphaBlendFactor];
 		blendAttachmentStates[i].alphaBlendOp = g_VulkanBlendOps[this->colorBlendAttachments[i].alphaBlendOp];
 		blendAttachmentStates[i].colorWriteMask = static_cast< VkColorComponentFlags >(this->colorBlendAttachments[i].colorWriteMask);
+	}
+
+	std::vector< VkPipelineShaderStageCreateInfo > shaderStages(m_shaderModules.size());
+
+	for (size_t i = 0; i < m_shaderModules.size(); i++) {
+		shaderStages[i].sType = VK_STRUCTURE_TYPE_PIPELINE_SHADER_STAGE_CREATE_INFO;
+		shaderStages[i].pNext = nullptr;
+		shaderStages[i].flags = 0;
+		shaderStages[i].stage = g_VulkanShaderTypes[m_shaderModules[i]->GetType()];
+		shaderStages[i].module = m_shaderModules[i]->handle;
+		shaderStages[i].pName = "main";
+		shaderStages[i].pSpecializationInfo = nullptr;
 	}
 
 	VkPipelineVertexInputStateCreateInfo vertexInputStateCreateInfo;
@@ -387,8 +364,8 @@ void VulkanGraphicsPipeline::Compile()
 	createInfo.sType = VK_STRUCTURE_TYPE_GRAPHICS_PIPELINE_CREATE_INFO;
 	createInfo.pNext = nullptr;
 	createInfo.flags = 0;
-	createInfo.stageCount = static_cast< uint32_t >(m_shaderModules.size());
-	createInfo.pStages = m_shaderModules.data();
+	createInfo.stageCount = static_cast< uint32_t >(shaderStages.size());
+	createInfo.pStages = shaderStages.data();
 	createInfo.pVertexInputState = &vertexInputStateCreateInfo;
 	createInfo.pInputAssemblyState = &inputAssemblyStateCreateInfo;
 	createInfo.pTessellationState = &tessellationStateCreateInfo;
