@@ -278,7 +278,7 @@ public:
 
 	RenderAPI() = delete;
 	inline RenderAPI(const char *_apiName) : apiName(_apiName) {}
-	inline virtual ~RenderAPI() {}
+	virtual ~RenderAPI() = default;
 };
 
 std::unique_ptr< RenderAPI > Render_CreateAPI(ERendererType type);
@@ -287,7 +287,7 @@ class IRenderPhysicalDevice {
 public:
 	RenderPhysicalDeviceFeatures apiFeatures = {};
 
-	inline virtual ~IRenderPhysicalDevice() {}
+	virtual ~IRenderPhysicalDevice() = default;
 
 	virtual RenderPhysicalDeviceInfo GetInfo() = 0;
 
@@ -296,7 +296,7 @@ public:
 
 class IRenderDevice {
 public:
-	inline virtual ~IRenderDevice() {}
+	virtual ~IRenderDevice() = default;
 
 	virtual void WaitIdle() = 0;
 	virtual void WaitIdleQueue(EDeviceQueue queue) = 0;
@@ -339,7 +339,7 @@ class IRenderAllocator {
 public:
 	std::string name;
 
-	inline virtual ~IRenderAllocator() {}
+	virtual ~IRenderAllocator() = default;
 
 	virtual std::shared_ptr< IRenderBuffer > AllocateBuffer(EBufferUsage usage, uint64_t size) = 0;
 	virtual std::shared_ptr< IRenderImage > AllocateImage(EImageType type, EImageFormat format, EImageUsage usage, const RenderExtent3D &extent3d, const RenderImageSubresourceRange &subresourceRange) = 0;
@@ -356,7 +356,7 @@ public:
 
 class IRenderBuffer {
 public:
-	inline virtual ~IRenderBuffer() {}
+	virtual ~IRenderBuffer() = default;
 
 	virtual void *Map() = 0;
 	virtual void Unmap() = 0;
@@ -368,7 +368,7 @@ public:
 
 class IRenderImage {
 public:
-	inline virtual ~IRenderImage() {}
+	virtual ~IRenderImage() = default;
 
 	virtual void *Map() = 0;
 	virtual void Unmap() = 0;
@@ -382,12 +382,12 @@ public:
 
 class IRenderPass {
 public:
-	inline virtual ~IRenderPass() {}
+	virtual ~IRenderPass() = default;
 };
 
 class IRenderFramebuffer {
 public:
-	inline virtual ~IRenderFramebuffer() {}
+	virtual ~IRenderFramebuffer() = default;
 
 	virtual std::vector< std::shared_ptr< IRenderImage > > GetImages() = 0;
 	virtual std::shared_ptr< IRenderPass > GetRenderPass() = 0;
@@ -397,7 +397,7 @@ public:
 
 class IRenderSwapchain {
 public:
-	inline virtual ~IRenderSwapchain() {}
+	virtual ~IRenderSwapchain() = default;
 
 	virtual ESwapchainResult GetAvailableImage(std::shared_ptr< IRenderSemaphore > semaphore, std::shared_ptr< IRenderFence > fence, uint64_t timeout, uint32_t &index) = 0;
 	virtual RenderExtent2D GetExtent() = 0;
@@ -412,7 +412,7 @@ public:
 
 class IRenderCommandPool {
 public:
-	inline virtual ~IRenderCommandPool() {}
+	virtual ~IRenderCommandPool() = default;
 
 	virtual std::shared_ptr< IRenderCommandBuffer > AllocateSingle(ECommandBufferLevel level) = 0;
 	virtual void AllocateBulk(std::vector< std::shared_ptr< IRenderCommandBuffer > > &commandBuffers, ECommandBufferLevel level) = 0;
@@ -420,7 +420,7 @@ public:
 
 class IRenderCommandBuffer {
 public:
-	inline virtual ~IRenderCommandBuffer() {}
+	virtual ~IRenderCommandBuffer() = default;
 
 	virtual void Begin(ECommandBufferUsage usage) = 0;
 	virtual void End() = 0;
@@ -470,7 +470,7 @@ public:
 
 class IRenderFence {
 public:
-	inline virtual ~IRenderFence() {}
+	virtual ~IRenderFence() = default;
 
 	virtual bool IsSignaled() = 0;
 
@@ -480,22 +480,22 @@ public:
 
 class IRenderSemaphore {
 public:
-	inline virtual ~IRenderSemaphore() {}
+	virtual ~IRenderSemaphore() = default;
 };
 
 class IRenderSampler {
 public:
-	inline virtual ~IRenderSampler() {}
+	virtual ~IRenderSampler() = default;
 };
 
 class IRenderDescriptorSetLayout {
 public:
-	inline virtual ~IRenderDescriptorSetLayout() {}
+	virtual ~IRenderDescriptorSetLayout() = default;
 };
 
 class IRenderDescriptorPool {
 public:
-	inline virtual ~IRenderDescriptorPool() {}
+	virtual ~IRenderDescriptorPool() = default;
 
 	virtual std::shared_ptr< IRenderDescriptorSet > AllocateSingle(std::shared_ptr< IRenderDescriptorSetLayout > layout) = 0;
 	virtual void AllocateBulk(std::vector< std::shared_ptr< IRenderDescriptorSet > > &descriptorSets, const std::vector< std::shared_ptr< IRenderDescriptorSetLayout > > &layouts) = 0;
@@ -503,7 +503,7 @@ public:
 
 class IRenderDescriptorSet {
 public:
-	inline virtual ~IRenderDescriptorSet() {}
+	virtual ~IRenderDescriptorSet() = default;
 
 	virtual void Copy(uint64_t sourceBinding, uint64_t sourceArrayElement, std::shared_ptr< IRenderDescriptorSet > destSet, uint64_t destBinding, uint64_t destArrayElement) = 0;
 	virtual void Update(uint32_t binding, uint32_t arrayElement, EDescriptorType type, std::shared_ptr< IRenderBuffer > buffer, uint64_t offset, uint64_t range) = 0;
@@ -511,12 +511,12 @@ public:
 
 class IRenderPipelineLayout {
 public:
-	inline virtual ~IRenderPipelineLayout() {}
+	virtual ~IRenderPipelineLayout() = default;
 };
 
 class IRenderComputePipeline {
 public:
-	inline virtual ~IRenderComputePipeline() {}
+	virtual ~IRenderComputePipeline() = default;
 
 	virtual void Compile() = 0;
 };
@@ -575,7 +575,7 @@ public:
 
 	std::vector< RenderColorBlendAttachmentState > colorBlendAttachments;
 
-	inline virtual ~IRenderGraphicsPipeline() {}
+	virtual ~IRenderGraphicsPipeline() = default;
 
 	virtual void Compile() = 0;
 };
