@@ -1,3 +1,4 @@
+#include <cstdint>
 #include <cstdio>
 #include <cstdlib>
 #include <cstring>
@@ -12,6 +13,8 @@
 #include <sstream>
 #include <fstream>
 #include <array>
+#include <bitset>
+#include <unordered_map>
 #include <exception>
 #include <fmt/format.h>
 #include <fmt/compile.h>
