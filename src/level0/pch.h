@@ -16,6 +16,7 @@
 #include <bitset>
 #include <unordered_map>
 #include <exception>
+#include <functional>
 #include <fmt/format.h>
 #include <fmt/compile.h>
 
