@@ -1,7 +1,6 @@
 # Quanta Engine
 
 ## Overview
-WIP
 
 ### Third-Party Libraries and Dependencies
 - [SDL2](https://www.libsdl.org/)
