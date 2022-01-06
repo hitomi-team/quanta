@@ -24,6 +24,9 @@ public:
 
 	GameService *GetService(const char *name);
 
+	template< typename T >
+	inline T *GetService(const char *name) { return dynamic_cast< T * >(this->GetService(name)); }
+
 protected:
 	std::vector< std::unique_ptr< GameService > > m_services;
 	bool m_shouldClose = false, m_running = false;

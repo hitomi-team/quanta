@@ -20,7 +20,7 @@ void InputService::Update()
 	SDL_Event event;
 	bool recoverFromWait = false;
 
-	auto renderService = dynamic_cast< RenderService * >(g_Game->GetService("RenderService"));
+	auto renderService = g_Game->GetService< RenderService >("RenderService");
 
 	while (true) {
 		if (renderService != nullptr) {
