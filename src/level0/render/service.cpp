@@ -21,8 +21,48 @@ RenderService::RenderService() : GameService("RenderService")
 	m_device = g_VulkanAPI->physicalDevices[0]->CreateLogicalDevice();
 	m_commandpool = m_device->CreateCommandPool(DEVICE_QUEUE_GRAPHICS, COMMAND_POOL_USAGE_NORMAL);
 
-	m_presenter = std::make_unique< RenderPresenter >(m_device, PRESENT_MODE_FIFO_VSYNC);
+	m_presenter = std::make_unique< RenderPresenter >(m_device, PRESENT_MODE_IMMEDIATE);
 	this->RedoCommandBuffers();
+
+	m_imguiRenderPass = m_device->CreateRenderPass(
+		[this](){
+			std::vector< RenderAttachmentDescription > attachments;
+			RenderAttachmentDescription attachment = {};
+			attachment.format = m_presenter->GetImage(0)->GetFormat();
+			attachment.loadOp = ATTACHMENT_LOAD_OP_CLEAR;
+			attachment.storeOp = ATTACHMENT_STORE_OP_STORE;
+			attachment.stencilLoadOp = ATTACHMENT_LOAD_OP_DONT_CARE;
+			attachment.stencilStoreOp = ATTACHMENT_STORE_OP_DONT_CARE;
+			attachment.initialLayout = IMAGE_LAYOUT_UNDEFINED;
+			attachment.finalLayout = IMAGE_LAYOUT_PRESENT_SRC;
+			attachments.push_back(attachment);
+			return attachments;
+		}(),
+		[](){
+			std::vector< RenderSubpassDescription > subpasses;
+			RenderAttachmentReference ref;
+			ref.attachment = 0;
+			ref.layout = IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL;
+			RenderSubpassDescription subpass = {};
+			subpass.colorAttachments.push_back(ref);
+			subpasses.push_back(subpass);
+			return subpasses;
+		}(),
+		[](){
+			std::vector< RenderSubpassDependency > dependencies;
+			RenderSubpassDependency dependency = {};
+			dependency.sourceSubpass = ~0;
+			dependency.destSubpass = 0;
+			dependency.sourceStageMask = PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT;
+			dependency.sourceAccessMask = RESOURCE_ACCESS_NONE;
+			dependency.destStageMask = PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT;
+			dependency.destAccessMask = RESOURCE_ACCESS_COLOR_ATTACHMENT_WRITE;
+			dependencies.push_back(dependency);
+			return dependencies;
+		}()
+	);
+
+	m_imgui = m_device->CreateImGui(m_imguiRenderPass, m_presenter->GetMaxImages());
 
 	m_init = true;
 }
@@ -56,7 +96,7 @@ void RenderService::Update()
 
 		ESwapchainResult result = m_presenter->AcquireNextImage(sync, imageIndex);
 		if (result == SWAPCHAIN_RESULT_SUBOPTIMAL) {
-			m_presenter->Recreate(PRESENT_MODE_FIFO_VSYNC);
+			this->TryResizeSwapchain();
 			return;
 		} else if (result == SWAPCHAIN_RESULT_NOT_READY) {
 			return;
@@ -64,11 +104,29 @@ void RenderService::Update()
 			g_Game->Abort("RenderService: Unable to acquire next image!");
 		}
 
-		m_device->Submit(DEVICE_QUEUE_GRAPHICS, m_commandbufs[imageIndex], sync.imageAvailable, PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT, sync.renderFinished, sync.fence);
+		// TODO: move all imgui stuff into their own functions
+		m_imgui->NewFrame();
+
+		if (!ImGui::Begin("Developer Menu", nullptr, ImGuiWindowFlags_AlwaysUseWindowPadding | ImGuiWindowFlags_NoSavedSettings))
+			g_Game->Abort("RenderService: Unable to make developer menu!");
+
+		ImGui::SetWindowSize(ImVec2(300, 275));
+
+		if (ImGui::CollapsingHeader("App Information"))
+			ImGui::Text("Build Date: %s @ %s", __DATE__, __TIME__);
+
+		if (ImGui::CollapsingHeader("Performance"))
+			ImGui::Text("Frametime: %.3f ms (%.1f FPS)", 1000.0f / ImGui::GetIO().Framerate, ImGui::GetIO().Framerate);
+
+		ImGui::End();
+
+		m_imgui->Draw(m_presenter->GetFramebuffer(imageIndex), imageIndex);
+
+		m_device->Submit(DEVICE_QUEUE_GRAPHICS, m_imgui->GetCommandBuffer(imageIndex), sync.imageAvailable, PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT, sync.renderFinished, sync.fence);
 
 		result = m_presenter->QueuePresent();
 		if (result == SWAPCHAIN_RESULT_SUBOPTIMAL) {
-			m_presenter->Recreate(PRESENT_MODE_FIFO_VSYNC);
+			this->TryResizeSwapchain();
 			return;
 		} else if (result != SWAPCHAIN_RESULT_SUCCESS) {
 			g_Game->Abort("RenderService: Unable to present image!");
@@ -81,7 +139,7 @@ void RenderService::Update()
 
 void RenderService::TryResizeSwapchain()
 {
-	m_presenter->Recreate(PRESENT_MODE_FIFO_VSYNC);
+	m_presenter->Recreate(PRESENT_MODE_IMMEDIATE);
 	this->RedoCommandBuffers();
 }
 
@@ -97,12 +155,7 @@ void RenderService::RedoCommandBuffers()
 		m_commandbufs[i]->BeginRenderPass(m_presenter->GetRenderPass(), m_presenter->GetFramebuffer(i), [&]() -> RenderRectangle {
 			auto extent = m_presenter->GetImage(i)->GetExtent();
 			return RenderRectangle { RenderOffset2D { 0, 0 }, RenderExtent2D { extent.width, extent.height } };
-		}(), [](){
-			static const std::array< float, 4 > clearColorValues { 0.f, 0.2f, 0.f, 1.f };
-			RenderClearValue value = {};
-			std::copy(clearColorValues.begin(), clearColorValues.end(), value.color.f32);
-			return std::vector< RenderClearValue >(1, value);
-		}(), SUBPASS_CONTENTS_INLINE);
+		}(), std::vector< RenderClearValue >(), SUBPASS_CONTENTS_INLINE);
 		m_commandbufs[i]->EndRenderPass();
 		m_commandbufs[i]->End();
 	}

@@ -6,6 +6,8 @@
 #include "level0/cmd.h"
 #include "service.h"
 
+#include "level0/dependencies/imgui/imgui_impl_sdl.h"
+
 InputService::InputService() : GameService("InputService")
 {
 #ifndef NDEBUG
@@ -18,29 +20,35 @@ void InputService::Update()
 	SDL_Event event;
 	bool recoverFromWait = false;
 
-	while (true) {
-		if (recoverFromWait) {
-			recoverFromWait = false;
-		} else {
-			if (SDL_PollEvent(&event) <= 0)
-				break;
-		}
+	auto renderService = dynamic_cast< RenderService * >(g_Game->GetService("RenderService"));
 
-		switch (event.type) {
-		case SDL_QUIT:
-			g_Game->RequestClose();
-			break;
-		case SDL_WINDOWEVENT:
-			switch (event.window.event) {
-			case SDL_WINDOWEVENT_RESIZED:
-				dynamic_cast< RenderService * >(g_Game->GetService("RenderService"))->TryResizeSwapchain();
+	while (true) {
+		if (renderService != nullptr) {
+			if (recoverFromWait) {
+				recoverFromWait = false;
+			} else {
+				if (SDL_PollEvent(&event) <= 0)
+					break;
+			}
+
+			ImGui_ImplSDL2_ProcessEvent(&event);
+
+			switch (event.type) {
+			case SDL_QUIT:
+				g_Game->RequestClose();
 				break;
-			case SDL_WINDOWEVENT_MINIMIZED:
-				recoverFromWait = true;
-				SDL_WaitEvent(&event);
+			case SDL_WINDOWEVENT:
+				switch (event.window.event) {
+				case SDL_WINDOWEVENT_RESIZED:
+					renderService->TryResizeSwapchain();
+					break;
+				case SDL_WINDOWEVENT_MINIMIZED:
+					recoverFromWait = true;
+					SDL_WaitEvent(&event);
+					break;
+				}
 				break;
 			}
-			break;
 		}
 	}
 

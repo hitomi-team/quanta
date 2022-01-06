@@ -3,6 +3,8 @@
 
 #include "defs.h"
 
+#include "level0/dependencies/imgui/imgui.h"
+
 class RenderAPI;
 class IRenderPhysicalDevice;
 class IRenderDevice;
@@ -20,6 +22,7 @@ class IRenderSampler;
 class IRenderDescriptorSetLayout;
 class IRenderDescriptorPool;
 class IRenderDescriptorSet;
+class IRenderImGui;
 class IRenderPipelineLayout;
 class IRenderShaderModule;
 class IRenderComputePipeline;
@@ -329,6 +332,7 @@ public:
 	virtual std::shared_ptr< IRenderFramebuffer > CreateFramebuffer(std::shared_ptr< IRenderPass > renderPass, const std::vector< std::shared_ptr< IRenderImage > > &images, const RenderExtent2D &extent) = 0;
 	virtual std::shared_ptr< IRenderFramebuffer > CreateFramebuffer(std::shared_ptr< IRenderPass > renderPass, std::shared_ptr< IRenderImage > image, const RenderExtent2D &extent) = 0;
 	virtual std::shared_ptr< IRenderSwapchain > CreateSwapchain(ESwapchainPresentMode presentMode, EDeviceQueue preferPresentQueue) = 0; // will handle image counts, etc...
+	virtual std::shared_ptr< IRenderImGui > CreateImGui(std::shared_ptr< IRenderPass > renderPass, uint32_t imageCount) = 0;
 
 	// Samplers
 	virtual std::shared_ptr< IRenderSampler > CreateSampler(const RenderSamplerStateDescription &state) = 0;
@@ -521,6 +525,16 @@ public:
 
 	virtual void Copy(uint64_t sourceBinding, uint64_t sourceArrayElement, std::shared_ptr< IRenderDescriptorSet > destSet, uint64_t destBinding, uint64_t destArrayElement) = 0;
 	virtual void Update(uint32_t binding, uint32_t arrayElement, EDescriptorType type, std::shared_ptr< IRenderBuffer > buffer, uint64_t offset, uint64_t range) = 0;
+};
+
+class IRenderImGui {
+public:
+	virtual ~IRenderImGui() = default;
+
+	virtual void NewFrame() = 0;
+	virtual void Draw(std::shared_ptr< IRenderFramebuffer > framebuffer, uint32_t imageIndex) = 0;
+	virtual std::shared_ptr< IRenderCommandBuffer > GetCommandBuffer(uint32_t imageIndex) = 0;
+	virtual std::shared_ptr< IRenderSemaphore > GetSemaphore(uint32_t imageIndex) = 0;
 };
 
 class IRenderPipelineLayout {

@@ -231,6 +231,11 @@ std::shared_ptr< IRenderSwapchain > VulkanDevice::CreateSwapchain(ESwapchainPres
 	return std::dynamic_pointer_cast< IRenderSwapchain >(std::make_shared< VulkanSwapchain >(this, presentMode, preferPresentQueue));
 }
 
+std::shared_ptr< IRenderImGui > VulkanDevice::CreateImGui(std::shared_ptr< IRenderPass > renderPass, uint32_t imageCount)
+{
+	return std::dynamic_pointer_cast< IRenderImGui >(std::make_shared< VulkanImGui >(this, renderPass, imageCount));
+}
+
 std::shared_ptr< IRenderSampler > VulkanDevice::CreateSampler(const RenderSamplerStateDescription &state)
 {
 	return std::dynamic_pointer_cast< IRenderSampler >(std::make_shared< VulkanSampler >(this, state));
@@ -270,7 +275,7 @@ void VulkanDevice::Submit(EDeviceQueue queue, std::shared_ptr< IRenderCommandBuf
 	submitInfo.signalSemaphoreCount = signalSemaphore != nullptr ? 1 : 0;
 	submitInfo.pSignalSemaphores = signalSemaphore != nullptr ? &signalSemaphore->handle : nullptr;
 
-	if (this->ftbl.vkQueueSubmit(queueObject, 1, &submitInfo, fence->handle) != VK_SUCCESS)
+	if (this->ftbl.vkQueueSubmit(queueObject, 1, &submitInfo, fence != nullptr ? fence->handle : VK_NULL_HANDLE) != VK_SUCCESS)
 		throw std::runtime_error("VulkanDevice: Failed to submit command buffer!");
 }
 
@@ -299,7 +304,7 @@ void VulkanDevice::Submit(EDeviceQueue queue, std::shared_ptr< IRenderCommandBuf
 	submitInfo.signalSemaphoreCount = signalSemaphore != nullptr ? 1 : 0;
 	submitInfo.pSignalSemaphores = signalSemaphore != nullptr ? &signalSemaphore->handle : nullptr;
 
-	if (this->ftbl.vkQueueSubmit(queueObject, 1, &submitInfo, fence->handle) != VK_SUCCESS)
+	if (this->ftbl.vkQueueSubmit(queueObject, 1, &submitInfo, fence != nullptr ? fence->handle : VK_NULL_HANDLE) != VK_SUCCESS)
 		throw std::runtime_error("VulkanDevice: Failed to submit command buffer!");
 }
 
@@ -330,7 +335,7 @@ void VulkanDevice::Submit(EDeviceQueue queue, std::shared_ptr< IRenderCommandBuf
 	submitInfo.signalSemaphoreCount = static_cast< uint32_t >(signalSemaphores.size());
 	submitInfo.pSignalSemaphores = signalSemaphores.data();
 
-	if (this->ftbl.vkQueueSubmit(queueObject, 1, &submitInfo, fence->handle) != VK_SUCCESS)
+	if (this->ftbl.vkQueueSubmit(queueObject, 1, &submitInfo, fence != nullptr ? fence->handle : VK_NULL_HANDLE) != VK_SUCCESS)
 		throw std::runtime_error("VulkanDevice: Failed to submit command buffer!");
 }
 
@@ -356,7 +361,7 @@ void VulkanDevice::Submit(EDeviceQueue queue, const std::vector< std::shared_ptr
 	submitInfo.signalSemaphoreCount = signalSemaphore != nullptr ? 1 : 0;
 	submitInfo.pSignalSemaphores = signalSemaphore != nullptr ? &signalSemaphore->handle : nullptr;
 
-	if (this->ftbl.vkQueueSubmit(queueObject, 1, &submitInfo, fence->handle) != VK_SUCCESS)
+	if (this->ftbl.vkQueueSubmit(queueObject, 1, &submitInfo, fence != nullptr ? fence->handle : VK_NULL_HANDLE) != VK_SUCCESS)
 		throw std::runtime_error("VulkanDevice: Failed to submit command buffer!");
 }
 
@@ -388,7 +393,7 @@ void VulkanDevice::Submit(EDeviceQueue queue, const std::vector< std::shared_ptr
 	submitInfo.signalSemaphoreCount = signalSemaphore != nullptr ? 1 : 0;
 	submitInfo.pSignalSemaphores = signalSemaphore != nullptr ? &signalSemaphore->handle : nullptr;
 
-	if (this->ftbl.vkQueueSubmit(queueObject, 1, &submitInfo, fence->handle) != VK_SUCCESS)
+	if (this->ftbl.vkQueueSubmit(queueObject, 1, &submitInfo, fence != nullptr ? fence->handle : VK_NULL_HANDLE) != VK_SUCCESS)
 		throw std::runtime_error("VulkanDevice: Failed to submit command buffer!");
 }
 
@@ -422,6 +427,6 @@ void VulkanDevice::Submit(EDeviceQueue queue, const std::vector< std::shared_ptr
 	submitInfo.signalSemaphoreCount = static_cast< uint32_t >(signalSemaphores.size());
 	submitInfo.pSignalSemaphores = signalSemaphores.data();
 
-	if (this->ftbl.vkQueueSubmit(queueObject, 1, &submitInfo, fence->handle) != VK_SUCCESS)
+	if (this->ftbl.vkQueueSubmit(queueObject, 1, &submitInfo, fence != nullptr ? fence->handle : VK_NULL_HANDLE) != VK_SUCCESS)
 		throw std::runtime_error("VulkanDevice: Failed to submit command buffer!");
 }

@@ -5,6 +5,9 @@
 #include "vk_mem_alloc.h"
 #include <SDL2/SDL_vulkan.h>
 
+#include "level0/dependencies/imgui/imgui_impl_sdl.h"
+#include "level0/dependencies/imgui/imgui_impl_vulkan.h"
+
 #include "level0/render/api.h"
 
 struct VulkanFormatAlphaProperties {
@@ -62,6 +65,7 @@ private:
 #endif
 	SDL_Window *m_window = nullptr;
 	friend class VulkanSwapchain;
+	friend class VulkanImGui;
 };
 
 extern VulkanAPI *g_VulkanAPI;
@@ -112,6 +116,7 @@ public:
 	std::shared_ptr< IRenderFramebuffer > CreateFramebuffer(std::shared_ptr< IRenderPass > renderPass, const std::vector< std::shared_ptr< IRenderImage > > &images, const RenderExtent2D &extent);
 	std::shared_ptr< IRenderFramebuffer > CreateFramebuffer(std::shared_ptr< IRenderPass > renderPass, std::shared_ptr< IRenderImage > image, const RenderExtent2D &extent);
 	std::shared_ptr< IRenderSwapchain > CreateSwapchain(ESwapchainPresentMode presentMode, EDeviceQueue preferPresentQueue);
+	std::shared_ptr< IRenderImGui > CreateImGui(std::shared_ptr< IRenderPass > renderPass, uint32_t imageCount);
 
 	std::shared_ptr< IRenderSampler > CreateSampler(const RenderSamplerStateDescription &state);
 
@@ -422,6 +427,28 @@ public:
 
 	void Copy(uint64_t sourceBinding, uint64_t sourceArrayElement, std::shared_ptr< IRenderDescriptorSet > destSet, uint64_t destBinding, uint64_t destArrayElement);
 	void Update(uint32_t binding, uint32_t arrayElement, EDescriptorType type, std::shared_ptr< IRenderBuffer > buffer, uint64_t offset, uint64_t range);
+};
+
+class VulkanImGui : public IRenderImGui {
+public:
+	VulkanDevice *device;
+
+	VulkanImGui() = delete;
+	VulkanImGui(VulkanDevice *device, std::shared_ptr< IRenderPass > renderPass, uint32_t imageCount);
+	~VulkanImGui();
+
+	void NewFrame();
+	void Draw(std::shared_ptr< IRenderFramebuffer > framebuffer, uint32_t imageIndex);
+	std::shared_ptr< IRenderCommandBuffer > GetCommandBuffer(uint32_t imageIndex);
+	std::shared_ptr< IRenderSemaphore > GetSemaphore(uint32_t imageIndex);
+private:
+	ImGuiContext *m_context;
+	VkDescriptorPool m_descriptorPool;
+	std::shared_ptr< VulkanRenderPass > m_renderPass;
+	std::vector< std::shared_ptr< VulkanCommandPool > > m_commandPools;
+	std::vector< std::shared_ptr< VulkanCommandBuffer > > m_commandBuffers;
+	std::vector< std::shared_ptr< IRenderSemaphore > > m_semaphores;
+	uint32_t m_imageCount;
 };
 
 class VulkanPipelineLayout : public IRenderPipelineLayout {

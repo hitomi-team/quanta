@@ -13,6 +13,7 @@ add_sources(
 	api_framebuffer.cpp
 	api_graphicspipeline.cpp
 	api_image.cpp
+	api_imgui.cpp
 	api_physicaldevice.cpp
 	api_pipelinelayout.cpp
 	api_renderpass.cpp

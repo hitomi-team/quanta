@@ -32,7 +32,7 @@ void RenderPresenter::Recreate(ESwapchainPresentMode presentMode)
 			std::vector< RenderAttachmentDescription > attachments;
 			RenderAttachmentDescription attachment = {};
 			attachment.format = m_images[0]->GetFormat();
-			attachment.loadOp = ATTACHMENT_LOAD_OP_CLEAR;
+			attachment.loadOp = ATTACHMENT_LOAD_OP_DONT_CARE;
 			attachment.storeOp = ATTACHMENT_STORE_OP_STORE;
 			attachment.stencilLoadOp = ATTACHMENT_LOAD_OP_DONT_CARE;
 			attachment.stencilStoreOp = ATTACHMENT_STORE_OP_DONT_CARE;

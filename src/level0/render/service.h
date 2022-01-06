@@ -27,6 +27,9 @@ private:
 	std::shared_ptr< IRenderCommandPool > m_commandpool;
 	std::vector< std::shared_ptr< IRenderCommandBuffer > > m_commandbufs;
 
+	std::shared_ptr< IRenderImGui > m_imgui;
+	std::shared_ptr< IRenderPass > m_imguiRenderPass;
+
 	PerfClock m_pc;
 	double m_lag = 0.;
 
