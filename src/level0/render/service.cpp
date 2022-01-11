@@ -107,8 +107,7 @@ void RenderService::Update()
 		// TODO: move all imgui stuff into their own functions
 		m_imgui->NewFrame();
 
-		if (!ImGui::Begin("Developer Menu", nullptr, ImGuiWindowFlags_AlwaysUseWindowPadding | ImGuiWindowFlags_NoSavedSettings))
-			g_Game->Abort("RenderService: Unable to make developer menu!");
+		ImGui::Begin("Developer Menu", nullptr, ImGuiWindowFlags_AlwaysUseWindowPadding | ImGuiWindowFlags_NoSavedSettings);
 
 		ImGui::SetWindowSize(ImVec2(300, 275));
 
