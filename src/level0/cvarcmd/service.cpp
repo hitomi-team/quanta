@@ -214,6 +214,16 @@ CVarCmdService::CVarCmdService() : GameService("CVarCmdService")
 		return 1;
 	});
 
+	this->AddCmd("alias", "usage: alias [aliasName] [aliasTo] - Add alias", [](CVarCmdService *cvarCmdService, std::string_view, const std::vector< std::string > &argv) -> int {
+		if (argv.size() < 3) {
+			g_Log.Error("alias usage: alias [aliasName] [aliasTo]");
+			return 1;
+		}
+
+		cvarCmdService->AddAlias(argv[1], argv[2]);
+		return 0;
+	});
+
 	this->AddCmd("quit", "Quit the game", [](CVarCmdService *, std::string_view, const std::vector< std::string > &) -> int {
 		g_Game->RequestClose();
 		return 0;
@@ -228,16 +238,12 @@ CVarCmdService::~CVarCmdService()
 
 void CVarCmdService::AddAlias(std::string_view name, std::string_view aliasTo)
 {
-	std::unique_lock lock(m_mutex);
-
 	m_aliases.push_back(std::string(name));
 	m_aliasMap[UtilStringHash(name)] = aliasTo;
 }
 
 void CVarCmdService::AddCmd(std::string_view name, std::string_view description, CmdFunction func)
 {
-	std::unique_lock lock(m_mutex);
-
 	CVarCmd cmd = { name.data(), description.data(), func, UtilStringHash(name) };
 	m_cmds[UtilStringHash(name)] = std::move(cmd);
 }
@@ -245,8 +251,6 @@ void CVarCmdService::AddCmd(std::string_view name, std::string_view description,
 template< typename T >
 void CVarCmdService::CreateCVar(std::string_view name, std::string_view description, const T &initValue, const T &minValue, const T &maxValue, const T &value)
 {
-	std::unique_lock lock(m_mutex);
-
 	auto param = this->CreateCVar(name, description);
 	if (param == nullptr)
 		g_Game->Abort("CVarCmdService: Failed to create CVar!");
@@ -257,8 +261,6 @@ void CVarCmdService::CreateCVar(std::string_view name, std::string_view descript
 template< typename T >
 void CVarCmdService::CreateCVar(std::string_view name, std::string_view description, const T &initValue, const T &minValue, const T &maxValue, const T &value, typename CVarCallbackType< T >::Value callback)
 {
-	std::unique_lock lock(m_mutex);
-
 	auto param = this->CreateCVar(name, description);
 	if (param == nullptr)
 		g_Game->Abort("CVarCmdService: Failed to create CVar!");
@@ -276,8 +278,6 @@ template void CVarCmdService::CreateCVar< int >(std::string_view, std::string_vi
 
 void CVarCmdService::CreateCVar(std::string_view name, std::string_view description, std::string_view initValue, std::string_view value)
 {
-	std::unique_lock lock(m_mutex);
-
 	auto param = this->CreateCVar(name, description);
 	if (param == nullptr)
 		g_Game->Abort("CVarCmdService: Failed to create CVar!");
@@ -288,8 +288,6 @@ void CVarCmdService::CreateCVar(std::string_view name, std::string_view descript
 
 void CVarCmdService::CreateCVar(std::string_view name, std::string_view description, std::string_view initValue, std::string_view value, typename CVarCallbackType< std::string >::Value callback)
 {
-	std::unique_lock lock(m_mutex);
-
 	auto param = this->CreateCVar(name, description);
 	if (param == nullptr)
 		g_Game->Abort("CVarCmdService: Failed to create CVar!");
@@ -302,8 +300,6 @@ void CVarCmdService::CreateCVar(std::string_view name, std::string_view descript
 template< typename T >
 void CVarCmdService::SetCVarCallback(uint64_t hash, typename CVarCallbackType< T >::Value callback)
 {
-	std::unique_lock lock(m_mutex);
-
 	auto array = this->GetCVarArray< T >();
 	array->SetCallback(array->hashToIndexMap[hash], callback);
 }
@@ -325,8 +321,6 @@ template std::string CVarCmdService::GetCVarValue< std::string >(uint64_t);
 
 void CVarCmdService::Exec(std::string_view cmd)
 {
-	std::shared_lock lock(m_mutex);
-
 	m_args = cmd.data();
 	m_argsHash = UtilStringHash(m_args);
 

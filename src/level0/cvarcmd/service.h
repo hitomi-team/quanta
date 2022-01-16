@@ -148,7 +148,6 @@ private:
 	template< typename T >
 	bool ExecCVarCmdType(CVarParameter *parameter);
 private:
-	std::shared_mutex m_mutex;
 	std::string m_args;
 	uint64_t m_argsHash;
 	std::vector< std::string > m_argv;
