@@ -135,6 +135,50 @@ CVarArray< std::string > *CVarCmdService::GetCVarArray()
 
 CVarCmdService::CVarCmdService() : GameService("CVarCmdService")
 {
+	this->AddCmd("find", "usage: find [part of cvar/cmd] - Find console variables or commands", [](CVarCmdService *cvarCmdService, std::string_view, const std::vector< std::string > &argv) -> int {
+		if (argv.size() < 2) {
+			g_Log.Error("find usage: find [part of cvar/cmd]");
+			return 1;
+		}
+
+		auto printCVarHelp = [](auto array, auto parameter) {
+			g_Log.Info(FMT_COMPILE("(cvar) \"{}\" = \"{}\""), parameter->name, array->GetValue(parameter->arrayIndex));
+		};
+
+		auto floatArray = cvarCmdService->GetCVarArray< double >();
+		auto intArray = cvarCmdService->GetCVarArray< int >();
+		auto stringArray = cvarCmdService->GetCVarArray< std::string >();
+
+		for (const auto &i : cvarCmdService->m_cmds) {
+			if (i.second.name.find(argv[1]) == 0)
+				g_Log.Info(FMT_COMPILE("(cmd) \"{}\""), i.second.name);
+		}
+
+		for (const auto &i : cvarCmdService->m_cvarMap) {
+			if (i.second->name.find(argv[1]) == 0) {
+				switch (i.second->type) {
+				case static_cast< uint32_t >(CVarType::Float):
+					printCVarHelp(floatArray, i.second.get());
+					break;
+				case static_cast< uint32_t >(CVarType::Int):
+					printCVarHelp(intArray, i.second.get());
+					break;
+				case static_cast< uint32_t >(CVarType::String):
+					printCVarHelp(stringArray, i.second.get());
+					break;
+				}
+
+			}
+		}
+
+		for (const auto &i : cvarCmdService->m_aliases) {
+			if (i.find(argv[1]) == 0)
+				g_Log.Info(FMT_COMPILE("(alias) \"{}\" -> \"{}\""), i, cvarCmdService->m_aliasMap[UtilStringHash(i)]);
+		}
+
+		return 0;
+	});
+
 	this->AddCmd("help", "usage: help [cvar/cmd] - Display help for a console variable or command", [](CVarCmdService *cvarCmdService, std::string_view, const std::vector< std::string > &argv) -> int {
 		if (argv.size() < 2) {
 			g_Log.Error("help usage: help [cvar/cmd]");
@@ -152,13 +196,13 @@ CVarCmdService::CVarCmdService() : GameService("CVarCmdService")
 
 		uint64_t hash = UtilStringHash(argv[1]);
 
-		if (cvarCmdService->CVarCmdExists(hash)) {
-			g_Log.Info(FMT_COMPILE("\"{}\" - {}"), argv[1], cvarCmdService->GetCVarCmd(hash).description);
+		if (cvarCmdService->m_cmds.count(hash) != 0) {
+			g_Log.Info(FMT_COMPILE("\"{}\" - {}"), argv[1], cvarCmdService->m_cmds[hash].description);
 			return 0;
 		} else if (floatArray->hashToIndexMap.count(hash) != 0) {
 			printCVarHelp(floatArray, hash);
 			return 0;
-		} else if (floatArray->hashToIndexMap.count(hash) != 0) {
+		} else if (intArray->hashToIndexMap.count(hash) != 0) {
 			printCVarHelp(intArray, hash);
 			return 0;
 		} else if (stringArray->hashToIndexMap.count(hash) != 0) {
@@ -168,7 +212,6 @@ CVarCmdService::CVarCmdService() : GameService("CVarCmdService")
 
 		g_Log.Error(FMT_COMPILE("No console variable or command found: \"{}\""), argv[1]);
 		return 1;
-
 	});
 
 	this->AddCmd("quit", "Quit the game", [](CVarCmdService *, std::string_view, const std::vector< std::string > &) -> int {
@@ -187,7 +230,8 @@ void CVarCmdService::AddAlias(std::string_view name, std::string_view aliasTo)
 {
 	std::unique_lock lock(m_mutex);
 
-	m_aliases[UtilStringHash(name)] = aliasTo;
+	m_aliases.push_back(std::string(name));
+	m_aliasMap[UtilStringHash(name)] = aliasTo;
 }
 
 void CVarCmdService::AddCmd(std::string_view name, std::string_view description, CmdFunction func)
@@ -222,6 +266,7 @@ void CVarCmdService::CreateCVar(std::string_view name, std::string_view descript
 	auto array = this->GetCVarArray< T >();
 	array->Add(param, initValue, minValue, maxValue, value);
 	array->SetCallback(param->arrayIndex, callback);
+	param->type = CVarTypeStruct< T >::Value;
 }
 
 template void CVarCmdService::CreateCVar< double >(std::string_view, std::string_view, const double &, const double &, const double &, const double &);
@@ -297,8 +342,8 @@ void CVarCmdService::Exec(std::string_view cmd)
 		return;
 	}
 
-	if (m_aliases.count(m_argvHash[0]) != 0) {
-		this->Exec(m_aliases[m_argvHash[0]]);
+	if (m_aliasMap.count(m_argvHash[0]) != 0) {
+		this->Exec(m_aliasMap[m_argvHash[0]]);
 		return;
 	}
 
@@ -393,7 +438,7 @@ bool CVarCmdService::ExecCVarCmdType(CVarParameter *parameter)
 	auto &storage = array->cvars[parameter->arrayIndex];
 
 	if (m_argv.size() == 1) {
-		g_Log.Info(FMT_COMPILE("cvar \"{}\" is \"{}\""), parameter->name, storage.value);
+		g_Log.Info(FMT_COMPILE("(cvar) \"{}\" = \"{}\""), parameter->name, storage.value);
 		return true;
 	}
 

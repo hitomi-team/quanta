@@ -11,6 +11,7 @@ enum class CVarType : uint32_t {
 	Float = 0,
 	Int,
 	String,
+	MaxTypes
 };
 
 enum class CVarFlags : uint32_t {
@@ -28,7 +29,7 @@ struct CVarTypeStruct {
 };
 
 template<>
-struct CVarTypeStruct< float > {
+struct CVarTypeStruct< double > {
 	static constexpr uint32_t Value = static_cast< uint32_t >(CVarType::Float);
 };
 
@@ -138,9 +139,6 @@ public:
 	template< typename T >
 	T GetCVarValue(uint64_t hash);
 
-	inline bool CVarCmdExists(uint64_t hash) { return m_cmds.count(hash) != 0; }
-	inline const CVarCmd &GetCVarCmd(uint64_t hash) { return m_cmds[hash]; }
-
 	void Exec(std::string_view cmd);
 private:
 	CVarParameter *CreateCVar(std::string_view name, std::string_view description);
@@ -155,7 +153,8 @@ private:
 	uint64_t m_argsHash;
 	std::vector< std::string > m_argv;
 	std::vector< uint64_t > m_argvHash;
-	std::unordered_map< uint64_t, std::string > m_aliases;
+	std::vector< std::string > m_aliases;
+	std::unordered_map< uint64_t, std::string > m_aliasMap;
 	std::unordered_map< uint64_t, CVarCmd > m_cmds;
 	std::unordered_map< uint64_t, std::unique_ptr< CVarParameter > > m_cvarMap;
 	CVarArray< double > m_cvarFloats;
