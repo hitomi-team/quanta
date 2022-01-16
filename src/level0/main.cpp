@@ -7,8 +7,6 @@
 #include "level0/render/service.h"
 #include "level0/input/service.h"
 
-#include "cmd.h"
-
 int main(int argc, char **argv)
 {
 	(void)argc;

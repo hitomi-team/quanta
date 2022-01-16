@@ -4,7 +4,6 @@
 #include "level0/game/game.h"
 #include "level0/cvarcmd/service.h"
 #include "level0/render/service.h"
-#include "level0/cmd.h"
 #include "service.h"
 
 #include "level0/dependencies/imgui/imgui_impl_sdl.h"
