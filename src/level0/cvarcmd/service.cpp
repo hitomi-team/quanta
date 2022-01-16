@@ -115,24 +115,6 @@ void CVarArray< std::string >::SetCallback(size_t index, typename CVarCallbackTy
 }
 
 // CVarCmdService begin
-CVarCmdService::CVarCmdService() : GameService("CVarCmdService")
-{
-	this->AddCmd("help", "Display help for a console variable or command", [](CVarCmdService *, std::string_view, const std::vector< std::string > &argv) -> int {
-		return 0;
-	});
-
-	this->AddCmd("quit", "Quit the game", [](CVarCmdService *, std::string_view, const std::vector< std::string > &) -> int {
-		g_Game->RequestClose();
-		return 0;
-	});
-
-	this->AddAlias("exit", "quit");
-}
-
-CVarCmdService::~CVarCmdService()
-{
-}
-
 template<>
 CVarArray< double > *CVarCmdService::GetCVarArray()
 {
@@ -149,6 +131,56 @@ template<>
 CVarArray< std::string > *CVarCmdService::GetCVarArray()
 {
 	return &m_cvarStrings;
+}
+
+CVarCmdService::CVarCmdService() : GameService("CVarCmdService")
+{
+	this->AddCmd("help", "usage: help [cvar/cmd] - Display help for a console variable or command", [](CVarCmdService *cvarCmdService, std::string_view, const std::vector< std::string > &argv) -> int {
+		if (argv.size() < 2) {
+			g_Log.Error("help usage: help [cvar/cmd]");
+			return 1;
+		}
+
+		auto printCVarHelp = [](auto array, uint64_t hash) {
+			auto &storage = array->cvars[array->hashToIndexMap[hash]];
+			g_Log.Info(FMT_COMPILE("\"{}\" - {}"), storage.parameter->name, storage.parameter->description);
+		};
+
+		auto floatArray = cvarCmdService->GetCVarArray< double >();
+		auto intArray = cvarCmdService->GetCVarArray< int >();
+		auto stringArray = cvarCmdService->GetCVarArray< std::string >();
+
+		uint64_t hash = UtilStringHash(argv[1]);
+
+		if (cvarCmdService->CVarCmdExists(hash)) {
+			g_Log.Info(FMT_COMPILE("\"{}\" - {}"), argv[1], cvarCmdService->GetCVarCmd(hash).description);
+			return 0;
+		} else if (floatArray->hashToIndexMap.count(hash) != 0) {
+			printCVarHelp(floatArray, hash);
+			return 0;
+		} else if (floatArray->hashToIndexMap.count(hash) != 0) {
+			printCVarHelp(intArray, hash);
+			return 0;
+		} else if (stringArray->hashToIndexMap.count(hash) != 0) {
+			printCVarHelp(stringArray, hash);
+			return 0;
+		}
+
+		g_Log.Error(FMT_COMPILE("No console variable or command found: \"{}\""), argv[1]);
+		return 1;
+
+	});
+
+	this->AddCmd("quit", "Quit the game", [](CVarCmdService *, std::string_view, const std::vector< std::string > &) -> int {
+		g_Game->RequestClose();
+		return 0;
+	});
+
+	this->AddAlias("exit", "quit");
+}
+
+CVarCmdService::~CVarCmdService()
+{
 }
 
 void CVarCmdService::AddAlias(std::string_view name, std::string_view aliasTo)

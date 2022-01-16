@@ -138,6 +138,9 @@ public:
 	template< typename T >
 	T GetCVarValue(uint64_t hash);
 
+	inline bool CVarCmdExists(uint64_t hash) { return m_cmds.count(hash) != 0; }
+	inline const CVarCmd &GetCVarCmd(uint64_t hash) { return m_cmds[hash]; }
+
 	void Exec(std::string_view cmd);
 private:
 	CVarParameter *CreateCVar(std::string_view name, std::string_view description);
