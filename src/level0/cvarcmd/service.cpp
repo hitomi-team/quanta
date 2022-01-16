@@ -229,6 +229,11 @@ CVarCmdService::CVarCmdService() : GameService("CVarCmdService")
 		return 0;
 	});
 
+	this->AddCmd("clear", "Clear console scrollback buffer", [](CVarCmdService *, std::string_view, const std::vector< std::string > &) -> int {
+		g_Log.ClearBuffer();
+		return 0;
+	});
+
 	this->AddAlias("exit", "quit");
 }
 

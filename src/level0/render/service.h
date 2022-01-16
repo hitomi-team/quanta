@@ -31,6 +31,7 @@ private:
 
 	std::shared_ptr< IRenderImGui > m_imgui;
 	std::shared_ptr< IRenderPass > m_imguiRenderPass;
+	std::array< char, 1024 > m_imguiConsoleTextInput {};
 
 	PerfClock m_pc;
 	double m_lag = 0.;

@@ -13,6 +13,8 @@ enum class LogLevel : int {
 
 class Log {
 public:
+	std::deque< std::string > buffer;
+
 	inline Log() { this->file = nullptr; }
 	Log(const std::string &filename);
 	~Log();
@@ -29,8 +31,6 @@ public:
 	inline void Info(const std::string &msg)  { Print(LogLevel::Info,  msg.c_str()); }
 	inline void Warn(const std::string &msg)  { Print(LogLevel::Warn,  msg.c_str()); }
 
-	// inline std::vector< std::string > &getBuffer() { return buffer; }
-
 	template < typename _StringType, typename ... Args >
 	inline void Debug(const _StringType &fmt, Args &&...args) { Print(LogLevel::Debug, fmt::format(fmt, std::forward< Args >(args)...).c_str()); }
 
@@ -45,6 +45,8 @@ public:
 
 	template < typename _StringType, typename ... Args >
 	inline void Fatal(const _StringType &fmt, Args &&...args) { Print(LogLevel::Fatal, fmt::format(fmt, std::forward< Args >(args)...).c_str()); }
+
+	inline void ClearBuffer() { this->buffer.clear(); }
 
 protected:
 	std::mutex mtx;

@@ -84,7 +84,11 @@ RenderService::~RenderService()
 void RenderService::Update()
 {
 	auto cvarCmdService = g_Game->GetService< CVarCmdService >();
-	double limit = 1./cvarCmdService->GetCVarValue< double >(UtilStringHash("r_fpsmax"));
+
+	double limit = 1./cvarCmdService->GetCVarValue< double >([]() -> uint64_t {
+		static constexpr uint64_t hash = UtilStringHash("r_fpsmax");
+		return hash;
+	}());
 
 	m_pc.Calc();
 
@@ -107,15 +111,40 @@ void RenderService::Update()
 		// TODO: move all imgui stuff into their own functions
 		m_imgui->NewFrame();
 
+		ImGui::PushStyleVar(ImGuiStyleVar_WindowMinSize, ImVec2(300, 275));
 		ImGui::Begin("Developer Menu", nullptr, ImGuiWindowFlags_AlwaysUseWindowPadding | ImGuiWindowFlags_NoSavedSettings);
-
-		ImGui::SetWindowSize(ImVec2(300, 275));
+		ImGui::PopStyleVar();
 
 		if (ImGui::CollapsingHeader("App Information"))
 			ImGui::Text("Build Date: %s @ %s", __DATE__, __TIME__);
 
 		if (ImGui::CollapsingHeader("Performance"))
 			ImGui::Text("Frametime: %.3f ms (%.1f FPS)", 1000.0f / ImGui::GetIO().Framerate, ImGui::GetIO().Framerate);
+
+		if (ImGui::CollapsingHeader("Console")) {
+			ImGui::BeginChild("Log", ImVec2(0, 0), false, ImGuiWindowFlags_HorizontalScrollbar);
+
+			for (const auto &line : g_Log.buffer)
+				ImGui::TextUnformatted(line.c_str());
+
+			if (ImGui::GetScrollY() >= ImGui::GetScrollMaxY())
+				ImGui::SetScrollHereY(1.0f);
+
+			ImGui::EndChild();
+
+			if (ImGui::InputText("Input", m_imguiConsoleTextInput.data(), m_imguiConsoleTextInput.size(), ImGuiInputTextFlags_EnterReturnsTrue, nullptr, m_imguiConsoleTextInput.data())) {
+				cvarCmdService->Exec(m_imguiConsoleTextInput.data());
+				std::fill(m_imguiConsoleTextInput.begin(), m_imguiConsoleTextInput.end(), '\0');
+			}
+
+			ImGui::SameLine(); if (ImGui::Button("Submit")) {
+				cvarCmdService->Exec(m_imguiConsoleTextInput.data());
+				std::fill(m_imguiConsoleTextInput.begin(), m_imguiConsoleTextInput.end(), '\0');
+			}
+
+			ImGui::SameLine(); if (ImGui::Button("Clear"))
+				g_Log.ClearBuffer();
+		}
 
 		ImGui::End();
 

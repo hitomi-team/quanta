@@ -74,6 +74,11 @@ void Log::Print(LogLevel level, const char *msg)
 			fwrite(temp.c_str(), 1, temp.size(), this->file);
 			fflush(this->file);
 		}
+
+		if (this->buffer.size() > 4096)
+			this->buffer.pop_front();
+
+		this->buffer.push_back(std::move(temp));
 	}
 }
 
