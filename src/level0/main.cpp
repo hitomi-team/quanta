@@ -28,12 +28,10 @@ int main(int argc, char **argv)
 		game.Run();
 	} catch (const std::exception &e) {
 		g_Log.Error(FMT_COMPILE("Game Exception Caught: {}"), e.what());
-		CVar_CleanAll();
 		Sys_Quit();
 		return 63;
 	}
 
-	CVar_CleanAll();
 	Sys_Quit();
 
 	return 0;
