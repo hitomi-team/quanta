@@ -61,3 +61,4 @@
 #include "sys.h"
 #include "log.h"
 #include "perfclock.h"
+#include "util.h"

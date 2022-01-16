@@ -5,6 +5,8 @@
 
 class FilesystemService : public GameService {
 public:
+	UTIL_DEFINE_SERVICE_HASH(FilesystemService);
+
 	FilesystemService() = delete;
 	FilesystemService(const char *argv0);
 	~FilesystemService();

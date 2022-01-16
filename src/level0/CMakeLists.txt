@@ -2,6 +2,7 @@ add_subdirectory(dependencies)
 
 add_subdirectory(component)
 add_subdirectory(crypto)
+add_subdirectory(cvarcmd)
 add_subdirectory(filesystem)
 add_subdirectory(game)
 add_subdirectory(input)

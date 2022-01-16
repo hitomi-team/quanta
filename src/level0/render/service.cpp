@@ -1,7 +1,7 @@
 #include "level0/pch.h"
 #include "level0/log.h"
 
-#include "level0/cvar.h"
+#include "level0/cvarcmd/service.h"
 #include "level0/game/game.h"
 
 #include "defs.h"
@@ -9,11 +9,10 @@
 
 #include "service.h"
 
-CVAR_INIT(r_fpsmax, "300", "300");
-
 RenderService::RenderService() : GameService("RenderService")
 {
-	CVar_Add(&CVAR_VAR(r_fpsmax));
+	auto cvarCmdService = g_Game->GetService< CVarCmdService >();
+	cvarCmdService->CreateCVar< double >("r_fpsmax", "Max FPS Target for FPS Limiter", 144., 30., 300., 144.);
 
 	this->renderAPI = std::make_unique< VulkanAPI >(GAME_TITLE_NAME);
 	g_VulkanAPI = dynamic_cast< VulkanAPI * >(this->renderAPI.get());
@@ -84,11 +83,12 @@ RenderService::~RenderService()
 
 void RenderService::Update()
 {
+	auto cvarCmdService = g_Game->GetService< CVarCmdService >();
+	double limit = 1./cvarCmdService->GetCVarValue< double >(UtilStringHash("r_fpsmax"));
+
 	m_pc.Calc();
 
 	m_lag += m_pc.dt_f64;
-
-	double limit = 1./CVAR_VAR(r_fpsmax).GetFloat();
 
 	while (m_lag >= limit) {
 		uint32_t imageIndex;

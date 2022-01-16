@@ -2,6 +2,7 @@
 #include "level0/log.h"
 
 #include "level0/game/game.h"
+#include "level0/cvarcmd/service.h"
 #include "level0/render/service.h"
 #include "level0/cmd.h"
 #include "service.h"
@@ -20,35 +21,34 @@ void InputService::Update()
 	SDL_Event event;
 	bool recoverFromWait = false;
 
-	auto renderService = g_Game->GetService< RenderService >("RenderService");
+	auto renderService = g_Game->GetService< RenderService >();
+	auto cvarCmdService = g_Game->GetService< CVarCmdService >();
 
-	while (true) {
-		if (renderService != nullptr) {
-			if (recoverFromWait) {
-				recoverFromWait = false;
-			} else {
-				if (SDL_PollEvent(&event) <= 0)
-					break;
-			}
-
-			ImGui_ImplSDL2_ProcessEvent(&event);
-
-			switch (event.type) {
-			case SDL_QUIT:
-				g_Game->RequestClose();
+	while (renderService != nullptr) {
+		if (recoverFromWait) {
+			recoverFromWait = false;
+		} else {
+			if (SDL_PollEvent(&event) <= 0)
 				break;
-			case SDL_WINDOWEVENT:
-				switch (event.window.event) {
-				case SDL_WINDOWEVENT_RESIZED:
-					renderService->TryResizeSwapchain();
-					break;
-				case SDL_WINDOWEVENT_MINIMIZED:
-					recoverFromWait = true;
-					SDL_WaitEvent(&event);
-					break;
-				}
+		}
+
+		ImGui_ImplSDL2_ProcessEvent(&event);
+
+		switch (event.type) {
+		case SDL_QUIT:
+			g_Game->RequestClose();
+			break;
+		case SDL_WINDOWEVENT:
+			switch (event.window.event) {
+			case SDL_WINDOWEVENT_RESIZED:
+				renderService->TryResizeSwapchain();
+				break;
+			case SDL_WINDOWEVENT_MINIMIZED:
+				recoverFromWait = true;
+				SDL_WaitEvent(&event);
 				break;
 			}
+			break;
 		}
 	}
 
@@ -59,7 +59,7 @@ void InputService::Update()
 		std::string cmd = m_consoleLines.front();
 		m_consoleLines.pop();
 
-		Cmd_Exec(cmd.c_str());
+		cvarCmdService->Exec(cmd);
 	}
 #endif
 }

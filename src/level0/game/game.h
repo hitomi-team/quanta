@@ -22,13 +22,13 @@ public:
 	// Emergency Abort
 	void Abort(std::string cause);
 
-	GameService *GetService(const char *name);
+	inline GameService *GetService(uint64_t hash) { return m_services[hash].get(); }
 
 	template< typename T >
-	inline T *GetService(const char *name) { return dynamic_cast< T * >(this->GetService(name)); }
+	inline T *GetService() { return dynamic_cast< T * >(m_services[T::Hash].get()); }
 
 protected:
-	std::vector< std::unique_ptr< GameService > > m_services;
+	std::unordered_map< uint64_t, std::unique_ptr< GameService > > m_services;
 	bool m_shouldClose = false, m_running = false;
 
 };

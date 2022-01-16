@@ -2,6 +2,7 @@
 #include "level0/log.h"
 
 #include "level0/game/game.h"
+#include "level0/cvarcmd/service.h"
 #include "level0/filesystem/service.h"
 #include "level0/render/service.h"
 #include "level0/input/service.h"
@@ -22,6 +23,7 @@ int main(int argc, char **argv)
 		Game game;
 		g_Game = &game;
 
+		game.RegisterService(std::make_unique< CVarCmdService >());
 		game.RegisterService(std::make_unique< FilesystemService >(argv[0]));
 		game.RegisterService(std::make_unique< RenderService >());
 		game.RegisterService(std::make_unique< InputService >());

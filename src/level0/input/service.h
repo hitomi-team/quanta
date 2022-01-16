@@ -5,6 +5,8 @@
 
 class InputService : public GameService {
 public:
+	UTIL_DEFINE_SERVICE_HASH(InputService);
+
 	InputService();
 
 	void Update();

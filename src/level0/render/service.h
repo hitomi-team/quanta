@@ -8,6 +8,8 @@
 
 class RenderService : public GameService {
 public:
+	UTIL_DEFINE_SERVICE_HASH(RenderService);
+
 	std::unique_ptr< RenderAPI > renderAPI = nullptr;
 
 	RenderService();
