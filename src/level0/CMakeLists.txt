@@ -10,9 +10,7 @@ add_subdirectory(render)
 
 add_sources(
 	utf8.c
-	cmd.cpp
 	common.cpp
-	cvar.cpp
 	log.cpp
 	main.cpp
 	perfclock.cpp
