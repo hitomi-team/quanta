@@ -8,7 +8,7 @@ static PFN_vkVoidFunction vk_imgui_loader_func(const char *function_name, void *
 	return reinterpret_cast< PFN_vkGetInstanceProcAddr >(SDL_Vulkan_GetVkGetInstanceProcAddr())(g_VulkanAPI->inst, function_name);
 }
 
-VulkanImGui::VulkanImGui(VulkanDevice *device, std::shared_ptr< IRenderPass > _renderPass, uint32_t imageCount)
+VulkanImGui::VulkanImGui(VulkanDevice *device, std::shared_ptr< IRenderPass > _renderPass, uint32_t minImageCount, uint32_t imageCount)
 {
 	this->device = device;
 	m_renderPass = std::dynamic_pointer_cast< VulkanRenderPass >(_renderPass);
@@ -55,7 +55,7 @@ VulkanImGui::VulkanImGui(VulkanDevice *device, std::shared_ptr< IRenderPass > _r
 	imguiInfo.Device = this->device->handle;
 	imguiInfo.Queue = this->device->GetQueue(DEVICE_QUEUE_GRAPHICS);
 	imguiInfo.DescriptorPool = m_descriptorPool;
-	imguiInfo.MinImageCount = imageCount - 1;
+	imguiInfo.MinImageCount = minImageCount;
 	imguiInfo.ImageCount = imageCount;
 	imguiInfo.MSAASamples = VK_SAMPLE_COUNT_1_BIT;
 

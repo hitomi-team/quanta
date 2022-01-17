@@ -231,9 +231,9 @@ std::shared_ptr< IRenderSwapchain > VulkanDevice::CreateSwapchain(ESwapchainPres
 	return std::dynamic_pointer_cast< IRenderSwapchain >(std::make_shared< VulkanSwapchain >(this, presentMode, preferPresentQueue));
 }
 
-std::shared_ptr< IRenderImGui > VulkanDevice::CreateImGui(std::shared_ptr< IRenderPass > renderPass, uint32_t imageCount)
+std::shared_ptr< IRenderImGui > VulkanDevice::CreateImGui(std::shared_ptr< IRenderPass > renderPass, uint32_t minImageCount, uint32_t imageCount)
 {
-	return std::dynamic_pointer_cast< IRenderImGui >(std::make_shared< VulkanImGui >(this, renderPass, imageCount));
+	return std::dynamic_pointer_cast< IRenderImGui >(std::make_shared< VulkanImGui >(this, renderPass, minImageCount, imageCount));
 }
 
 std::shared_ptr< IRenderSampler > VulkanDevice::CreateSampler(const RenderSamplerStateDescription &state)

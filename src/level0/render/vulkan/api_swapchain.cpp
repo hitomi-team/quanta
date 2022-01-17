@@ -66,6 +66,11 @@ uint32_t VulkanSwapchain::GetMaxImages()
 	return this->numImages;
 }
 
+uint32_t VulkanSwapchain::GetMinImages()
+{
+	return this->minNumImages;
+}
+
 EDeviceQueue VulkanSwapchain::GetPresentingQueue()
 {
 	return m_presentingQueue;
@@ -167,6 +172,13 @@ void VulkanSwapchain::Init(ESwapchainPresentMode _presentMode, bool useOldSwapch
 
 	m_extent.width = chosenExtent.width;
 	m_extent.height = chosenExtent.height;
+
+	this->minNumImages = caps.minImageCount;
+	if (this->minNumImages < 2)
+		this->minNumImages = 2;
+
+	if (caps.maxImageCount > 0 && this->minNumImages > caps.maxImageCount)
+		throw std::runtime_error("VulkanSwapchain: Unsupported surface capabilities!");
 
 	this->numImages = caps.minImageCount + 1;
 	if (caps.maxImageCount > 0 && this->numImages > caps.maxImageCount)

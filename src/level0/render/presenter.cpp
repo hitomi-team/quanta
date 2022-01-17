@@ -83,7 +83,8 @@ void RenderPresenter::Recreate(ESwapchainPresentMode presentMode)
 
 	m_frameCounter = 0;
 	m_imageIndex = 0;
-	m_maxImages = static_cast< uint32_t >(m_images.size());
+	m_minImages = m_swapchain->GetMinImages();
+	m_maxImages = m_swapchain->GetMaxImages();
 	m_init = true;
 }
 

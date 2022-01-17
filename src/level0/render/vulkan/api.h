@@ -116,7 +116,7 @@ public:
 	std::shared_ptr< IRenderFramebuffer > CreateFramebuffer(std::shared_ptr< IRenderPass > renderPass, const std::vector< std::shared_ptr< IRenderImage > > &images, const RenderExtent2D &extent);
 	std::shared_ptr< IRenderFramebuffer > CreateFramebuffer(std::shared_ptr< IRenderPass > renderPass, std::shared_ptr< IRenderImage > image, const RenderExtent2D &extent);
 	std::shared_ptr< IRenderSwapchain > CreateSwapchain(ESwapchainPresentMode presentMode, EDeviceQueue preferPresentQueue);
-	std::shared_ptr< IRenderImGui > CreateImGui(std::shared_ptr< IRenderPass > renderPass, uint32_t imageCount);
+	std::shared_ptr< IRenderImGui > CreateImGui(std::shared_ptr< IRenderPass > renderPass, uint32_t minImageCount, uint32_t imageCount);
 
 	std::shared_ptr< IRenderSampler > CreateSampler(const RenderSamplerStateDescription &state);
 
@@ -261,6 +261,7 @@ public:
 	std::vector< std::shared_ptr< IRenderImage > > images;
 
 	uint32_t numImages;
+	uint32_t minNumImages;
 
 	VulkanSwapchain() = delete;
 	VulkanSwapchain(VulkanDevice *device, ESwapchainPresentMode presentMode, EDeviceQueue preferPresentQueue);
@@ -272,6 +273,7 @@ public:
 	std::shared_ptr< IRenderImage > GetImage(uint32_t index);
 	std::vector< std::shared_ptr< IRenderImage > > GetImages();
 	uint32_t GetMaxImages();
+	uint32_t GetMinImages();
 	EDeviceQueue GetPresentingQueue();
 
 	ESwapchainResult PresentImage(std::shared_ptr< IRenderSemaphore > waitSemaphore, uint32_t index);
@@ -434,7 +436,7 @@ public:
 	VulkanDevice *device;
 
 	VulkanImGui() = delete;
-	VulkanImGui(VulkanDevice *device, std::shared_ptr< IRenderPass > renderPass, uint32_t imageCount);
+	VulkanImGui(VulkanDevice *device, std::shared_ptr< IRenderPass > renderPass, uint32_t minImageCount, uint32_t imageCount);
 	~VulkanImGui();
 
 	void NewFrame();

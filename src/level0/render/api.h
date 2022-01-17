@@ -332,7 +332,7 @@ public:
 	virtual std::shared_ptr< IRenderFramebuffer > CreateFramebuffer(std::shared_ptr< IRenderPass > renderPass, const std::vector< std::shared_ptr< IRenderImage > > &images, const RenderExtent2D &extent) = 0;
 	virtual std::shared_ptr< IRenderFramebuffer > CreateFramebuffer(std::shared_ptr< IRenderPass > renderPass, std::shared_ptr< IRenderImage > image, const RenderExtent2D &extent) = 0;
 	virtual std::shared_ptr< IRenderSwapchain > CreateSwapchain(ESwapchainPresentMode presentMode, EDeviceQueue preferPresentQueue) = 0; // will handle image counts, etc...
-	virtual std::shared_ptr< IRenderImGui > CreateImGui(std::shared_ptr< IRenderPass > renderPass, uint32_t imageCount) = 0;
+	virtual std::shared_ptr< IRenderImGui > CreateImGui(std::shared_ptr< IRenderPass > renderPass, uint32_t minImageCount, uint32_t imageCount) = 0;
 
 	// Samplers
 	virtual std::shared_ptr< IRenderSampler > CreateSampler(const RenderSamplerStateDescription &state) = 0;
@@ -420,6 +420,7 @@ public:
 	virtual std::shared_ptr< IRenderImage > GetImage(uint32_t index) = 0;
 	virtual std::vector< std::shared_ptr< IRenderImage > > GetImages() = 0;
 	virtual uint32_t GetMaxImages() = 0;
+	virtual uint32_t GetMinImages() = 0;
 	virtual EDeviceQueue GetPresentingQueue() = 0;
 
 	virtual ESwapchainResult PresentImage(std::shared_ptr< IRenderSemaphore > waitSemaphore, uint32_t index) = 0;

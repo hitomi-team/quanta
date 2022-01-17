@@ -61,7 +61,7 @@ RenderService::RenderService() : GameService("RenderService")
 		}()
 	);
 
-	m_imgui = m_device->CreateImGui(m_imguiRenderPass, m_presenter->GetMaxImages());
+	m_imgui = m_device->CreateImGui(m_imguiRenderPass, m_presenter->GetMinImages(), m_presenter->GetMaxImages());
 
 	m_init = true;
 }
