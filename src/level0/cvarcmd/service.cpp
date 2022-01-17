@@ -380,7 +380,7 @@ bool CVarCmdService::ParseStr(std::string_view str)
 
 	while (true) {
 		while (true) {
-			c_len = utf8_decode_v2(str.begin(), str.end(), &c, &e);
+			c_len = utf8_decode_v2(str.data(), str.data() + str.size(), &c, &e);
 			if (e != 0)
 				return false;
 			if (c == '\0' || c > ' ' || c == '\n')
@@ -396,11 +396,11 @@ bool CVarCmdService::ParseStr(std::string_view str)
 		if (c == '\0')
 			return true;
 
-		const char *ptr = Com_ParseStr(tokenBuffer.data(), tokenBuffer.size(), str.begin());
+		const char *ptr = Com_ParseStr(tokenBuffer.data(), tokenBuffer.size(), str.data());
 		if (ptr == nullptr)
 			return true;
 
-		auto offset = static_cast< size_t >(ptr - str.begin());
+		auto offset = static_cast< size_t >(ptr - str.data());
 		str.remove_prefix(offset);
 
 		m_argv.push_back(tokenBuffer.data());
