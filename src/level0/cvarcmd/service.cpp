@@ -324,30 +324,27 @@ template double CVarCmdService::GetCVarValue< double >(uint64_t);
 template int CVarCmdService::GetCVarValue< int >(uint64_t);
 template std::string CVarCmdService::GetCVarValue< std::string >(uint64_t);
 
-void CVarCmdService::Exec(std::string_view cmd)
+void CVarCmdService::Exec(std::string_view cmdline)
 {
-	m_args = cmd.data();
-	m_argsHash = UtilStringHash(m_args);
-
-	if (!this->ParseStr(cmd))
+	if (!this->ParseStr(cmdline))
 		return;
 
 	if (m_argv.size() == 0)
 		return;
 
 	if (m_cmds.count(m_argvHash[0]) != 0) {
-		if (m_cmds[m_argvHash[0]].func(this, m_args, m_argv) != 0)
+		if (m_cmds[m_argvHash[0]].func(this, cmdline, m_argv) != 0)
 			g_Log.Error(FMT_COMPILE("failed to execute command \"{}\""), m_argv[0]);
 		return;
 	}
 
 	if (m_aliasMap.count(m_argvHash[0]) != 0) {
-		this->Exec(m_aliasMap[m_argvHash[0]]);
+		this->Exec(fmt::format(FMT_COMPILE("{}{}"), m_aliasMap[m_argvHash[0]], cmdline.substr(m_argv[0].size()).data()));
 		return;
 	}
 
 	if (!this->ExecCVarCmd()) {
-		g_Log.Error(FMT_COMPILE("command does not exist: \"{}\""), m_argv[0]);
+		g_Log.Error(FMT_COMPILE("unknown command: \"{}\""), cmdline);
 		return;
 	}
 }
@@ -369,7 +366,6 @@ CVarParameter *CVarCmdService::CreateCVar(std::string_view name, std::string_vie
 
 bool CVarCmdService::ParseStr(std::string_view str)
 {
-	IO_EraseCPPVector(m_args);
 	IO_EraseCPPVector(m_argv);
 	IO_EraseCPPVector(m_argvHash);
 

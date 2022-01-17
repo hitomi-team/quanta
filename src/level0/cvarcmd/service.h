@@ -148,8 +148,6 @@ private:
 	template< typename T >
 	bool ExecCVarCmdType(CVarParameter *parameter);
 private:
-	std::string m_args;
-	uint64_t m_argsHash;
 	std::vector< std::string > m_argv;
 	std::vector< uint64_t > m_argvHash;
 	std::vector< std::string > m_aliases;

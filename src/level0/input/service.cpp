@@ -58,6 +58,7 @@ void InputService::Update()
 		std::string cmd = m_consoleLines.front();
 		m_consoleLines.pop();
 
+		cmd.erase(cmd.size() - 1);
 		cvarCmdService->Exec(cmd);
 	}
 #endif
@@ -67,6 +68,7 @@ void InputService::Update()
 void InputService::ConsoleThread()
 {
 	std::array< char, 1024 > buf {};
+
 	while (1) {
 		Sys_GetConsoleInput(buf.data(), buf.size());
 
