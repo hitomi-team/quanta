@@ -135,6 +135,7 @@ void RenderService::Update()
 			if (ImGui::InputText("Input", m_imguiConsoleTextInput.data(), m_imguiConsoleTextInput.size(), ImGuiInputTextFlags_EnterReturnsTrue, nullptr, m_imguiConsoleTextInput.data())) {
 				cvarCmdService->Exec(m_imguiConsoleTextInput.data());
 				std::fill(m_imguiConsoleTextInput.begin(), m_imguiConsoleTextInput.end(), '\0');
+				ImGui::SetKeyboardFocusHere(-1);
 			}
 
 			ImGui::SameLine(); if (ImGui::Button("Submit")) {
