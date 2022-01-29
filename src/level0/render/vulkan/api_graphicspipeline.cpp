@@ -244,7 +244,7 @@ void VulkanGraphicsPipeline::Compile()
 
 	std::vector< VkPipelineColorBlendAttachmentState > blendAttachmentStates(this->colorBlendAttachments.size());
 
-	for (size_t i = 0; i < this->viewportState.scissors.size(); i++) {
+	for (size_t i = 0; i < this->colorBlendAttachments.size(); i++) {
 		blendAttachmentStates[i].blendEnable = this->colorBlendAttachments[i].enable ? VK_TRUE : VK_FALSE;
 		blendAttachmentStates[i].srcColorBlendFactor = g_VulkanBlendFactors[this->colorBlendAttachments[i].sourceColorBlendFactor];
 		blendAttachmentStates[i].dstColorBlendFactor = g_VulkanBlendFactors[this->colorBlendAttachments[i].destColorBlendFactor];
