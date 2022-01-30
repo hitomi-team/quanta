@@ -186,6 +186,16 @@ std::shared_ptr< IRenderDescriptorPool > VulkanDevice::CreateDescriptorPool(uint
 	return std::dynamic_pointer_cast< IRenderDescriptorPool >(std::make_shared< VulkanDescriptorPool >(this, maxSets, poolSizes));
 }
 
+std::shared_ptr< IRenderBufferView > VulkanDevice::CreateBufferView(std::shared_ptr< IRenderBuffer > buffer, EImageFormat bufferFormat, uint64_t offset, uint64_t range)
+{
+	return std::dynamic_pointer_cast< IRenderBufferView >(std::make_shared< VulkanBufferView >(this, std::dynamic_pointer_cast< VulkanBuffer >(buffer), bufferFormat, offset, range));
+}
+
+std::shared_ptr< IRenderImageView > VulkanDevice::CreateImageView(std::shared_ptr< IRenderImage > image, eRenderImageViewType imageViewType, EImageFormat imageFormat, const RenderImageComponentMapping &componentMapping, const RenderImageSubresourceRange &subresourceRange)
+{
+	return std::dynamic_pointer_cast< IRenderImageView >(std::make_shared< VulkanImageView >(this, std::dynamic_pointer_cast< VulkanImage >(image), imageViewType, imageFormat, componentMapping, subresourceRange));
+}
+
 std::shared_ptr< IRenderFence > VulkanDevice::CreateFence(bool signaled)
 {
 	return std::dynamic_pointer_cast< IRenderFence >(std::make_shared< VulkanFence >(this, signaled));

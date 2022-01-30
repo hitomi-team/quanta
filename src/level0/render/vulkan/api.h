@@ -10,6 +10,12 @@
 
 #include "level0/render/api.h"
 
+#define VK_CHECK(X, msg) \
+do { \
+	if ((X) != VK_SUCCESS) \
+		throw std::runtime_error((msg)); \
+} while (0)
+
 struct VulkanFormatAlphaProperties {
 	VkFormat format;
 	bool ignoreAlpha;
@@ -23,6 +29,7 @@ extern const std::array< VkAttachmentStoreOp, MAX_ATTACHMENT_STORE_OP_ENUM > g_V
 extern const std::array< VkBlendFactor, MAX_BLEND_FACTORS > g_VulkanBlendFactors;
 extern const std::array< VkBlendOp, MAX_BLEND_OPS > g_VulkanBlendOps;
 extern const std::array< VkCommandBufferLevel, MAX_COMMAND_BUFFER_LEVEL_ENUM > g_VulkanCommandBufferLevels;
+extern const std::array< VkComponentSwizzle, static_cast< size_t >(eRenderImageComponentSwizzle::MaxEnum) > g_VulkanComponentSwizzleTypes;
 extern const std::array< VkCullModeFlags, MAX_CULLMODES > g_VulkanCullModes;
 extern const std::array< VkDescriptorType, MAX_DESCRIPTOR_TYPE_ENUM > g_VulkanDescriptorTypes;
 extern const std::array< VkFrontFace, MAX_FRONT_FACE_ENUM > g_VulkanFrontFaces;
@@ -31,6 +38,7 @@ extern const std::array< VulkanFormatAlphaProperties, MAX_IMAGE_FORMAT_ENUM > g_
 extern const std::array< VkImageLayout, MAX_IMAGE_LAYOUT_ENUM > g_VulkanImageLayouts;
 extern const std::array< VkImageType, MAX_IMAGE_TYPE_ENUM > g_VulkanImageTypes;
 extern const std::array< VkImageViewType, MAX_IMAGE_TYPE_ENUM > g_VulkanImageViewTypes;
+extern const std::array< VkImageViewType, static_cast< size_t >(eRenderImageViewType::MaxEnum) > g_VulkanImageViewTypes2;
 extern const std::array< VkLogicOp, MAX_LOGIC_OP_ENUM > g_VulkanLogicOps;
 extern const std::array< VkPolygonMode, MAX_FILL_MODE_ENUM > g_VulkanPolygonModes;
 extern const std::array< VkPresentModeKHR, MAX_PRESENT_MODE_ENUM > g_VulkanPresentModes;
@@ -105,6 +113,8 @@ public:
 	std::shared_ptr< IRenderAllocator > CreateAllocator(const std::string &name, EResourceMemoryUsage usage, uint64_t minAlign, uint64_t blockSize, size_t minBlockCount, size_t maxBlockCount);
 	std::shared_ptr< IRenderCommandPool > CreateCommandPool(EDeviceQueue queue, ECommandPoolUsage usage);
 	std::shared_ptr< IRenderDescriptorPool > CreateDescriptorPool(uint32_t maxSets, const std::vector< RenderDescriptorPoolSize > &poolSizes);
+	std::shared_ptr< IRenderBufferView > CreateBufferView(std::shared_ptr< IRenderBuffer > buffer, EImageFormat bufferFormat, uint64_t offset, uint64_t range);
+	std::shared_ptr< IRenderImageView > CreateImageView(std::shared_ptr< IRenderImage > image, eRenderImageViewType imageViewType, EImageFormat imageFormat, const RenderImageComponentMapping &componentMapping, const RenderImageSubresourceRange &subresourceRange);
 	std::shared_ptr< IRenderFence > CreateFence(bool signaled);
 	std::shared_ptr< IRenderSemaphore > CreateSemaphore();
 
@@ -188,6 +198,16 @@ private:
 	uint64_t m_size;
 };
 
+class VulkanBufferView : public IRenderBufferView {
+public:
+	VulkanDevice *device;
+	VkBufferView handle;
+
+	VulkanBufferView() = delete;
+	VulkanBufferView(VulkanDevice *device, std::shared_ptr< VulkanBuffer > buffer, EImageFormat bufferFormat, uint64_t offset, uint64_t range);
+	~VulkanBufferView();
+};
+
 class VulkanImage : public IRenderImage {
 public:
 	VulkanDevice *device;
@@ -220,6 +240,16 @@ private:
 	EImageFormat m_format;
 	RenderExtent3D m_extent;
 	RenderImageSubresourceRange m_subresourceRange;
+};
+
+class VulkanImageView : public IRenderImageView {
+public:
+	VulkanDevice *device;
+	VkImageView handle;
+
+	VulkanImageView() = delete;
+	VulkanImageView(VulkanDevice *device, std::shared_ptr< VulkanImage > image, eRenderImageViewType imageViewType, EImageFormat imageFormat, const RenderImageComponentMapping &componentMapping, const RenderImageSubresourceRange &subresourceRange);
+	~VulkanImageView();
 };
 
 class VulkanRenderPass : public IRenderPass {

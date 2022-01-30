@@ -10,7 +10,9 @@ class IRenderPhysicalDevice;
 class IRenderDevice;
 class IRenderAllocator;
 class IRenderBuffer;
+class IRenderBufferView;
 class IRenderImage; // this could be 1D, 2D, or 3D
+class IRenderImageView;
 class IRenderPass;
 class IRenderFramebuffer;
 class IRenderSwapchain;
@@ -64,6 +66,10 @@ struct RenderPhysicalDeviceInfo {
 struct RenderPhysicalDeviceFeatures {
 	bool hasSmartAccessMemory;
 	bool vulkanAMDAPUHeapWorkaround; // For determining Vulkan memory heap workarounds
+};
+
+struct RenderImageComponentMapping {
+	eRenderImageComponentSwizzle r, g, b, a;
 };
 
 struct RenderImageSubresourceLayers {
@@ -319,6 +325,8 @@ public:
 	virtual std::shared_ptr< IRenderAllocator > CreateAllocator(const std::string &name, EResourceMemoryUsage memoryUsage, uint64_t minAlign, uint64_t blockSize, size_t minBlockCount, size_t maxBlockCount) = 0;
 	virtual std::shared_ptr< IRenderCommandPool > CreateCommandPool(EDeviceQueue queue, ECommandPoolUsage usage) = 0;
 	virtual std::shared_ptr< IRenderDescriptorPool > CreateDescriptorPool(uint32_t maxSets, const std::vector< RenderDescriptorPoolSize > &poolSizes) = 0;
+	virtual std::shared_ptr< IRenderBufferView > CreateBufferView(std::shared_ptr< IRenderBuffer > buffer, EImageFormat bufferFormat, uint64_t offset, uint64_t range) = 0;
+	virtual std::shared_ptr< IRenderImageView > CreateImageView(std::shared_ptr< IRenderImage > image, eRenderImageViewType imageViewType, EImageFormat imageFormat, const RenderImageComponentMapping &componentMapping, const RenderImageSubresourceRange &subresourceRange) = 0;
 	virtual std::shared_ptr< IRenderFence > CreateFence(bool signaled) = 0;
 	virtual std::shared_ptr< IRenderSemaphore > CreateSemaphore() = 0;
 
@@ -382,6 +390,15 @@ public:
 	virtual uint64_t GetSize() = 0;
 };
 
+class IRenderBufferView {
+public:
+	std::shared_ptr< IRenderBuffer > buffer;
+	EImageFormat bufferFormat;
+	uint64_t offset, range;
+
+	virtual ~IRenderBufferView() = default;
+};
+
 class IRenderImage {
 public:
 	virtual ~IRenderImage() = default;
@@ -394,6 +411,16 @@ public:
 	virtual EImageFormat GetFormat() = 0;
 	virtual RenderExtent3D GetExtent() = 0;
 	virtual RenderImageSubresourceRange GetSubresourceRange() = 0;
+};
+
+class IRenderImageView {
+public:
+	std::shared_ptr< IRenderImage > image;
+	EImageFormat imageFormat;
+	EImageType imageType;
+	eRenderImageViewType imageViewType;
+
+	virtual ~IRenderImageView() = default;
 };
 
 class IRenderPass {

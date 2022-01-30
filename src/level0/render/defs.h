@@ -191,6 +191,28 @@ enum EImageType
 	MAX_IMAGE_TYPE_ENUM
 };
 
+enum class eRenderImageComponentSwizzle : uint32_t {
+	Identity = 0,
+	Zero,
+	One,
+	R,
+	G,
+	B,
+	A,
+	MaxEnum
+};
+
+enum class eRenderImageViewType : uint32_t {
+	Type1D = 0,
+	Type2D,
+	Type3D,
+	TypeCube,
+	Type1DArray,
+	Type2DArray,
+	TypeCubeArray,
+	MaxEnum
+};
+
 enum EImageUsage
 {
 	IMAGE_USAGE_TRANSFER_SRC = 0x00000001,

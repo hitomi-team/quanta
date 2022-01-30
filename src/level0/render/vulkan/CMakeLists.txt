@@ -2,6 +2,7 @@ add_sources(
 	api.cpp
 	api_allocator.cpp
 	api_buffer.cpp
+	api_bufferview.cpp
 	api_commandbuffer.cpp
 	api_commandpool.cpp
 	api_computepipeline.cpp
@@ -13,6 +14,7 @@ add_sources(
 	api_framebuffer.cpp
 	api_graphicspipeline.cpp
 	api_image.cpp
+	api_imageview.cpp
 	api_imgui.cpp
 	api_physicaldevice.cpp
 	api_pipelinelayout.cpp
