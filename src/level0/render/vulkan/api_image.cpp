@@ -2,64 +2,6 @@
 
 #include "api.h"
 
-const std::array< VkImageAspectFlags, MAX_IMAGE_ASPECT_ENUM > g_VulkanImageAspectFlags {
-	VK_IMAGE_ASPECT_COLOR_BIT,
-	VK_IMAGE_ASPECT_DEPTH_BIT,
-	VK_IMAGE_ASPECT_DEPTH_BIT | VK_IMAGE_ASPECT_STENCIL_BIT,
-	VK_IMAGE_ASPECT_STENCIL_BIT
-};
-
-const std::array< VkImageType, MAX_IMAGE_TYPE_ENUM > g_VulkanImageTypes {
-	VK_IMAGE_TYPE_1D,
-	VK_IMAGE_TYPE_2D,
-	VK_IMAGE_TYPE_3D,
-	VK_IMAGE_TYPE_2D
-};
-
-const std::array< VkImageViewType, MAX_IMAGE_TYPE_ENUM > g_VulkanImageViewTypes {
-	VK_IMAGE_VIEW_TYPE_1D,
-	VK_IMAGE_VIEW_TYPE_2D,
-	VK_IMAGE_VIEW_TYPE_3D,
-	VK_IMAGE_VIEW_TYPE_CUBE
-};
-
-const std::array< VulkanFormatAlphaProperties, MAX_IMAGE_FORMAT_ENUM > g_VulkanImageFormats {
-	VulkanFormatAlphaProperties { VK_FORMAT_UNDEFINED, false },
-
-	VulkanFormatAlphaProperties { VK_FORMAT_R8_UINT, false },
-	VulkanFormatAlphaProperties { VK_FORMAT_R8G8_UINT, false },
-	VulkanFormatAlphaProperties { VK_FORMAT_R8G8B8_UINT, true }, // RGBX8888
-	VulkanFormatAlphaProperties { VK_FORMAT_R8G8B8A8_UINT, false },
-	VulkanFormatAlphaProperties { VK_FORMAT_R8G8B8A8_SRGB, false },
-	VulkanFormatAlphaProperties { VK_FORMAT_R8G8B8A8_UINT, true }, // RGBX8888
-	VulkanFormatAlphaProperties { VK_FORMAT_R8G8B8A8_SRGB, true }, // RGBX8888
-
-	VulkanFormatAlphaProperties { VK_FORMAT_R16_SFLOAT, false },
-	VulkanFormatAlphaProperties { VK_FORMAT_R32_SFLOAT, false },
-	VulkanFormatAlphaProperties { VK_FORMAT_R16G16_SFLOAT, false },
-	VulkanFormatAlphaProperties { VK_FORMAT_R32G32_SFLOAT, false },
-	VulkanFormatAlphaProperties { VK_FORMAT_R16G16B16_SFLOAT, true }, // RGBX32323232
-	VulkanFormatAlphaProperties { VK_FORMAT_R32G32B32_SFLOAT, true }, // RGBX32323232
-	VulkanFormatAlphaProperties { VK_FORMAT_R16G16B16A16_SFLOAT, false },
-	VulkanFormatAlphaProperties { VK_FORMAT_R32G32B32A32_SFLOAT, false },
-	VulkanFormatAlphaProperties { VK_FORMAT_R16G16B16A16_SFLOAT, true }, // RGBX16161616
-	VulkanFormatAlphaProperties { VK_FORMAT_R32G32B32A32_SFLOAT, true }, // RGBX32323232
-
-	VulkanFormatAlphaProperties { VK_FORMAT_B8G8R8_UINT, true }, // BGRX8888
-	VulkanFormatAlphaProperties { VK_FORMAT_B8G8R8A8_UINT, false },
-	VulkanFormatAlphaProperties { VK_FORMAT_B8G8R8A8_SRGB, false },
-	VulkanFormatAlphaProperties { VK_FORMAT_B8G8R8A8_UINT, true }, // BGRX8888
-	VulkanFormatAlphaProperties { VK_FORMAT_B8G8R8A8_SRGB, true }, // BGRX8888
-
-	VulkanFormatAlphaProperties { VK_FORMAT_D16_UNORM, false },
-	VulkanFormatAlphaProperties { VK_FORMAT_D32_SFLOAT, false },
-	VulkanFormatAlphaProperties { VK_FORMAT_S8_UINT, false },
-	VulkanFormatAlphaProperties { VK_FORMAT_D16_UNORM_S8_UINT, false },
-	VulkanFormatAlphaProperties { VK_FORMAT_D24_UNORM_S8_UINT, false },
-	VulkanFormatAlphaProperties { VK_FORMAT_X8_D24_UNORM_PACK32, false },
-	VulkanFormatAlphaProperties { VK_FORMAT_D32_SFLOAT_S8_UINT, false },
-};
-
 VulkanImage::VulkanImage(VulkanDevice *device, VmaPool pool, EResourceMemoryUsage memoryUsage, EImageType type, EImageFormat format, EImageUsage usage, const RenderExtent3D &extent, const RenderImageSubresourceRange &subresourceRange)
 {
 	this->device = device;

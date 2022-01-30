@@ -2,16 +2,6 @@
 
 #include "api.h"
 
-const std::array< VkCommandBufferLevel, MAX_COMMAND_BUFFER_LEVEL_ENUM > g_VulkanCommandBufferLevels {
-	VK_COMMAND_BUFFER_LEVEL_PRIMARY,
-	VK_COMMAND_BUFFER_LEVEL_SECONDARY
-};
-
-const std::array< VkSubpassContents, MAX_SUBPASS_CONTENTS_ENUM > g_VulkanSubpassContents {
-	VK_SUBPASS_CONTENTS_INLINE,
-	VK_SUBPASS_CONTENTS_SECONDARY_COMMAND_BUFFERS
-};
-
 VulkanCommandBuffer::VulkanCommandBuffer(VulkanDevice *device, VulkanCommandPool *pool, ECommandBufferLevel level)
 {
 	this->device = device;

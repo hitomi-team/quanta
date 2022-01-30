@@ -2,13 +2,6 @@
 
 #include "api.h"
 
-const std::array< VkPresentModeKHR, MAX_PRESENT_MODE_ENUM > g_VulkanPresentModes {
-	VK_PRESENT_MODE_IMMEDIATE_KHR,
-	VK_PRESENT_MODE_FIFO_KHR,
-	VK_PRESENT_MODE_FIFO_RELAXED_KHR,
-	VK_PRESENT_MODE_MAILBOX_KHR
-};
-
 VulkanSwapchain::VulkanSwapchain(VulkanDevice *device, ESwapchainPresentMode presentMode, EDeviceQueue preferPresentQueue)
 {
 	this->device = device;

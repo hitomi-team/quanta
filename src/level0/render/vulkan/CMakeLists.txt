@@ -6,6 +6,7 @@ add_sources(
 	api_commandbuffer.cpp
 	api_commandpool.cpp
 	api_computepipeline.cpp
+	api_constenum.cpp
 	api_descriptorpool.cpp
 	api_descriptorset.cpp
 	api_descriptorsetlayout.cpp

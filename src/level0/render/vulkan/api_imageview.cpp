@@ -2,26 +2,6 @@
 
 #include "api.h"
 
-const std::array< VkComponentSwizzle, static_cast< size_t >(eRenderImageComponentSwizzle::MaxEnum) > g_VulkanComponentSwizzleTypes {
-	VK_COMPONENT_SWIZZLE_IDENTITY,
-	VK_COMPONENT_SWIZZLE_ZERO,
-	VK_COMPONENT_SWIZZLE_ONE,
-	VK_COMPONENT_SWIZZLE_R,
-	VK_COMPONENT_SWIZZLE_G,
-	VK_COMPONENT_SWIZZLE_B,
-	VK_COMPONENT_SWIZZLE_A
-};
-
-const std::array< VkImageViewType, static_cast< size_t >(eRenderImageViewType::MaxEnum) > g_VulkanImageViewTypes2 {
-	VK_IMAGE_VIEW_TYPE_1D,
-	VK_IMAGE_VIEW_TYPE_2D,
-	VK_IMAGE_VIEW_TYPE_3D,
-	VK_IMAGE_VIEW_TYPE_CUBE,
-	VK_IMAGE_VIEW_TYPE_1D_ARRAY,
-	VK_IMAGE_VIEW_TYPE_2D_ARRAY,
-	VK_IMAGE_VIEW_TYPE_CUBE_ARRAY
-};
-
 VulkanImageView::VulkanImageView(VulkanDevice *device, std::shared_ptr< VulkanImage > image, eRenderImageViewType imageViewType, EImageFormat imageFormat, const RenderImageComponentMapping &componentMapping, const RenderImageSubresourceRange &subresourceRange)
 {
 	static const std::array< EImageType, static_cast< size_t >(eRenderImageViewType::MaxEnum) > imageViewTypeToImageType {
