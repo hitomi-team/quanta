@@ -77,8 +77,6 @@ VulkanAPI::VulkanAPI(const char *titleName) : RenderAPI("Vulkan")
 	debugMessengerCreateInfo.pNext = nullptr;
 	debugMessengerCreateInfo.flags = 0;
 	debugMessengerCreateInfo.messageSeverity = \
-		VK_DEBUG_UTILS_MESSAGE_SEVERITY_VERBOSE_BIT_EXT |
-		VK_DEBUG_UTILS_MESSAGE_SEVERITY_INFO_BIT_EXT    |
 		VK_DEBUG_UTILS_MESSAGE_SEVERITY_WARNING_BIT_EXT |
 		VK_DEBUG_UTILS_MESSAGE_SEVERITY_ERROR_BIT_EXT;
 	debugMessengerCreateInfo.messageType = \
