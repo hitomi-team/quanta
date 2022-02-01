@@ -11,6 +11,9 @@ RenderPresenter::RenderPresenter(std::shared_ptr< IRenderDevice > device, ESwapc
 
 RenderPresenter::~RenderPresenter()
 {
+	IO_EraseCPPVector(m_imagesInFlight);
+	IO_EraseCPPVector(m_presenterSync);
+	m_device.reset();
 }
 
 void RenderPresenter::Recreate(ESwapchainPresentMode presentMode)
