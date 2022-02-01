@@ -2,18 +2,26 @@
 
 #include "api.h"
 
-VulkanSwapchain::VulkanSwapchain(VulkanDevice *device, ESwapchainPresentMode presentMode, EDeviceQueue preferPresentQueue)
+VulkanSwapchain::VulkanSwapchain(VulkanDevice *device, ESwapchainPresentMode presentMode)
 {
 	this->device = device;
-	this->Init(presentMode, false, preferPresentQueue);
+	this->Init(presentMode, false);
 }
 
 VulkanSwapchain::~VulkanSwapchain()
 {
-	for (auto &image : this->images)
-		image.reset();
+	if (this->numImages != 0) {
+		this->device->ftbl.vkDestroyRenderPass(this->device->handle, this->defaultRenderPass, nullptr);
 
-	std::vector< std::shared_ptr< IRenderImage > >().swap(this->images);
+		for (uint32_t i = 0; i < this->numImages; i++) {
+			this->device->ftbl.vkDestroyFramebuffer(this->device->handle, this->framebuffers[i], nullptr);
+			this->device->ftbl.vkDestroyImageView(this->device->handle, this->imageViews[i], nullptr);
+		}
+
+		IO_EraseCPPVector(this->images);
+		IO_EraseCPPVector(this->imageViews);
+		IO_EraseCPPVector(this->framebuffers);
+	}
 
 	if (this->handle != VK_NULL_HANDLE) {
 		this->device->ftbl.vkDestroySwapchainKHR(this->device->handle, this->handle, nullptr);
@@ -38,37 +46,6 @@ ESwapchainResult VulkanSwapchain::GetAvailableImage(std::shared_ptr< IRenderSema
 	return SWAPCHAIN_RESULT_SUCCESS;
 }
 
-RenderExtent2D VulkanSwapchain::GetExtent()
-{
-	return m_extent;
-}
-
-std::shared_ptr< IRenderImage > VulkanSwapchain::GetImage(uint32_t index)
-{
-	return this->images[index];
-}
-
-std::vector< std::shared_ptr< IRenderImage > > VulkanSwapchain::GetImages()
-{
-	return this->images;
-}
-
-
-uint32_t VulkanSwapchain::GetMaxImages()
-{
-	return this->numImages;
-}
-
-uint32_t VulkanSwapchain::GetMinImages()
-{
-	return this->minNumImages;
-}
-
-EDeviceQueue VulkanSwapchain::GetPresentingQueue()
-{
-	return m_presentingQueue;
-}
-
 ESwapchainResult VulkanSwapchain::PresentImage(std::shared_ptr< IRenderSemaphore > waitSemaphore, uint32_t index)
 {
 	VkPresentInfoKHR presentInfo;
@@ -81,7 +58,8 @@ ESwapchainResult VulkanSwapchain::PresentImage(std::shared_ptr< IRenderSemaphore
 	presentInfo.pImageIndices = &index;
 	presentInfo.pResults = nullptr;
 
-	VkResult result = this->device->ftbl.vkQueuePresentKHR(this->device->GetQueue(m_presentingQueue), &presentInfo);
+	// TODO: get the presenting queue from somewhere else
+	VkResult result = this->device->ftbl.vkQueuePresentKHR(this->device->GetQueue(DEVICE_QUEUE_GRAPHICS), &presentInfo);
 	if (result == VK_SUBOPTIMAL_KHR || result == VK_ERROR_OUT_OF_DATE_KHR)
 		return SWAPCHAIN_RESULT_SUBOPTIMAL;
 	else if (result != VK_SUCCESS)
@@ -90,17 +68,99 @@ ESwapchainResult VulkanSwapchain::PresentImage(std::shared_ptr< IRenderSemaphore
 	return SWAPCHAIN_RESULT_SUCCESS;
 }
 
-void VulkanSwapchain::Recreate(ESwapchainPresentMode presentMode, EDeviceQueue preferPresentQueue)
+void VulkanSwapchain::Recreate(ESwapchainPresentMode presentMode)
 {
-	for (auto &image : this->images)
-		image.reset();
+	if (this->numImages != 0) {
+		this->device->ftbl.vkDestroyRenderPass(this->device->handle, this->defaultRenderPass, nullptr);
 
-	std::vector< std::shared_ptr< IRenderImage > >().swap(this->images);
+		for (uint32_t i = 0; i < this->numImages; i++) {
+			this->device->ftbl.vkDestroyFramebuffer(this->device->handle, this->framebuffers[i], nullptr);
+			this->device->ftbl.vkDestroyImageView(this->device->handle, this->imageViews[i], nullptr);
+		}
 
-	this->Init(presentMode, true, preferPresentQueue);
+		IO_EraseCPPVector(this->images);
+		IO_EraseCPPVector(this->imageViews);
+		IO_EraseCPPVector(this->framebuffers);
+	}
+
+	this->Init(presentMode, true);
 }
 
-void VulkanSwapchain::Init(ESwapchainPresentMode _presentMode, bool useOldSwapchain, EDeviceQueue preferPresentQueue)
+void VulkanSwapchain::BeginRenderPass(std::shared_ptr< IRenderCommandBuffer > _commandBuffer, uint32_t index)
+{
+	VkCommandBuffer handle = std::dynamic_pointer_cast< VulkanCommandBuffer >(_commandBuffer)->handle;
+
+	VkClearValue value = {};
+
+	VkRenderPassBeginInfo beginInfo;
+	beginInfo.sType = VK_STRUCTURE_TYPE_RENDER_PASS_BEGIN_INFO;
+	beginInfo.pNext = nullptr;
+	beginInfo.renderPass = this->defaultRenderPass;
+	beginInfo.framebuffer = this->framebuffers[index];
+	beginInfo.renderArea.offset = {};
+	beginInfo.renderArea.extent = { this->extent2D.width, this->extent2D.height };
+	beginInfo.clearValueCount = 1;
+	beginInfo.pClearValues = &value;
+
+	this->device->ftbl.vkCmdBeginRenderPass(handle, &beginInfo, VK_SUBPASS_CONTENTS_INLINE);
+}
+
+void VulkanSwapchain::Copy2DImageToSwapchainImage(std::shared_ptr< IRenderCommandBuffer > commandBuffer, std::shared_ptr< IRenderImage > image, uint32_t index, const RenderImageCopy &region)
+{
+	VkCommandBuffer handle = std::dynamic_pointer_cast< VulkanCommandBuffer >(commandBuffer)->handle;
+	VkImage srcImage = std::dynamic_pointer_cast< VulkanImage >(image)->handle;
+
+	VkImageMemoryBarrier swapchainImageBarrierCopy;
+	swapchainImageBarrierCopy.sType = VK_STRUCTURE_TYPE_IMAGE_MEMORY_BARRIER;
+	swapchainImageBarrierCopy.pNext = nullptr;
+	swapchainImageBarrierCopy.srcAccessMask = 0;
+	swapchainImageBarrierCopy.dstAccessMask = VK_ACCESS_TRANSFER_WRITE_BIT;
+	swapchainImageBarrierCopy.oldLayout = VK_IMAGE_LAYOUT_UNDEFINED;
+	swapchainImageBarrierCopy.newLayout = VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL;
+	swapchainImageBarrierCopy.srcQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED;
+	swapchainImageBarrierCopy.dstQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED;
+	swapchainImageBarrierCopy.image = this->images[index];
+	swapchainImageBarrierCopy.subresourceRange.aspectMask = VK_IMAGE_ASPECT_COLOR_BIT;
+	swapchainImageBarrierCopy.subresourceRange.baseMipLevel = 0;
+	swapchainImageBarrierCopy.subresourceRange.levelCount = 1;
+	swapchainImageBarrierCopy.subresourceRange.baseArrayLayer = 0;
+	swapchainImageBarrierCopy.subresourceRange.layerCount = 1;
+
+	VkImageMemoryBarrier swapchainImageBarrierPresent;
+	swapchainImageBarrierPresent.sType = VK_STRUCTURE_TYPE_IMAGE_MEMORY_BARRIER;
+	swapchainImageBarrierPresent.pNext = nullptr;
+	swapchainImageBarrierPresent.srcAccessMask = VK_ACCESS_TRANSFER_WRITE_BIT;
+	swapchainImageBarrierPresent.dstAccessMask = VK_ACCESS_MEMORY_READ_BIT;
+	swapchainImageBarrierPresent.oldLayout = VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL;
+	swapchainImageBarrierPresent.newLayout = VK_IMAGE_LAYOUT_PRESENT_SRC_KHR;
+	swapchainImageBarrierPresent.srcQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED;
+	swapchainImageBarrierPresent.dstQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED;
+	swapchainImageBarrierPresent.image = this->images[index];
+	swapchainImageBarrierPresent.subresourceRange.aspectMask = VK_IMAGE_ASPECT_COLOR_BIT;
+	swapchainImageBarrierPresent.subresourceRange.baseMipLevel = 0;
+	swapchainImageBarrierPresent.subresourceRange.levelCount = 1;
+	swapchainImageBarrierPresent.subresourceRange.baseArrayLayer = 0;
+	swapchainImageBarrierPresent.subresourceRange.layerCount = 1;
+
+	VkImageCopy copyRegion;
+	copyRegion.srcSubresource.aspectMask = g_VulkanImageAspectFlags[region.sourceSubresource.aspect];
+	copyRegion.srcSubresource.mipLevel = region.sourceSubresource.mipLevel;
+	copyRegion.srcSubresource.baseArrayLayer = region.sourceSubresource.baseArrayLayer;
+	copyRegion.srcSubresource.layerCount = region.sourceSubresource.layerCount;
+	copyRegion.srcOffset = { region.sourceOffset.x, region.sourceOffset.y, 0 };
+	copyRegion.dstSubresource.aspectMask = g_VulkanImageAspectFlags[region.destSubresource.aspect];
+	copyRegion.dstSubresource.mipLevel = region.destSubresource.mipLevel;
+	copyRegion.dstSubresource.baseArrayLayer = region.destSubresource.baseArrayLayer;
+	copyRegion.dstSubresource.layerCount = region.destSubresource.layerCount;
+	copyRegion.dstOffset = { region.destOffset.x, region.destOffset.y, 0 };
+	copyRegion.extent = { region.extent.width, region.extent.height, 1 };
+
+	this->device->ftbl.vkCmdPipelineBarrier(handle, VK_PIPELINE_STAGE_TOP_OF_PIPE_BIT, VK_PIPELINE_STAGE_TRANSFER_BIT, 0, 0, nullptr, 0, nullptr, 1, &swapchainImageBarrierCopy);
+	this->device->ftbl.vkCmdCopyImage(handle, srcImage, VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL, this->images[index], VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL, 1, &copyRegion);
+	this->device->ftbl.vkCmdPipelineBarrier(handle, VK_PIPELINE_STAGE_TRANSFER_BIT, VK_PIPELINE_STAGE_BOTTOM_OF_PIPE_BIT, 0, 0, nullptr, 0, nullptr, 1, &swapchainImageBarrierPresent);
+}
+
+void VulkanSwapchain::Init(ESwapchainPresentMode _presentMode, bool useOldSwapchain)
 {
 	uint32_t numSurfaceFormats, numPresentModes;
 	vkGetPhysicalDeviceSurfaceFormatsKHR(this->device->phy->handle, g_VulkanAPI->surface, &numSurfaceFormats, nullptr);
@@ -120,16 +180,7 @@ void VulkanSwapchain::Init(ESwapchainPresentMode _presentMode, bool useOldSwapch
 		return presentSupport != VK_FALSE;
 	};
 
-	m_presentingQueue = [&]() -> EDeviceQueue {
-		if (preferPresentQueue == DEVICE_QUEUE_UNKNOWN)
-			return DEVICE_QUEUE_GRAPHICS;
-
-		if (!doesQueueSupportPresent(preferPresentQueue))
-			return DEVICE_QUEUE_GRAPHICS;
-
-		return preferPresentQueue;
-	}();
-
+	// TODO: prefer a surface format supplied by the user
 	auto chosenSurfaceFormat = [&]() -> VkSurfaceFormatKHR {
 		for (auto &surfaceFormat : surfaceFormats) {
 			if (surfaceFormat.format == VK_FORMAT_B8G8R8A8_SRGB && surfaceFormat.colorSpace == VK_COLOR_SPACE_SRGB_NONLINEAR_KHR)
@@ -163,8 +214,8 @@ void VulkanSwapchain::Init(ESwapchainPresentMode _presentMode, bool useOldSwapch
 		}
 	}();
 
-	m_extent.width = chosenExtent.width;
-	m_extent.height = chosenExtent.height;
+	this->extent2D.width = chosenExtent.width;
+	this->extent2D.height = chosenExtent.height;
 
 	this->minNumImages = caps.minImageCount;
 	if (this->minNumImages < 2)
@@ -177,6 +228,7 @@ void VulkanSwapchain::Init(ESwapchainPresentMode _presentMode, bool useOldSwapch
 	if (caps.maxImageCount > 0 && this->numImages > caps.maxImageCount)
 		this->numImages = caps.maxImageCount;
 
+	// TODO: share swapchain with different queue family indices
 	VkSwapchainCreateInfoKHR createInfo;
 	createInfo.sType = VK_STRUCTURE_TYPE_SWAPCHAIN_CREATE_INFO_KHR;
 	createInfo.pNext = nullptr;
@@ -187,7 +239,7 @@ void VulkanSwapchain::Init(ESwapchainPresentMode _presentMode, bool useOldSwapch
 	createInfo.imageColorSpace = chosenSurfaceFormat.colorSpace;
 	createInfo.imageExtent = chosenExtent;
 	createInfo.imageArrayLayers = 1;
-	createInfo.imageUsage = VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT;
+	createInfo.imageUsage = VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT | VK_IMAGE_USAGE_TRANSFER_DST_BIT;
 	createInfo.imageSharingMode = VK_SHARING_MODE_EXCLUSIVE;
 	createInfo.queueFamilyIndexCount = 0;
 	createInfo.pQueueFamilyIndices = nullptr;
@@ -205,43 +257,103 @@ void VulkanSwapchain::Init(ESwapchainPresentMode _presentMode, bool useOldSwapch
 	if (useOldSwapchain)
 		this->device->ftbl.vkDestroySwapchainKHR(this->device->handle, oldSwapchain, nullptr);
 
-	auto images = [&]() {
+	this->images = [&]() -> std::vector< VkImage > {
 		uint32_t count;
 		this->device->ftbl.vkGetSwapchainImagesKHR(this->device->handle, this->handle, &count, nullptr);
 
 		std::vector< VkImage > images(count);
 		this->device->ftbl.vkGetSwapchainImagesKHR(this->device->handle, this->handle, &count, images.data());
 
+		this->numImages = count;
 		return images;
 	}();
 
-	RenderImageSubresourceRange range;
-	range.aspect = IMAGE_ASPECT_COLOR;
-	range.baseMipLevel = 0;
-	range.levelCount = 1;
-	range.baseArrayLayer = 0;
-	range.layerCount = 1;
+	VkAttachmentReference colorAttachment;
+	colorAttachment.attachment = 0;
+	colorAttachment.layout = VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL;
 
-	this->images.resize(images.size());
-	for (size_t i = 0; i < images.size(); i++)
-		this->images[i] = std::dynamic_pointer_cast< IRenderImage >(std::make_shared< VulkanImage >(
-			this->device,
-			images[i],
-			[&]() -> EImageFormat {
-				switch (chosenSurfaceFormat.format) {
-				case VK_FORMAT_R8G8B8A8_SRGB:
-					return IMAGE_FORMAT_RGBX_UINT_8_8_8_8_SRGB;
-				case VK_FORMAT_R8G8B8A8_UNORM:
-					return IMAGE_FORMAT_RGBX_UINT_8_8_8_8;
-				case VK_FORMAT_B8G8R8A8_SRGB:
-					return IMAGE_FORMAT_BGRX_UINT_8_8_8_8_SRGB;
-				case VK_FORMAT_B8G8R8A8_UNORM:
-					return IMAGE_FORMAT_BGRX_UINT_8_8_8_8;
-				default:
-					return IMAGE_FORMAT_UNKNOWN;
-				}
-			}(),
-			m_extent,
-			range
-		));
+	VkAttachmentDescription attachmentDescription;
+	attachmentDescription.flags = 0;
+	attachmentDescription.format = chosenSurfaceFormat.format;
+	attachmentDescription.samples = VK_SAMPLE_COUNT_1_BIT;
+	attachmentDescription.loadOp = VK_ATTACHMENT_LOAD_OP_CLEAR;
+	attachmentDescription.storeOp = VK_ATTACHMENT_STORE_OP_STORE;
+	attachmentDescription.stencilLoadOp = VK_ATTACHMENT_LOAD_OP_DONT_CARE;
+	attachmentDescription.stencilStoreOp = VK_ATTACHMENT_STORE_OP_DONT_CARE;
+	attachmentDescription.initialLayout = VK_IMAGE_LAYOUT_UNDEFINED;
+	attachmentDescription.finalLayout = VK_IMAGE_LAYOUT_PRESENT_SRC_KHR;
+
+	VkSubpassDescription subpassDescription;
+	subpassDescription.flags = 0;
+	subpassDescription.pipelineBindPoint = VK_PIPELINE_BIND_POINT_GRAPHICS;
+	subpassDescription.inputAttachmentCount = 0;
+	subpassDescription.pInputAttachments = nullptr;
+	subpassDescription.colorAttachmentCount = 1;
+	subpassDescription.pColorAttachments = &colorAttachment;
+	subpassDescription.pResolveAttachments = 0;
+	subpassDescription.pDepthStencilAttachment = nullptr;
+	subpassDescription.preserveAttachmentCount = 0;
+	subpassDescription.pPreserveAttachments = nullptr;
+
+	VkSubpassDependency subpassDependency;
+	subpassDependency.srcSubpass = VK_SUBPASS_EXTERNAL;
+	subpassDependency.dstSubpass = 0;
+	subpassDependency.srcStageMask = VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT;
+	subpassDependency.dstStageMask = VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT;
+	subpassDependency.srcAccessMask = 0;
+	subpassDependency.dstAccessMask = VK_ACCESS_COLOR_ATTACHMENT_WRITE_BIT;
+	subpassDependency.dependencyFlags = 0;
+
+	VkRenderPassCreateInfo renderPassCreateInfo;
+	renderPassCreateInfo.sType = VK_STRUCTURE_TYPE_RENDER_PASS_CREATE_INFO;
+	renderPassCreateInfo.pNext = nullptr;
+	renderPassCreateInfo.flags = 0;
+	renderPassCreateInfo.attachmentCount = 1;
+	renderPassCreateInfo.pAttachments = &attachmentDescription;
+	renderPassCreateInfo.subpassCount = 1;
+	renderPassCreateInfo.pSubpasses = &subpassDescription;
+	renderPassCreateInfo.dependencyCount = 1;
+	renderPassCreateInfo.pDependencies = &subpassDependency;
+
+	VK_CHECK(this->device->ftbl.vkCreateRenderPass(this->device->handle, &renderPassCreateInfo, nullptr, &this->defaultRenderPass),
+		"VulkanSwapchain: Failed to create default render pass!");
+
+	VkImageViewCreateInfo imageViewCreateInfo;
+	imageViewCreateInfo.sType = VK_STRUCTURE_TYPE_IMAGE_VIEW_CREATE_INFO;
+	imageViewCreateInfo.pNext = nullptr;
+	imageViewCreateInfo.flags = 0;
+	imageViewCreateInfo.viewType = VK_IMAGE_VIEW_TYPE_2D;
+	imageViewCreateInfo.format = chosenSurfaceFormat.format;
+	imageViewCreateInfo.components.r = VK_COMPONENT_SWIZZLE_IDENTITY;
+	imageViewCreateInfo.components.g = VK_COMPONENT_SWIZZLE_IDENTITY;
+	imageViewCreateInfo.components.b = VK_COMPONENT_SWIZZLE_IDENTITY;
+	imageViewCreateInfo.components.a = VK_COMPONENT_SWIZZLE_IDENTITY;
+	imageViewCreateInfo.subresourceRange.aspectMask = VK_IMAGE_ASPECT_COLOR_BIT;
+	imageViewCreateInfo.subresourceRange.baseMipLevel = 0;
+	imageViewCreateInfo.subresourceRange.levelCount = 1;
+	imageViewCreateInfo.subresourceRange.baseArrayLayer = 0;
+	imageViewCreateInfo.subresourceRange.layerCount = 1;
+
+	VkFramebufferCreateInfo framebufferCreateInfo;
+	framebufferCreateInfo.sType = VK_STRUCTURE_TYPE_FRAMEBUFFER_CREATE_INFO;
+	framebufferCreateInfo.pNext = nullptr;
+	framebufferCreateInfo.flags = 0;
+	framebufferCreateInfo.renderPass = this->defaultRenderPass;
+	framebufferCreateInfo.attachmentCount = 1;
+	framebufferCreateInfo.width = chosenExtent.width;
+	framebufferCreateInfo.height = chosenExtent.height;
+	framebufferCreateInfo.layers = 1;
+
+	this->imageViews.resize(this->numImages);
+	this->framebuffers.resize(this->numImages);
+
+	for (uint32_t i = 0; i < this->numImages; i++) {
+		imageViewCreateInfo.image = this->images[i];
+		VK_CHECK(this->device->ftbl.vkCreateImageView(this->device->handle, &imageViewCreateInfo, nullptr, &this->imageViews[i]),
+			"VulkanSwapchain: Failed to create image view!");
+
+		framebufferCreateInfo.pAttachments = &this->imageViews[i];
+		VK_CHECK(this->device->ftbl.vkCreateFramebuffer(this->device->handle, &framebufferCreateInfo, nullptr, &this->framebuffers[i]),
+			"VulkanSwapchain: Failed to create framebuffer!");
+	}
 }

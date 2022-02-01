@@ -2,7 +2,7 @@
 
 #include "api.h"
 
-VulkanImage::VulkanImage(VulkanDevice *device, VmaPool pool, EResourceMemoryUsage memoryUsage, EImageType type, EImageFormat format, EImageUsage usage, const RenderExtent3D &extent, const RenderImageSubresourceRange &subresourceRange)
+VulkanImage::VulkanImage(VulkanDevice *device, VmaPool pool, EResourceMemoryUsage memoryUsage, EImageType type, eRenderImageFormat format, EImageUsage usage, const RenderExtent3D &extent, const RenderImageSubresourceRange &subresourceRange)
 {
 	this->device = device;
 
@@ -18,7 +18,7 @@ VulkanImage::VulkanImage(VulkanDevice *device, VmaPool pool, EResourceMemoryUsag
 	imageInfo.pNext = nullptr;
 	imageInfo.flags = 0;
 	imageInfo.imageType = g_VulkanImageTypes[m_type];
-	imageInfo.format = g_VulkanImageFormats[m_format].format;
+	imageInfo.format = g_VulkanImageFormats2[static_cast< uint32_t >(m_format)];
 	imageInfo.extent = VkExtent3D { extent.width, extent.height, extent.depth };
 	imageInfo.mipLevels = subresourceRange.levelCount;
 	imageInfo.arrayLayers = subresourceRange.layerCount;
@@ -42,11 +42,11 @@ VulkanImage::VulkanImage(VulkanDevice *device, VmaPool pool, EResourceMemoryUsag
 	imageViewCreateInfo.flags = 0;
 	imageViewCreateInfo.image = this->handle;
 	imageViewCreateInfo.viewType = g_VulkanImageViewTypes[m_type];
-	imageViewCreateInfo.format = g_VulkanImageFormats[m_format].format;
+	imageViewCreateInfo.format = g_VulkanImageFormats2[static_cast< uint32_t >(m_format)];
 	imageViewCreateInfo.components.r = VK_COMPONENT_SWIZZLE_IDENTITY;
 	imageViewCreateInfo.components.g = VK_COMPONENT_SWIZZLE_IDENTITY;
 	imageViewCreateInfo.components.b = VK_COMPONENT_SWIZZLE_IDENTITY;
-	imageViewCreateInfo.components.a = g_VulkanImageFormats[m_format].ignoreAlpha ? VK_COMPONENT_SWIZZLE_ONE : VK_COMPONENT_SWIZZLE_IDENTITY;
+	imageViewCreateInfo.components.a = VK_COMPONENT_SWIZZLE_IDENTITY;
 	imageViewCreateInfo.subresourceRange.aspectMask = g_VulkanImageAspectFlags[m_subresourceRange.aspect];
 	imageViewCreateInfo.subresourceRange.baseMipLevel = m_subresourceRange.baseMipLevel;
 	imageViewCreateInfo.subresourceRange.levelCount = m_subresourceRange.levelCount;
@@ -57,14 +57,13 @@ VulkanImage::VulkanImage(VulkanDevice *device, VmaPool pool, EResourceMemoryUsag
 		throw std::runtime_error("VulkanImage: Cannot create image view!");
 }
 
-VulkanImage::VulkanImage(VulkanDevice *device, VkImage image, EImageFormat format, const RenderExtent2D &extent, const RenderImageSubresourceRange &subresourceRange)
+VulkanImage::VulkanImage(VulkanDevice *device, VkImage image, VkFormat format, const RenderExtent2D &extent, const RenderImageSubresourceRange &subresourceRange)
 {
 	this->device = device;
 	this->handle = image;
 
 	m_memoryUsage = RESOURCE_MEMORY_USAGE_NONE;
 	m_type = IMAGE_TYPE_2D;
-	m_format = format;
 	m_usage = IMAGE_USAGE_COLOR_ATTACHMENT;
 	m_extent = { extent.width, extent.height, 1 };
 	m_subresourceRange = subresourceRange;
@@ -75,7 +74,7 @@ VulkanImage::VulkanImage(VulkanDevice *device, VkImage image, EImageFormat forma
 	imageViewCreateInfo.flags = 0;
 	imageViewCreateInfo.image = this->handle;
 	imageViewCreateInfo.viewType = g_VulkanImageViewTypes[m_type];
-	imageViewCreateInfo.format = g_VulkanImageFormats[m_format].format;
+	imageViewCreateInfo.format = format;
 	imageViewCreateInfo.components.r = VK_COMPONENT_SWIZZLE_IDENTITY;
 	imageViewCreateInfo.components.g = VK_COMPONENT_SWIZZLE_IDENTITY;
 	imageViewCreateInfo.components.b = VK_COMPONENT_SWIZZLE_IDENTITY;
@@ -139,7 +138,7 @@ EImageUsage VulkanImage::GetUsage()
 	return m_usage;
 }
 
-EImageFormat VulkanImage::GetFormat()
+eRenderImageFormat VulkanImage::GetFormat()
 {
 	return m_format;
 }

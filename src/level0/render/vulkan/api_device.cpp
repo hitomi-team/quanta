@@ -186,12 +186,12 @@ std::shared_ptr< IRenderDescriptorPool > VulkanDevice::CreateDescriptorPool(uint
 	return std::dynamic_pointer_cast< IRenderDescriptorPool >(std::make_shared< VulkanDescriptorPool >(this, maxSets, poolSizes));
 }
 
-std::shared_ptr< IRenderBufferView > VulkanDevice::CreateBufferView(std::shared_ptr< IRenderBuffer > buffer, EImageFormat bufferFormat, uint64_t offset, uint64_t range)
+std::shared_ptr< IRenderBufferView > VulkanDevice::CreateBufferView(std::shared_ptr< IRenderBuffer > buffer, eRenderImageFormat bufferFormat, uint64_t offset, uint64_t range)
 {
 	return std::dynamic_pointer_cast< IRenderBufferView >(std::make_shared< VulkanBufferView >(this, std::dynamic_pointer_cast< VulkanBuffer >(buffer), bufferFormat, offset, range));
 }
 
-std::shared_ptr< IRenderImageView > VulkanDevice::CreateImageView(std::shared_ptr< IRenderImage > image, eRenderImageViewType imageViewType, EImageFormat imageFormat, const RenderImageComponentMapping &componentMapping, const RenderImageSubresourceRange &subresourceRange)
+std::shared_ptr< IRenderImageView > VulkanDevice::CreateImageView(std::shared_ptr< IRenderImage > image, eRenderImageViewType imageViewType, eRenderImageFormat imageFormat, const RenderImageComponentMapping &componentMapping, const RenderImageSubresourceRange &subresourceRange)
 {
 	return std::dynamic_pointer_cast< IRenderImageView >(std::make_shared< VulkanImageView >(this, std::dynamic_pointer_cast< VulkanImage >(image), imageViewType, imageFormat, componentMapping, subresourceRange));
 }
@@ -236,9 +236,9 @@ std::shared_ptr< IRenderFramebuffer > VulkanDevice::CreateFramebuffer(std::share
 	return std::dynamic_pointer_cast< IRenderFramebuffer >(std::make_shared< VulkanFramebuffer >(this, renderPass, image, extent));
 }
 
-std::shared_ptr< IRenderSwapchain > VulkanDevice::CreateSwapchain(ESwapchainPresentMode presentMode, EDeviceQueue preferPresentQueue)
+std::shared_ptr< IRenderSwapchain > VulkanDevice::CreateSwapchain(ESwapchainPresentMode presentMode)
 {
-	return std::dynamic_pointer_cast< IRenderSwapchain >(std::make_shared< VulkanSwapchain >(this, presentMode, preferPresentQueue));
+	return std::dynamic_pointer_cast< IRenderSwapchain >(std::make_shared< VulkanSwapchain >(this, presentMode));
 }
 
 std::shared_ptr< IRenderImGui > VulkanDevice::CreateImGui(std::shared_ptr< IRenderPass > renderPass, uint32_t minImageCount, uint32_t imageCount)

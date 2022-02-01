@@ -107,7 +107,7 @@ struct RenderPushConstantRange {
 };
 
 struct RenderAttachmentDescription {
-	EImageFormat format;
+	eRenderImageFormat format;
 	EAttachmentLoadOp loadOp;
 	EAttachmentStoreOp storeOp;
 	EAttachmentLoadOp stencilLoadOp;
@@ -150,7 +150,7 @@ struct RenderVertexInputBindingDescription {
 struct RenderVertexInputAttributeDescription {
 	uint32_t location;
 	uint32_t binding;
-	EImageFormat format;
+	eRenderImageFormat format;
 	uint32_t offset;
 };
 
@@ -325,8 +325,8 @@ public:
 	virtual std::shared_ptr< IRenderAllocator > CreateAllocator(const std::string &name, EResourceMemoryUsage memoryUsage, uint64_t minAlign, uint64_t blockSize, size_t minBlockCount, size_t maxBlockCount) = 0;
 	virtual std::shared_ptr< IRenderCommandPool > CreateCommandPool(EDeviceQueue queue, ECommandPoolUsage usage) = 0;
 	virtual std::shared_ptr< IRenderDescriptorPool > CreateDescriptorPool(uint32_t maxSets, const std::vector< RenderDescriptorPoolSize > &poolSizes) = 0;
-	virtual std::shared_ptr< IRenderBufferView > CreateBufferView(std::shared_ptr< IRenderBuffer > buffer, EImageFormat bufferFormat, uint64_t offset, uint64_t range) = 0;
-	virtual std::shared_ptr< IRenderImageView > CreateImageView(std::shared_ptr< IRenderImage > image, eRenderImageViewType imageViewType, EImageFormat imageFormat, const RenderImageComponentMapping &componentMapping, const RenderImageSubresourceRange &subresourceRange) = 0;
+	virtual std::shared_ptr< IRenderBufferView > CreateBufferView(std::shared_ptr< IRenderBuffer > buffer, eRenderImageFormat bufferFormat, uint64_t offset, uint64_t range) = 0;
+	virtual std::shared_ptr< IRenderImageView > CreateImageView(std::shared_ptr< IRenderImage > image, eRenderImageViewType imageViewType, eRenderImageFormat imageFormat, const RenderImageComponentMapping &componentMapping, const RenderImageSubresourceRange &subresourceRange) = 0;
 	virtual std::shared_ptr< IRenderFence > CreateFence(bool signaled) = 0;
 	virtual std::shared_ptr< IRenderSemaphore > CreateSemaphore() = 0;
 
@@ -339,7 +339,7 @@ public:
 	virtual std::shared_ptr< IRenderPass > CreateRenderPass(const std::vector< RenderAttachmentDescription > &attachments, const std::vector< RenderSubpassDescription > &subpasses, const std::vector< RenderSubpassDependency > &subpassDependencies) = 0;
 	virtual std::shared_ptr< IRenderFramebuffer > CreateFramebuffer(std::shared_ptr< IRenderPass > renderPass, const std::vector< std::shared_ptr< IRenderImage > > &images, const RenderExtent2D &extent) = 0;
 	virtual std::shared_ptr< IRenderFramebuffer > CreateFramebuffer(std::shared_ptr< IRenderPass > renderPass, std::shared_ptr< IRenderImage > image, const RenderExtent2D &extent) = 0;
-	virtual std::shared_ptr< IRenderSwapchain > CreateSwapchain(ESwapchainPresentMode presentMode, EDeviceQueue preferPresentQueue) = 0; // will handle image counts, etc...
+	virtual std::shared_ptr< IRenderSwapchain > CreateSwapchain(ESwapchainPresentMode presentMode) = 0; // will handle image counts, etc...
 	virtual std::shared_ptr< IRenderImGui > CreateImGui(std::shared_ptr< IRenderPass > renderPass, uint32_t minImageCount, uint32_t imageCount) = 0;
 
 	// Samplers
@@ -366,7 +366,7 @@ public:
 	virtual ~IRenderAllocator() = default;
 
 	virtual std::shared_ptr< IRenderBuffer > AllocateBuffer(EBufferUsage usage, uint64_t size) = 0;
-	virtual std::shared_ptr< IRenderImage > AllocateImage(EImageType type, EImageFormat format, EImageUsage usage, const RenderExtent3D &extent3d, const RenderImageSubresourceRange &subresourceRange) = 0;
+	virtual std::shared_ptr< IRenderImage > AllocateImage(EImageType type, eRenderImageFormat format, EImageUsage usage, const RenderExtent3D &extent3d, const RenderImageSubresourceRange &subresourceRange) = 0;
 
 	virtual EResourceMemoryUsage GetResourceMemoryUsage() = 0;
 
@@ -393,7 +393,7 @@ public:
 class IRenderBufferView {
 public:
 	std::shared_ptr< IRenderBuffer > buffer;
-	EImageFormat bufferFormat;
+	eRenderImageFormat bufferFormat;
 	uint64_t offset, range;
 
 	virtual ~IRenderBufferView() = default;
@@ -408,7 +408,7 @@ public:
 
 	virtual EResourceMemoryUsage GetResourceMemoryUsage() = 0;
 	virtual EImageUsage GetUsage() = 0;
-	virtual EImageFormat GetFormat() = 0;
+	virtual eRenderImageFormat GetFormat() = 0;
 	virtual RenderExtent3D GetExtent() = 0;
 	virtual RenderImageSubresourceRange GetSubresourceRange() = 0;
 };
@@ -416,7 +416,7 @@ public:
 class IRenderImageView {
 public:
 	std::shared_ptr< IRenderImage > image;
-	EImageFormat imageFormat;
+	eRenderImageFormat imageFormat;
 	EImageType imageType;
 	eRenderImageViewType imageViewType;
 
@@ -440,18 +440,17 @@ public:
 
 class IRenderSwapchain {
 public:
+	uint32_t numImages, minNumImages;
+	RenderExtent2D extent2D;
+
 	virtual ~IRenderSwapchain() = default;
 
 	virtual ESwapchainResult GetAvailableImage(std::shared_ptr< IRenderSemaphore > semaphore, std::shared_ptr< IRenderFence > fence, uint64_t timeout, uint32_t &index) = 0;
-	virtual RenderExtent2D GetExtent() = 0;
-	virtual std::shared_ptr< IRenderImage > GetImage(uint32_t index) = 0;
-	virtual std::vector< std::shared_ptr< IRenderImage > > GetImages() = 0;
-	virtual uint32_t GetMaxImages() = 0;
-	virtual uint32_t GetMinImages() = 0;
-	virtual EDeviceQueue GetPresentingQueue() = 0;
-
 	virtual ESwapchainResult PresentImage(std::shared_ptr< IRenderSemaphore > waitSemaphore, uint32_t index) = 0;
-	virtual void Recreate(ESwapchainPresentMode presentMode, EDeviceQueue preferPresentQueue) = 0;
+	virtual void Recreate(ESwapchainPresentMode presentMode) = 0;
+
+	virtual void BeginRenderPass(std::shared_ptr< IRenderCommandBuffer > commandBuffer, uint32_t index) = 0;
+	virtual void Copy2DImageToSwapchainImage(std::shared_ptr< IRenderCommandBuffer > commandBuffer, std::shared_ptr< IRenderImage > image, uint32_t index, const RenderImageCopy &region) = 0;
 };
 
 class IRenderCommandPool {

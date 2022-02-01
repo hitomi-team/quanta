@@ -74,7 +74,7 @@ void VulkanGraphicsPipeline::Compile()
 	for (size_t i = 0; i < this->vertexInputState.attributes.size(); i++) {
 		vertexInputAttributeDescriptions[i].location = this->vertexInputState.attributes[i].location;
 		vertexInputAttributeDescriptions[i].binding = this->vertexInputState.attributes[i].binding;
-		vertexInputAttributeDescriptions[i].format = g_VulkanImageFormats[this->vertexInputState.attributes[i].format].format;
+		vertexInputAttributeDescriptions[i].format = g_VulkanImageFormats2[static_cast< uint32_t >(this->vertexInputState.attributes[i].format)];
 		vertexInputAttributeDescriptions[i].offset = this->vertexInputState.attributes[i].offset;
 	}
 

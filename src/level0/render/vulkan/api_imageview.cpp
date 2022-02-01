@@ -2,7 +2,7 @@
 
 #include "api.h"
 
-VulkanImageView::VulkanImageView(VulkanDevice *device, std::shared_ptr< VulkanImage > image, eRenderImageViewType imageViewType, EImageFormat imageFormat, const RenderImageComponentMapping &componentMapping, const RenderImageSubresourceRange &subresourceRange)
+VulkanImageView::VulkanImageView(VulkanDevice *device, std::shared_ptr< VulkanImage > image, eRenderImageViewType imageViewType, eRenderImageFormat imageFormat, const RenderImageComponentMapping &componentMapping, const RenderImageSubresourceRange &subresourceRange)
 {
 	static const std::array< EImageType, static_cast< size_t >(eRenderImageViewType::MaxEnum) > imageViewTypeToImageType {
 		IMAGE_TYPE_1D,
@@ -26,7 +26,7 @@ VulkanImageView::VulkanImageView(VulkanDevice *device, std::shared_ptr< VulkanIm
 	createInfo.flags = 0;
 	createInfo.image = image->handle;
 	createInfo.viewType = g_VulkanImageViewTypes2[static_cast< uint32_t >(imageViewType)];
-	createInfo.format = g_VulkanImageFormats[imageFormat].format;
+	createInfo.format = g_VulkanImageFormats2[static_cast< uint32_t >(imageFormat)];
 	createInfo.components.r = g_VulkanComponentSwizzleTypes[static_cast< uint32_t >(componentMapping.r)];
 	createInfo.components.g = g_VulkanComponentSwizzleTypes[static_cast< uint32_t >(componentMapping.g)];
 	createInfo.components.b = g_VulkanComponentSwizzleTypes[static_cast< uint32_t >(componentMapping.b)];

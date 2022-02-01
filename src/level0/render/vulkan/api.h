@@ -35,6 +35,7 @@ extern const std::array< VkDescriptorType, MAX_DESCRIPTOR_TYPE_ENUM > g_VulkanDe
 extern const std::array< VkFrontFace, MAX_FRONT_FACE_ENUM > g_VulkanFrontFaces;
 extern const std::array< VkImageAspectFlags, MAX_IMAGE_ASPECT_ENUM > g_VulkanImageAspectFlags;
 extern const std::array< VulkanFormatAlphaProperties, MAX_IMAGE_FORMAT_ENUM > g_VulkanImageFormats;
+extern const std::array< VkFormat, static_cast< size_t >(eRenderImageFormat::MaxEnum) > g_VulkanImageFormats2;
 extern const std::array< VkImageLayout, MAX_IMAGE_LAYOUT_ENUM > g_VulkanImageLayouts;
 extern const std::array< VkImageType, MAX_IMAGE_TYPE_ENUM > g_VulkanImageTypes;
 extern const std::array< VkImageViewType, MAX_IMAGE_TYPE_ENUM > g_VulkanImageViewTypes;
@@ -51,6 +52,7 @@ extern const std::array< VkSamplerMipmapMode, MAX_FILTERMODES > g_VulkanSamplerM
 extern const std::array< VkShaderStageFlagBits, MAX_SHADER_TYPES > g_VulkanShaderTypes;
 extern const std::array< VkStencilOp, MAX_STENCIL_OP_ENUM > g_VulkanStencilOps;
 extern const std::array< VkVertexInputRate, MAX_VERTEX_INPUT_RATE_ENUM > g_VulkanVertexInputRates;
+extern const std::array< eRenderImageFormat, static_cast< size_t >(eRenderImageFormat::MaxEnum) > g_ToAbstractionImageFormat;
 
 class VulkanAPI : public RenderAPI {
 public:
@@ -113,8 +115,8 @@ public:
 	std::shared_ptr< IRenderAllocator > CreateAllocator(const std::string &name, EResourceMemoryUsage usage, uint64_t minAlign, uint64_t blockSize, size_t minBlockCount, size_t maxBlockCount);
 	std::shared_ptr< IRenderCommandPool > CreateCommandPool(EDeviceQueue queue, ECommandPoolUsage usage);
 	std::shared_ptr< IRenderDescriptorPool > CreateDescriptorPool(uint32_t maxSets, const std::vector< RenderDescriptorPoolSize > &poolSizes);
-	std::shared_ptr< IRenderBufferView > CreateBufferView(std::shared_ptr< IRenderBuffer > buffer, EImageFormat bufferFormat, uint64_t offset, uint64_t range);
-	std::shared_ptr< IRenderImageView > CreateImageView(std::shared_ptr< IRenderImage > image, eRenderImageViewType imageViewType, EImageFormat imageFormat, const RenderImageComponentMapping &componentMapping, const RenderImageSubresourceRange &subresourceRange);
+	std::shared_ptr< IRenderBufferView > CreateBufferView(std::shared_ptr< IRenderBuffer > buffer, eRenderImageFormat bufferFormat, uint64_t offset, uint64_t range);
+	std::shared_ptr< IRenderImageView > CreateImageView(std::shared_ptr< IRenderImage > image, eRenderImageViewType imageViewType, eRenderImageFormat imageFormat, const RenderImageComponentMapping &componentMapping, const RenderImageSubresourceRange &subresourceRange);
 	std::shared_ptr< IRenderFence > CreateFence(bool signaled);
 	std::shared_ptr< IRenderSemaphore > CreateSemaphore();
 
@@ -125,7 +127,7 @@ public:
 	std::shared_ptr< IRenderPass > CreateRenderPass(const std::vector< RenderAttachmentDescription > &attachments, const std::vector< RenderSubpassDescription > &subpasses, const std::vector< RenderSubpassDependency > &subpassDependencies);
 	std::shared_ptr< IRenderFramebuffer > CreateFramebuffer(std::shared_ptr< IRenderPass > renderPass, const std::vector< std::shared_ptr< IRenderImage > > &images, const RenderExtent2D &extent);
 	std::shared_ptr< IRenderFramebuffer > CreateFramebuffer(std::shared_ptr< IRenderPass > renderPass, std::shared_ptr< IRenderImage > image, const RenderExtent2D &extent);
-	std::shared_ptr< IRenderSwapchain > CreateSwapchain(ESwapchainPresentMode presentMode, EDeviceQueue preferPresentQueue);
+	std::shared_ptr< IRenderSwapchain > CreateSwapchain(ESwapchainPresentMode presentMode);
 	std::shared_ptr< IRenderImGui > CreateImGui(std::shared_ptr< IRenderPass > renderPass, uint32_t minImageCount, uint32_t imageCount);
 
 	std::shared_ptr< IRenderSampler > CreateSampler(const RenderSamplerStateDescription &state);
@@ -163,7 +165,7 @@ public:
 	EResourceMemoryUsage GetResourceMemoryUsage();
 
 	std::shared_ptr< IRenderBuffer > AllocateBuffer(EBufferUsage usage, uint64_t size);
-	std::shared_ptr< IRenderImage > AllocateImage(EImageType type, EImageFormat format, EImageUsage usage, const RenderExtent3D &extent3d, const RenderImageSubresourceRange &subresourceRange);
+	std::shared_ptr< IRenderImage > AllocateImage(EImageType type, eRenderImageFormat format, EImageUsage usage, const RenderExtent3D &extent3d, const RenderImageSubresourceRange &subresourceRange);
 
 	void Compactify();
 
@@ -204,7 +206,7 @@ public:
 	VkBufferView handle;
 
 	VulkanBufferView() = delete;
-	VulkanBufferView(VulkanDevice *device, std::shared_ptr< VulkanBuffer > buffer, EImageFormat bufferFormat, uint64_t offset, uint64_t range);
+	VulkanBufferView(VulkanDevice *device, std::shared_ptr< VulkanBuffer > buffer, eRenderImageFormat bufferFormat, uint64_t offset, uint64_t range);
 	~VulkanBufferView();
 };
 
@@ -218,10 +220,10 @@ public:
 	bool swapchainImage = false;
 
 	VulkanImage() = delete;
-	VulkanImage(VulkanDevice *device, VmaPool pool, EResourceMemoryUsage memoryUsage, EImageType type, EImageFormat format, EImageUsage usage, const RenderExtent3D &extent, const RenderImageSubresourceRange &subresourceRange);
+	VulkanImage(VulkanDevice *device, VmaPool pool, EResourceMemoryUsage memoryUsage, EImageType type, eRenderImageFormat format, EImageUsage usage, const RenderExtent3D &extent, const RenderImageSubresourceRange &subresourceRange);
 
 	// for swapchain
-	VulkanImage(VulkanDevice *device, VkImage image, EImageFormat format, const RenderExtent2D &extent, const RenderImageSubresourceRange &subresourceRange);
+	VulkanImage(VulkanDevice *device, VkImage image, VkFormat format, const RenderExtent2D &extent, const RenderImageSubresourceRange &subresourceRange);
 
 	~VulkanImage();
 
@@ -230,14 +232,14 @@ public:
 
 	EResourceMemoryUsage GetResourceMemoryUsage();
 	EImageUsage GetUsage();
-	EImageFormat GetFormat();
+	eRenderImageFormat GetFormat();
 	RenderExtent3D GetExtent();
 	RenderImageSubresourceRange GetSubresourceRange();
 private:
 	EResourceMemoryUsage m_memoryUsage;
 	EImageType m_type;
 	EImageUsage m_usage;
-	EImageFormat m_format;
+	eRenderImageFormat m_format;
 	RenderExtent3D m_extent;
 	RenderImageSubresourceRange m_subresourceRange;
 };
@@ -248,7 +250,7 @@ public:
 	VkImageView handle;
 
 	VulkanImageView() = delete;
-	VulkanImageView(VulkanDevice *device, std::shared_ptr< VulkanImage > image, eRenderImageViewType imageViewType, EImageFormat imageFormat, const RenderImageComponentMapping &componentMapping, const RenderImageSubresourceRange &subresourceRange);
+	VulkanImageView(VulkanDevice *device, std::shared_ptr< VulkanImage > image, eRenderImageViewType imageViewType, eRenderImageFormat imageFormat, const RenderImageComponentMapping &componentMapping, const RenderImageSubresourceRange &subresourceRange);
 	~VulkanImageView();
 };
 
@@ -284,35 +286,30 @@ private:
 	RenderExtent2D m_extent;
 };
 
+// due to the rigid structure of Vulkan swapchains compared to other objects
+// the inflexibility also has to be deployed in our abstraction layer.
 class VulkanSwapchain : public IRenderSwapchain {
 public:
 	VulkanDevice *device;
 	VkSwapchainKHR handle = VK_NULL_HANDLE;
-	std::vector< std::shared_ptr< IRenderImage > > images;
-
-	uint32_t numImages;
-	uint32_t minNumImages;
+	VkRenderPass defaultRenderPass;
+	std::vector< VkImage > images;
+	std::vector< VkImageView > imageViews;
+	std::vector< VkFramebuffer > framebuffers;
 
 	VulkanSwapchain() = delete;
-	VulkanSwapchain(VulkanDevice *device, ESwapchainPresentMode presentMode, EDeviceQueue preferPresentQueue);
+	VulkanSwapchain(VulkanDevice *device, ESwapchainPresentMode presentMode);
 
 	~VulkanSwapchain();
 
 	ESwapchainResult GetAvailableImage(std::shared_ptr< IRenderSemaphore > semaphore, std::shared_ptr< IRenderFence > fence, uint64_t timeout, uint32_t &index);
-	RenderExtent2D GetExtent();
-	std::shared_ptr< IRenderImage > GetImage(uint32_t index);
-	std::vector< std::shared_ptr< IRenderImage > > GetImages();
-	uint32_t GetMaxImages();
-	uint32_t GetMinImages();
-	EDeviceQueue GetPresentingQueue();
-
 	ESwapchainResult PresentImage(std::shared_ptr< IRenderSemaphore > waitSemaphore, uint32_t index);
-	void Recreate(ESwapchainPresentMode presentMode, EDeviceQueue preferPresentQueue);
+	void Recreate(ESwapchainPresentMode presentMode);
+
+	void BeginRenderPass(std::shared_ptr< IRenderCommandBuffer > commandBuffer, uint32_t index);
+	void Copy2DImageToSwapchainImage(std::shared_ptr< IRenderCommandBuffer > commandBuffer, std::shared_ptr< IRenderImage > image, uint32_t index, const RenderImageCopy &region);
 private:
-	void Init(ESwapchainPresentMode presentMode, bool useOldSwapchain, EDeviceQueue preferPresentQueue);
-private:
-	RenderExtent2D m_extent;
-	EDeviceQueue m_presentingQueue;
+	void Init(ESwapchainPresentMode presentMode, bool useOldSwapchain);
 };
 
 class VulkanCommandPool : public IRenderCommandPool {
@@ -371,7 +368,6 @@ public:
 	void PipelineBarrierMemory(EPipelineStage sourceStage, EPipelineStage destStage, EDependencyFlag dependency, const RenderMemoryBarrier &memoryBarrier);
 	void PipelineBarrierBuffer(EPipelineStage sourceStage, EPipelineStage destStage, EDependencyFlag dependency, const RenderBufferMemoryBarrier &bufferMemoryBarrier);
 	void PipelineBarrierImage(EPipelineStage sourceStage, EPipelineStage destStage, EDependencyFlag dependency, const RenderImageMemoryBarrier &imageMemoryBarrier);
-
 
 	void CopyBuffer(std::shared_ptr< IRenderBuffer > source, std::shared_ptr< IRenderBuffer > dest, const RenderBufferCopy &region);
 	void CopyBuffer(std::shared_ptr< IRenderBuffer > source, std::shared_ptr< IRenderBuffer > dest, const std::vector< RenderBufferCopy > &regions);

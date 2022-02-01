@@ -11,7 +11,7 @@ VulkanRenderPass::VulkanRenderPass(VulkanDevice *device, const std::vector< Rend
 
 	for (size_t i = 0; i < attachments.size(); i++) {
 		_attachments[i].flags = 0;
-		_attachments[i].format = g_VulkanImageFormats[attachments[i].format].format;
+		_attachments[i].format = g_VulkanImageFormats2[static_cast< uint32_t >(attachments[i].format)];
 		_attachments[i].samples = VK_SAMPLE_COUNT_1_BIT;
 		_attachments[i].loadOp = g_VulkanAttachmentLoadOps[attachments[i].loadOp];
 		_attachments[i].storeOp = g_VulkanAttachmentStoreOps[attachments[i].storeOp];

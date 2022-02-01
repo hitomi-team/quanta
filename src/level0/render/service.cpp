@@ -24,10 +24,10 @@ RenderService::RenderService() : GameService("RenderService")
 	this->RedoCommandBuffers();
 
 	m_imguiRenderPass = m_device->CreateRenderPass(
-		[this](){
+		[](){
 			std::vector< RenderAttachmentDescription > attachments;
 			RenderAttachmentDescription attachment = {};
-			attachment.format = m_presenter->GetImage(0)->GetFormat();
+			attachment.format = eRenderImageFormat::B8G8R8A8_UNORM;
 			attachment.loadOp = ATTACHMENT_LOAD_OP_CLEAR;
 			attachment.storeOp = ATTACHMENT_STORE_OP_STORE;
 			attachment.stencilLoadOp = ATTACHMENT_LOAD_OP_DONT_CARE;
@@ -61,7 +61,7 @@ RenderService::RenderService() : GameService("RenderService")
 		}()
 	);
 
-	m_imgui = m_device->CreateImGui(m_imguiRenderPass, m_presenter->GetMinImages(), m_presenter->GetMaxImages());
+	m_imgui = m_device->CreateImGui(m_imguiRenderPass, m_presenter->m_swapchain->minNumImages, m_presenter->m_swapchain->numImages);
 
 	m_init = true;
 }
@@ -79,6 +79,16 @@ RenderService::~RenderService()
 		return;
 
 	m_device->WaitIdle();
+
+	m_imguiRenderPass.reset();
+	m_imgui.reset();
+
+	IO_EraseCPPVector(m_commandbufs);
+	m_commandpool.reset();
+	m_presenter.release();
+	m_device.reset();
+
+	this->renderAPI.release();
 }
 
 void RenderService::Update()
@@ -109,6 +119,7 @@ void RenderService::Update()
 		}
 
 		// TODO: move all imgui stuff into their own functions
+/*
 		m_imgui->NewFrame();
 
 		ImGui::PushStyleVar(ImGuiStyleVar_WindowMinSize, ImVec2(300, 275));
@@ -150,8 +161,8 @@ void RenderService::Update()
 		ImGui::End();
 
 		m_imgui->Draw(m_presenter->GetFramebuffer(imageIndex), imageIndex);
-
-		m_device->Submit(DEVICE_QUEUE_GRAPHICS, m_imgui->GetCommandBuffer(imageIndex), sync.imageAvailable, PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT, sync.renderFinished, sync.fence);
+*/
+		m_device->Submit(DEVICE_QUEUE_GRAPHICS, m_commandbufs[imageIndex], sync.imageAvailable, PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT, sync.renderFinished, sync.fence);
 
 		result = m_presenter->QueuePresent();
 		if (result == SWAPCHAIN_RESULT_SUBOPTIMAL) {
@@ -176,15 +187,12 @@ void RenderService::RedoCommandBuffers()
 {
 	IO_EraseCPPVector(m_commandbufs);
 
-	m_commandbufs.resize(m_presenter->GetMaxImages());
+	m_commandbufs.resize(m_presenter->m_swapchain->numImages);
 	m_commandpool->AllocateBulk(m_commandbufs, COMMAND_BUFFER_LEVEL_PRIMARY);
 
 	for (size_t i = 0; i < m_commandbufs.size(); i++) {
 		m_commandbufs[i]->Begin(COMMAND_BUFFER_USAGE_NORMAL);
-		m_commandbufs[i]->BeginRenderPass(m_presenter->GetRenderPass(), m_presenter->GetFramebuffer(i), [&]() -> RenderRectangle {
-			auto extent = m_presenter->GetImage(i)->GetExtent();
-			return RenderRectangle { RenderOffset2D { 0, 0 }, RenderExtent2D { extent.width, extent.height } };
-		}(), std::vector< RenderClearValue >(), SUBPASS_CONTENTS_INLINE);
+		m_presenter->m_swapchain->BeginRenderPass(m_commandbufs[i], i);
 		m_commandbufs[i]->EndRenderPass();
 		m_commandbufs[i]->End();
 	}

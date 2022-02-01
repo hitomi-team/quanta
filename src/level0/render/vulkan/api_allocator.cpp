@@ -94,7 +94,7 @@ std::shared_ptr< IRenderBuffer > VulkanAllocator::AllocateBuffer(EBufferUsage us
 	return std::dynamic_pointer_cast< IRenderBuffer >(std::make_shared< VulkanBuffer >(this->device, this->handle, m_memoryUsage, usage, size));
 }
 
-std::shared_ptr< IRenderImage > VulkanAllocator::AllocateImage(EImageType type, EImageFormat format, EImageUsage usage, const RenderExtent3D &extent3d, const RenderImageSubresourceRange &range)
+std::shared_ptr< IRenderImage > VulkanAllocator::AllocateImage(EImageType type, eRenderImageFormat format, EImageUsage usage, const RenderExtent3D &extent3d, const RenderImageSubresourceRange &range)
 {
 	return std::dynamic_pointer_cast< IRenderImage >(std::make_shared< VulkanImage >(this->device, this->handle, m_memoryUsage, type, format, usage, extent3d, range));
 }

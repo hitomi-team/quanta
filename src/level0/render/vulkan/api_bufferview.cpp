@@ -2,7 +2,7 @@
 
 #include "api.h"
 
-VulkanBufferView::VulkanBufferView(VulkanDevice *device, std::shared_ptr< VulkanBuffer > buffer, EImageFormat bufferFormat, uint64_t offset, uint64_t range)
+VulkanBufferView::VulkanBufferView(VulkanDevice *device, std::shared_ptr< VulkanBuffer > buffer, eRenderImageFormat bufferFormat, uint64_t offset, uint64_t range)
 {
 	this->device = device;
 	this->buffer = std::dynamic_pointer_cast< IRenderBuffer >(buffer);
@@ -15,7 +15,7 @@ VulkanBufferView::VulkanBufferView(VulkanDevice *device, std::shared_ptr< Vulkan
 	createInfo.pNext = nullptr;
 	createInfo.flags = 0;
 	createInfo.buffer = buffer->handle;
-	createInfo.format = g_VulkanImageFormats[bufferFormat].format;
+	createInfo.format = g_VulkanImageFormats2[static_cast< uint32_t >(bufferFormat)];
 	createInfo.offset = offset;
 	createInfo.range = range;
 
