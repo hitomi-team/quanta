@@ -4,7 +4,7 @@
 
 // CPU Accessible Device Memory
 // (Usually the PCI BAR on x86)
-static const VkMemoryPropertyFlags VULKAN_ACCESSIBLE_DEVICE_MEMORY = VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT | VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT;
+static const VkMemoryPropertyFlags VULKAN_ACCESSIBLE_DEVICE_MEMORY = VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT | VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT;
 
 VulkanPhysicalDevice::VulkanPhysicalDevice(VkPhysicalDevice _handle)
 {
@@ -42,21 +42,24 @@ VulkanPhysicalDevice::VulkanPhysicalDevice(VkPhysicalDevice _handle)
 	VkPhysicalDeviceMemoryProperties memoryProperties;
 	vkGetPhysicalDeviceMemoryProperties(this->handle, &memoryProperties);
 
+	uint64_t maxDeviceLocalMemSize = 0;
+	for (uint32_t i = 0; i < memoryProperties.memoryTypeCount; i++) {
+		if (memoryProperties.memoryTypes[i].propertyFlags & VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT)
+			maxDeviceLocalMemSize = std::max(maxDeviceLocalMemSize, memoryProperties.memoryHeaps[memoryProperties.memoryTypes[i].heapIndex].size);
+	}
+
 	for (uint32_t i = 0; i < memoryProperties.memoryTypeCount; i++) {
 		VkMemoryType type = memoryProperties.memoryTypes[i];
 
 		// look for device local host visible heap
-		// * Assume SAM off when no such heap is present
+		// * Assume ReBAR/UMA off when no such heap is present
 		if ((type.propertyFlags & VULKAN_ACCESSIBLE_DEVICE_MEMORY) == VULKAN_ACCESSIBLE_DEVICE_MEMORY) {
 			VkMemoryHeap heap = memoryProperties.memoryHeaps[type.heapIndex];
 
-			// now check if the heap is device local
-			if (heap.flags & (VK_MEMORY_HEAP_DEVICE_LOCAL_BIT | VK_MEMORY_HEAP_MULTI_INSTANCE_BIT)) {
-				// determine SAM support by checking that BAR heap size is over 256 MiB
-				// for SoC / integrated solutions we may toggle this always on
-				if (heap.size > 0x10000000 || this->cachedInfo.hardware.type == PHYSICAL_DEVICE_TYPE_INTEGRATED)
-					this->apiFeatures.hasSmartAccessMemory = true;
-			}
+			// determine ReBAR / UMA support by checking the HVV size
+			// for SoC / integrated solutions we may toggle this always on
+			if (heap.size >= maxDeviceLocalMemSize || this->cachedInfo.hardware.type == PHYSICAL_DEVICE_TYPE_INTEGRATED)
+				this->apiFeatures.hasReBARUMA = true;
 		}
 	}
 

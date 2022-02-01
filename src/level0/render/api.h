@@ -64,7 +64,7 @@ struct RenderPhysicalDeviceInfo {
 };
 
 struct RenderPhysicalDeviceFeatures {
-	bool hasSmartAccessMemory;
+	bool hasReBARUMA;
 	bool vulkanAMDAPUHeapWorkaround; // For determining Vulkan memory heap workarounds
 };
 

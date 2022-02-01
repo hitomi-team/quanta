@@ -138,7 +138,7 @@ VulkanAPI::VulkanAPI(const char *titleName) : RenderAPI("Vulkan")
 	for (auto &vulkanPhysicalDevice : vulkanPhysicalDevices) {
 		auto physicalDevice = std::make_shared< VulkanPhysicalDevice >(vulkanPhysicalDevice);
 		this->physicalDevices.push_back(std::dynamic_pointer_cast< IRenderPhysicalDevice >(physicalDevice));
-		g_Log.Info(FMT_COMPILE("Found Vulkan hardware: {} (Smart Access Memory Supported: {})"), physicalDevice->name, physicalDevice->apiFeatures.hasSmartAccessMemory);
+		g_Log.Info(FMT_COMPILE("Found Vulkan hardware: {} (ReBAR/UMA: {})"), physicalDevice->name, physicalDevice->apiFeatures.hasReBARUMA);
 	}
 
 	if (!SDL_Vulkan_CreateSurface(m_window, this->inst, &this->surface))
