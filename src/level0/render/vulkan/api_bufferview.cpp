@@ -6,9 +6,6 @@ VulkanBufferView::VulkanBufferView(VulkanDevice *device, std::shared_ptr< Vulkan
 {
 	this->device = device;
 	this->buffer = std::dynamic_pointer_cast< IRenderBuffer >(buffer);
-	this->bufferFormat = bufferFormat;
-	this->offset = offset;
-	this->range = range;
 
 	VkBufferViewCreateInfo createInfo;
 	createInfo.sType = VK_STRUCTURE_TYPE_BUFFER_VIEW_CREATE_INFO;

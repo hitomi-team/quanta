@@ -337,8 +337,8 @@ public:
 
 	// Render
 	virtual std::shared_ptr< IRenderPass > CreateRenderPass(const std::vector< RenderAttachmentDescription > &attachments, const std::vector< RenderSubpassDescription > &subpasses, const std::vector< RenderSubpassDependency > &subpassDependencies) = 0;
-	virtual std::shared_ptr< IRenderFramebuffer > CreateFramebuffer(std::shared_ptr< IRenderPass > renderPass, const std::vector< std::shared_ptr< IRenderImage > > &images, const RenderExtent2D &extent) = 0;
-	virtual std::shared_ptr< IRenderFramebuffer > CreateFramebuffer(std::shared_ptr< IRenderPass > renderPass, std::shared_ptr< IRenderImage > image, const RenderExtent2D &extent) = 0;
+	virtual std::shared_ptr< IRenderFramebuffer > CreateFramebuffer(std::shared_ptr< IRenderPass > renderPass, const std::vector< std::shared_ptr< IRenderImageView > > &images, const RenderExtent2D &extent) = 0;
+	virtual std::shared_ptr< IRenderFramebuffer > CreateFramebuffer(std::shared_ptr< IRenderPass > renderPass, std::shared_ptr< IRenderImageView > image, const RenderExtent2D &extent) = 0;
 	virtual std::shared_ptr< IRenderSwapchain > CreateSwapchain(ESwapchainPresentMode presentMode) = 0; // will handle image counts, etc...
 	virtual std::shared_ptr< IRenderImGui > CreateImGui(std::shared_ptr< IRenderPass > renderPass, uint32_t minImageCount, uint32_t imageCount) = 0;
 
@@ -366,9 +366,8 @@ public:
 	virtual ~IRenderAllocator() = default;
 
 	virtual std::shared_ptr< IRenderBuffer > AllocateBuffer(EBufferUsage usage, uint64_t size) = 0;
-	virtual std::shared_ptr< IRenderImage > AllocateImage(EImageType type, eRenderImageFormat format, EImageUsage usage, const RenderExtent3D &extent3d, const RenderImageSubresourceRange &subresourceRange) = 0;
-
-	virtual EResourceMemoryUsage GetResourceMemoryUsage() = 0;
+	virtual std::shared_ptr< IRenderImage > AllocateImage(EImageType type, eRenderImageFormat format, EImageUsage usage, uint32_t numMipLevels, uint32_t numArrayLayers, const RenderExtent3D &extent3d) = 0;
+	virtual std::shared_ptr< IRenderImage > AllocateImage(EImageType type, eRenderImageFormat format, EImageUsage usage, uint32_t numMipLevels, uint32_t numArrayLayers, const RenderExtent2D &extent2d) = 0;
 
 	// Dangerous call
 	virtual void Compactify() = 0;
@@ -380,45 +379,36 @@ public:
 
 class IRenderBuffer {
 public:
+	uint64_t size;
+
 	virtual ~IRenderBuffer() = default;
 
 	virtual void *Map() = 0;
 	virtual void Unmap() = 0;
-
-	virtual EResourceMemoryUsage GetResourceMemoryUsage() = 0;
-	virtual EBufferUsage GetUsage() = 0;
-	virtual uint64_t GetSize() = 0;
 };
 
 class IRenderBufferView {
 public:
 	std::shared_ptr< IRenderBuffer > buffer;
-	eRenderImageFormat bufferFormat;
-	uint64_t offset, range;
 
 	virtual ~IRenderBufferView() = default;
 };
 
 class IRenderImage {
 public:
+	RenderExtent2D extent2D;
+	RenderExtent3D extent3D;
+	uint64_t numPixels;
+
 	virtual ~IRenderImage() = default;
 
 	virtual void *Map() = 0;
 	virtual void Unmap() = 0;
-
-	virtual EResourceMemoryUsage GetResourceMemoryUsage() = 0;
-	virtual EImageUsage GetUsage() = 0;
-	virtual eRenderImageFormat GetFormat() = 0;
-	virtual RenderExtent3D GetExtent() = 0;
-	virtual RenderImageSubresourceRange GetSubresourceRange() = 0;
 };
 
 class IRenderImageView {
 public:
 	std::shared_ptr< IRenderImage > image;
-	eRenderImageFormat imageFormat;
-	EImageType imageType;
-	eRenderImageViewType imageViewType;
 
 	virtual ~IRenderImageView() = default;
 };
@@ -431,11 +421,6 @@ public:
 class IRenderFramebuffer {
 public:
 	virtual ~IRenderFramebuffer() = default;
-
-	virtual std::vector< std::shared_ptr< IRenderImage > > GetImages() = 0;
-	virtual std::shared_ptr< IRenderPass > GetRenderPass() = 0;
-	virtual RenderExtent2D GetExtent() = 0;
-	virtual bool IsMultiView() = 0;
 };
 
 class IRenderSwapchain {

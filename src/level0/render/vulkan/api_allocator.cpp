@@ -16,11 +16,10 @@ VulkanAllocator::VulkanAllocator(VulkanDevice *device, const std::string &name, 
 {
 	this->name = name;
 	this->device = device;
-	m_memoryUsage = memoryUsage;
 
 	VkMemoryPropertyFlags requiredFlags = 0, preferredFlags = 0, mask = 0;
 
-	switch (m_memoryUsage) {
+	switch (memoryUsage) {
 	case RESOURCE_MEMORY_USAGE_NONE:
 		break;
 	case RESOURCE_MEMORY_USAGE_CPU_ONLY:
@@ -84,19 +83,19 @@ VulkanAllocator::~VulkanAllocator()
 	}
 }
 
-EResourceMemoryUsage VulkanAllocator::GetResourceMemoryUsage()
-{
-	return m_memoryUsage;
-}
-
 std::shared_ptr< IRenderBuffer > VulkanAllocator::AllocateBuffer(EBufferUsage usage, uint64_t size)
 {
-	return std::dynamic_pointer_cast< IRenderBuffer >(std::make_shared< VulkanBuffer >(this->device, this->handle, m_memoryUsage, usage, size));
+	return std::dynamic_pointer_cast< IRenderBuffer >(std::make_shared< VulkanBuffer >(this->device, this->handle, usage, size));
 }
 
-std::shared_ptr< IRenderImage > VulkanAllocator::AllocateImage(EImageType type, eRenderImageFormat format, EImageUsage usage, const RenderExtent3D &extent3d, const RenderImageSubresourceRange &range)
+std::shared_ptr< IRenderImage > VulkanAllocator::AllocateImage(EImageType type, eRenderImageFormat format, EImageUsage usage, uint32_t numMipLevels, uint32_t numArrayLayers, const RenderExtent3D &extent)
 {
-	return std::dynamic_pointer_cast< IRenderImage >(std::make_shared< VulkanImage >(this->device, this->handle, m_memoryUsage, type, format, usage, extent3d, range));
+	return std::dynamic_pointer_cast< IRenderImage >(std::make_shared< VulkanImage >(this->device, this->handle, type, format, usage, numMipLevels, numArrayLayers, extent));
+}
+
+std::shared_ptr< IRenderImage > VulkanAllocator::AllocateImage(EImageType type, eRenderImageFormat format, EImageUsage usage, uint32_t numMipLevels, uint32_t numArrayLayers, const RenderExtent2D &extent)
+{
+	return std::dynamic_pointer_cast< IRenderImage >(std::make_shared< VulkanImage >(this->device, this->handle, type, format, usage, numMipLevels, numArrayLayers, extent));
 }
 
 void VulkanAllocator::Compactify()

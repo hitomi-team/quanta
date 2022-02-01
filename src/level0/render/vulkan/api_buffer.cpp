@@ -2,13 +2,10 @@
 
 #include "api.h"
 
-VulkanBuffer::VulkanBuffer(VulkanDevice *device, VmaPool pool, EResourceMemoryUsage memoryUsage, EBufferUsage usage, uint64_t size)
+VulkanBuffer::VulkanBuffer(VulkanDevice *device, VmaPool pool, EBufferUsage usage, uint64_t size)
 {
 	this->device = device;
-
-	m_memoryUsage = memoryUsage;
-	m_usage = usage;
-	m_size = size;
+	this->size = size;
 
 	VkBufferCreateInfo bufferInfo;
 	bufferInfo.sType = VK_STRUCTURE_TYPE_BUFFER_CREATE_INFO;
@@ -37,9 +34,6 @@ VulkanBuffer::~VulkanBuffer()
 
 void *VulkanBuffer::Map()
 {
-	if (mem_ptr != nullptr)
-		return mem_ptr;
-
 	vmaMapMemory(this->device->allocator, this->allocation, &this->mem_ptr);
 	return this->mem_ptr;
 }
@@ -48,19 +42,4 @@ void VulkanBuffer::Unmap()
 {
 	vmaUnmapMemory(this->device->allocator, this->allocation);
 	this->mem_ptr = nullptr;
-}
-
-EResourceMemoryUsage VulkanBuffer::GetResourceMemoryUsage()
-{
-	return m_memoryUsage;
-}
-
-EBufferUsage VulkanBuffer::GetUsage()
-{
-	return m_usage;
-}
-
-uint64_t VulkanBuffer::GetSize()
-{
-	return m_size;
 }

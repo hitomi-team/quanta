@@ -125,8 +125,8 @@ public:
 	std::shared_ptr< IRenderPipelineLayout > CreatePipelineLayout(const std::vector< std::shared_ptr< IRenderDescriptorSetLayout > > &layouts, const std::vector< RenderPushConstantRange > &ranges);
 
 	std::shared_ptr< IRenderPass > CreateRenderPass(const std::vector< RenderAttachmentDescription > &attachments, const std::vector< RenderSubpassDescription > &subpasses, const std::vector< RenderSubpassDependency > &subpassDependencies);
-	std::shared_ptr< IRenderFramebuffer > CreateFramebuffer(std::shared_ptr< IRenderPass > renderPass, const std::vector< std::shared_ptr< IRenderImage > > &images, const RenderExtent2D &extent);
-	std::shared_ptr< IRenderFramebuffer > CreateFramebuffer(std::shared_ptr< IRenderPass > renderPass, std::shared_ptr< IRenderImage > image, const RenderExtent2D &extent);
+	std::shared_ptr< IRenderFramebuffer > CreateFramebuffer(std::shared_ptr< IRenderPass > renderPass, const std::vector< std::shared_ptr< IRenderImageView > > &images, const RenderExtent2D &extent);
+	std::shared_ptr< IRenderFramebuffer > CreateFramebuffer(std::shared_ptr< IRenderPass > renderPass, std::shared_ptr< IRenderImageView > image, const RenderExtent2D &extent);
 	std::shared_ptr< IRenderSwapchain > CreateSwapchain(ESwapchainPresentMode presentMode);
 	std::shared_ptr< IRenderImGui > CreateImGui(std::shared_ptr< IRenderPass > renderPass, uint32_t minImageCount, uint32_t imageCount);
 
@@ -162,18 +162,15 @@ public:
 
 	~VulkanAllocator();
 
-	EResourceMemoryUsage GetResourceMemoryUsage();
-
 	std::shared_ptr< IRenderBuffer > AllocateBuffer(EBufferUsage usage, uint64_t size);
-	std::shared_ptr< IRenderImage > AllocateImage(EImageType type, eRenderImageFormat format, EImageUsage usage, const RenderExtent3D &extent3d, const RenderImageSubresourceRange &subresourceRange);
+	std::shared_ptr< IRenderImage > AllocateImage(EImageType type, eRenderImageFormat format, EImageUsage usage, uint32_t numMipLevels, uint32_t numArrayLayers, const RenderExtent3D &extent);
+	std::shared_ptr< IRenderImage > AllocateImage(EImageType type, eRenderImageFormat format, EImageUsage usage, uint32_t numMipLevels, uint32_t numArrayLayers, const RenderExtent2D &extent);
 
 	void Compactify();
 
 #ifndef NDEBUG
 	void DumpInfo(const std::string &filename);
 #endif
-private:
-	EResourceMemoryUsage m_memoryUsage;
 };
 
 class VulkanBuffer : public IRenderBuffer {
@@ -184,20 +181,12 @@ public:
 	void *mem_ptr = nullptr;
 
 	VulkanBuffer() = delete;
-	VulkanBuffer(VulkanDevice *device, VmaPool pool, EResourceMemoryUsage memoryUsage, EBufferUsage usage, uint64_t size);
+	VulkanBuffer(VulkanDevice *device, VmaPool pool, EBufferUsage usage, uint64_t size);
 
 	~VulkanBuffer();
 
 	void *Map();
 	void Unmap();
-
-	EResourceMemoryUsage GetResourceMemoryUsage();
-	EBufferUsage GetUsage();
-	uint64_t GetSize();
-private:
-	EResourceMemoryUsage m_memoryUsage;
-	EBufferUsage m_usage;
-	uint64_t m_size;
 };
 
 class VulkanBufferView : public IRenderBufferView {
@@ -215,33 +204,16 @@ public:
 	VulkanDevice *device;
 	VmaAllocation allocation;
 	VkImage handle = VK_NULL_HANDLE;
-	VkImageView imageView = VK_NULL_HANDLE;
 	void *mem_ptr = nullptr;
-	bool swapchainImage = false;
 
 	VulkanImage() = delete;
-	VulkanImage(VulkanDevice *device, VmaPool pool, EResourceMemoryUsage memoryUsage, EImageType type, eRenderImageFormat format, EImageUsage usage, const RenderExtent3D &extent, const RenderImageSubresourceRange &subresourceRange);
-
-	// for swapchain
-	VulkanImage(VulkanDevice *device, VkImage image, VkFormat format, const RenderExtent2D &extent, const RenderImageSubresourceRange &subresourceRange);
+	VulkanImage(VulkanDevice *device, VmaPool pool, EImageType type, eRenderImageFormat format, EImageUsage usage, uint32_t numMipLevels, uint32_t numArrayLayers, const RenderExtent3D &extent);
+	VulkanImage(VulkanDevice *device, VmaPool pool, EImageType type, eRenderImageFormat format, EImageUsage usage, uint32_t numMipLevels, uint32_t numArrayLayers, const RenderExtent2D &extent);
 
 	~VulkanImage();
 
 	void *Map();
 	void Unmap();
-
-	EResourceMemoryUsage GetResourceMemoryUsage();
-	EImageUsage GetUsage();
-	eRenderImageFormat GetFormat();
-	RenderExtent3D GetExtent();
-	RenderImageSubresourceRange GetSubresourceRange();
-private:
-	EResourceMemoryUsage m_memoryUsage;
-	EImageType m_type;
-	EImageUsage m_usage;
-	eRenderImageFormat m_format;
-	RenderExtent3D m_extent;
-	RenderImageSubresourceRange m_subresourceRange;
 };
 
 class VulkanImageView : public IRenderImageView {
@@ -273,17 +245,10 @@ public:
 	VkFramebuffer handle = VK_NULL_HANDLE;
 
 	VulkanFramebuffer() = delete;
-	VulkanFramebuffer(VulkanDevice *device, std::shared_ptr< IRenderPass > renderPass, const std::vector< std::shared_ptr< IRenderImage > > &images, const RenderExtent2D &extent);
-	VulkanFramebuffer(VulkanDevice *device, std::shared_ptr< IRenderPass > renderPass, std::shared_ptr< IRenderImage > image, const RenderExtent2D &extent);
+	VulkanFramebuffer(VulkanDevice *device, std::shared_ptr< IRenderPass > renderPass, const std::vector< std::shared_ptr< IRenderImageView > > &images, const RenderExtent2D &extent);
+	VulkanFramebuffer(VulkanDevice *device, std::shared_ptr< IRenderPass > renderPass, std::shared_ptr< IRenderImageView > image, const RenderExtent2D &extent);
 
 	~VulkanFramebuffer();
-
-	std::vector< std::shared_ptr< IRenderImage > > GetImages();
-	std::shared_ptr< IRenderPass > GetRenderPass();
-	RenderExtent2D GetExtent();
-	bool IsMultiView();
-private:
-	RenderExtent2D m_extent;
 };
 
 // due to the rigid structure of Vulkan swapchains compared to other objects

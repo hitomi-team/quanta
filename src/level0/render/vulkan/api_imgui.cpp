@@ -106,7 +106,7 @@ void VulkanImGui::Draw(std::shared_ptr< IRenderFramebuffer > _framebuffer, uint3
 
 	m_commandBuffers[imageIndex]->Begin(COMMAND_BUFFER_USAGE_ONE_TIME_SUBMIT);
 	m_commandBuffers[imageIndex]->BeginRenderPass(m_renderPass, framebuffer, [&]() -> RenderRectangle {
-		return RenderRectangle { RenderOffset2D { 0, 0 }, framebuffer->GetExtent() };
+		return RenderRectangle { RenderOffset2D { 0, 0 }, { 1, 1 } };
 	}(), std::vector< RenderClearValue >(1), SUBPASS_CONTENTS_INLINE);
 	ImGui_ImplVulkan_RenderDrawData(ImGui::GetDrawData(), m_commandBuffers[imageIndex]->handle);
 	m_commandBuffers[imageIndex]->EndRenderPass();
