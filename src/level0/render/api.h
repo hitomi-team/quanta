@@ -291,6 +291,67 @@ struct RenderDrawIndexedIndirectParameter {
 	uint32_t firstInstance;
 };
 
+struct RenderVertexInputState {
+	std::vector< RenderVertexInputBindingDescription > bindings;
+	std::vector< RenderVertexInputAttributeDescription > attributes;
+};
+
+struct RenderInputAssemblyState {
+	EPrimitiveType primitiveType;
+	bool primitiveRestartEnable;
+};
+
+struct RenderTessellationState {
+	uint32_t patchControlPoints;
+};
+
+struct RenderViewportState {
+	std::vector< RenderViewport > viewports;
+	std::vector< RenderRectangle > scissors;
+};
+
+struct RenderRasterizationState {
+	bool depthClampEnable;
+	bool rasterizerDiscardEnable;
+	EFillMode fillMode;
+	ECullMode cullMode;
+	EFrontFace frontFace;
+	bool depthBiasEnable;
+	float depthBiasConstantFactor;
+	float depthBiasClamp;
+	float depthBiasSlopeFactor;
+	float lineWidth;
+};
+
+struct RenderDepthStencilState {
+	bool depthTestEnable;
+	bool depthWriteEnable;
+	ETextureComparisonFunction compareMode;
+	bool depthBoundsTestEnable;
+	bool stencilTestEnable;
+	RenderStencilOpState front;
+	RenderStencilOpState back;
+	float minDepthBounds;
+	float maxDepthBounds;
+};
+
+struct RenderColorBlendState {
+	bool logicOpEnable;
+	ELogicOp logicOp;
+	float blendConstants[4];
+	std::vector< RenderColorBlendAttachmentState > attachments;
+};
+
+struct RenderGraphicsPipelineDesc {
+	RenderVertexInputState vertexInputState;
+	RenderInputAssemblyState inputAssemblyState;
+	RenderTessellationState tessellationState;
+	RenderViewportState viewportState;
+	RenderRasterizationState rasterizationState;
+	RenderDepthStencilState depthStencilState;
+	RenderColorBlendState colorBlendState;
+};
+
 class RenderAPI {
 public:
 	const char *apiName = nullptr;
@@ -348,7 +409,7 @@ public:
 	// Pipelines
 	virtual std::shared_ptr< IRenderShaderModule > CreateShaderModule(EShaderType type, const void *blob, size_t blobSize) = 0;
 	virtual std::shared_ptr< IRenderComputePipeline > CreateComputePipeline(std::shared_ptr< IRenderShaderModule > shaderModule, std::shared_ptr< IRenderPipelineLayout > pipelineLayout, std::shared_ptr< IRenderComputePipeline > basePipeline) = 0;
-	virtual std::shared_ptr< IRenderGraphicsPipeline > CreateGraphicsPipeline(const std::vector< std::shared_ptr< IRenderShaderModule > > &shaderModules, std::shared_ptr< IRenderPipelineLayout > pipelineLayout, std::shared_ptr< IRenderGraphicsPipeline > basePipeline, std::shared_ptr< IRenderPass > renderPass, uint32_t subpass) = 0;
+	virtual std::shared_ptr< IRenderGraphicsPipeline > CreateGraphicsPipeline(const std::vector< std::shared_ptr< IRenderShaderModule > > &shaderModules, std::shared_ptr< IRenderPipelineLayout > pipelineLayout, std::shared_ptr< IRenderGraphicsPipeline > basePipeline, std::shared_ptr< IRenderPass > renderPass, const RenderGraphicsPipelineDesc &desc, uint32_t subpass) = 0;
 
 	// Command Submission
 	virtual void Submit(EDeviceQueue queue, std::shared_ptr< IRenderCommandBuffer > commandBuffer, std::shared_ptr< IRenderSemaphore > waitSemaphore, EPipelineStage waitPipelineStage, std::shared_ptr< IRenderSemaphore > signalSemaphore, std::shared_ptr< IRenderFence > fence) = 0;
@@ -568,61 +629,7 @@ public:
 
 class IRenderGraphicsPipeline {
 public:
-	struct {
-		std::vector< RenderVertexInputBindingDescription > bindings;
-		std::vector< RenderVertexInputAttributeDescription > attributes;
-	} vertexInputState;
-
-	struct {
-		EPrimitiveType primitiveType;
-		bool primitiveRestartEnable;
-	} inputAssemblyState = {};
-
-	struct {
-		uint32_t patchControlPoints;
-	} tessellationState = {};
-
-	struct {
-		std::vector< RenderViewport > viewports;
-		std::vector< RenderRectangle > scissors;
-	} viewportState;
-
-	struct {
-		bool depthClampEnable;
-		bool rasterizerDiscardEnable;
-		EFillMode fillMode;
-		ECullMode cullMode;
-		EFrontFace frontFace;
-		bool depthBiasEnable;
-		float depthBiasConstantFactor;
-		float depthBiasClamp;
-		float depthBiasSlopeFactor;
-		float lineWidth;
-	} rasterizationState = {};
-
-	struct {
-		bool depthTestEnable;
-		bool depthWriteEnable;
-		ETextureComparisonFunction compareMode;
-		bool depthBoundsTestEnable;
-		bool stencilTestEnable;
-		RenderStencilOpState front;
-		RenderStencilOpState back;
-		float minDepthBounds;
-		float maxDepthBounds;
-	} depthStencilState = {};
-
-	struct {
-		bool logicOpEnable;
-		ELogicOp logicOp;
-		float blendConstants[4];
-	} colorBlendState = {};
-
-	std::vector< RenderColorBlendAttachmentState > colorBlendAttachments;
-
 	virtual ~IRenderGraphicsPipeline() = default;
-
-	virtual void Compile() = 0;
 };
 
 #endif

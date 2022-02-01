@@ -134,7 +134,7 @@ public:
 
 	std::shared_ptr< IRenderShaderModule > CreateShaderModule(EShaderType type, const void *blob, size_t blobSize);
 	std::shared_ptr< IRenderComputePipeline > CreateComputePipeline(std::shared_ptr< IRenderShaderModule > shaderModule, std::shared_ptr< IRenderPipelineLayout > pipelineLayout, std::shared_ptr< IRenderComputePipeline > basePipeline);
-	std::shared_ptr< IRenderGraphicsPipeline > CreateGraphicsPipeline(const std::vector< std::shared_ptr< IRenderShaderModule > > &shaderModules, std::shared_ptr< IRenderPipelineLayout > pipelineLayout, std::shared_ptr< IRenderGraphicsPipeline > basePipeline, std::shared_ptr< IRenderPass > renderPass, uint32_t subpass);
+	std::shared_ptr< IRenderGraphicsPipeline > CreateGraphicsPipeline(const std::vector< std::shared_ptr< IRenderShaderModule > > &shaderModules, std::shared_ptr< IRenderPipelineLayout > pipelineLayout, std::shared_ptr< IRenderGraphicsPipeline > basePipeline, std::shared_ptr< IRenderPass > renderPass, const RenderGraphicsPipelineDesc &desc, uint32_t subpass);
 
 	void Submit(EDeviceQueue queue, std::shared_ptr< IRenderCommandBuffer > commandBuffer, std::shared_ptr< IRenderSemaphore > waitSemaphore, EPipelineStage waitPipelineStage, std::shared_ptr< IRenderSemaphore > signalSemaphore, std::shared_ptr< IRenderFence > fence);
 	void Submit(EDeviceQueue queue, std::shared_ptr< IRenderCommandBuffer > commandBuffer, const std::vector< std::shared_ptr< IRenderSemaphore > > &waitSemaphores, const std::vector< EPipelineStage > &waitPipelineStages, std::shared_ptr< IRenderSemaphore > signalSemaphore, std::shared_ptr< IRenderFence > fence);
@@ -481,30 +481,15 @@ public:
 	~VulkanComputePipeline();
 };
 
-// compute the hash for all states
-struct VulkanGraphicsPipelineHash {
-	uint8_t checksum[16]; // MD5, the pipeline hashmap does not require cryptography
-	VkPipeline pipeline;
-};
-
 class VulkanGraphicsPipeline : public IRenderGraphicsPipeline {
 public:
 	VulkanDevice *device;
 	VkPipeline handle = VK_NULL_HANDLE;
 
 	VulkanGraphicsPipeline() = delete;
-	VulkanGraphicsPipeline(VulkanDevice *device, const std::vector< std::shared_ptr< IRenderShaderModule > > &shaders, std::shared_ptr< IRenderPipelineLayout > pipelineLayout, std::shared_ptr< IRenderGraphicsPipeline > basePipeline, std::shared_ptr< IRenderPass > renderPass, uint32_t subpass);
+	VulkanGraphicsPipeline(VulkanDevice *device, const std::vector< std::shared_ptr< IRenderShaderModule > > &shaders, std::shared_ptr< IRenderPipelineLayout > pipelineLayout, std::shared_ptr< IRenderGraphicsPipeline > basePipeline, std::shared_ptr< IRenderPass > renderPass, const RenderGraphicsPipelineDesc &desc, uint32_t subpass);
 
 	~VulkanGraphicsPipeline();
-
-	void Compile();
-private:
-	std::vector< std::shared_ptr< VulkanShaderModule > > m_shaderModules;
-	std::vector< VulkanGraphicsPipelineHash > m_hashmap;
-	std::shared_ptr< VulkanPipelineLayout > m_pipelineLayout;
-	std::shared_ptr< VulkanGraphicsPipeline > m_basePipeline;
-	std::shared_ptr< VulkanRenderPass > m_renderPass;
-	uint32_t m_subpass;
 };
 
 #endif
