@@ -18,6 +18,7 @@ add_sources(
 	api_imageview.cpp
 	api_imgui.cpp
 	api_physicaldevice.cpp
+	api_pipelinecache.cpp
 	api_pipelinelayout.cpp
 	api_renderpass.cpp
 	api_sampler.cpp

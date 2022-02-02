@@ -2,7 +2,7 @@
 
 #include "api.h"
 
-VulkanGraphicsPipeline::VulkanGraphicsPipeline(VulkanDevice *device, const std::vector< std::shared_ptr< IRenderShaderModule > > &shaderModules, std::shared_ptr< IRenderPipelineLayout > pipelineLayout, std::shared_ptr< IRenderGraphicsPipeline > basePipeline, std::shared_ptr< IRenderPass > renderPass, const RenderGraphicsPipelineDesc &desc, uint32_t subpass)
+VulkanGraphicsPipeline::VulkanGraphicsPipeline(VulkanDevice *device, const std::vector< std::shared_ptr< IRenderShaderModule > > &shaderModules, std::shared_ptr< IRenderPipelineLayout > pipelineLayout, std::shared_ptr< IRenderPipelineCache > pipelineCache, std::shared_ptr< IRenderPass > renderPass, const RenderGraphicsPipelineDesc &desc, uint32_t subpass)
 {
 	this->device = device;
 
@@ -177,10 +177,11 @@ VulkanGraphicsPipeline::VulkanGraphicsPipeline(VulkanDevice *device, const std::
 	createInfo.layout = std::dynamic_pointer_cast< VulkanPipelineLayout >(pipelineLayout)->handle;
 	createInfo.renderPass = std::dynamic_pointer_cast< VulkanRenderPass >(renderPass)->handle;
 	createInfo.subpass = subpass;
-	createInfo.basePipelineHandle = basePipeline != nullptr ? std::dynamic_pointer_cast< VulkanGraphicsPipeline >(basePipeline)->handle : VK_NULL_HANDLE;
-	createInfo.basePipelineIndex = basePipeline != nullptr ? -1 : 0;
+	createInfo.basePipelineHandle = VK_NULL_HANDLE;
+	createInfo.basePipelineIndex = 0;
 
-	if (this->device->ftbl.vkCreateGraphicsPipelines(this->device->handle, VK_NULL_HANDLE, 1, &createInfo, nullptr, &this->handle) != VK_SUCCESS)
+	VkPipelineCache cache = pipelineCache != nullptr ? std::dynamic_pointer_cast< VulkanPipelineCache >(pipelineCache)->handle : VK_NULL_HANDLE;
+	if (this->device->ftbl.vkCreateGraphicsPipelines(this->device->handle, cache, 1, &createInfo, nullptr, &this->handle) != VK_SUCCESS)
 		throw std::runtime_error("VulkanGraphicsPipeline: Failed to create graphics pipeline!");
 
 }

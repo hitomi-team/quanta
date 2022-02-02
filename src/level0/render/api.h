@@ -26,6 +26,7 @@ class IRenderDescriptorPool;
 class IRenderDescriptorSet;
 class IRenderImGui;
 class IRenderPipelineLayout;
+class IRenderPipelineCache;
 class IRenderShaderModule;
 class IRenderComputePipeline;
 class IRenderGraphicsPipeline;
@@ -395,6 +396,7 @@ public:
 	virtual std::shared_ptr< IRenderDescriptorSetLayout > CreateDescriptorSetLayout(const std::vector< RenderDescriptorSetLayoutBinding > &bindings) = 0;
 	virtual std::shared_ptr< IRenderPipelineLayout > CreatePipelineLayout(const std::vector< std::shared_ptr< IRenderDescriptorSetLayout > > &layouts) = 0;
 	virtual std::shared_ptr< IRenderPipelineLayout > CreatePipelineLayout(const std::vector< std::shared_ptr< IRenderDescriptorSetLayout > > &layouts, const std::vector< RenderPushConstantRange > &ranges) = 0;
+	virtual std::shared_ptr< IRenderPipelineCache > CreatePipelineCache(const void *blob, size_t blobSize) = 0;
 
 	// Render
 	virtual std::shared_ptr< IRenderPass > CreateRenderPass(const std::vector< RenderAttachmentDescription > &attachments, const std::vector< RenderSubpassDescription > &subpasses, const std::vector< RenderSubpassDependency > &subpassDependencies) = 0;
@@ -408,8 +410,8 @@ public:
 
 	// Pipelines
 	virtual std::shared_ptr< IRenderShaderModule > CreateShaderModule(EShaderType type, const void *blob, size_t blobSize) = 0;
-	virtual std::shared_ptr< IRenderComputePipeline > CreateComputePipeline(std::shared_ptr< IRenderShaderModule > shaderModule, std::shared_ptr< IRenderPipelineLayout > pipelineLayout, std::shared_ptr< IRenderComputePipeline > basePipeline) = 0;
-	virtual std::shared_ptr< IRenderGraphicsPipeline > CreateGraphicsPipeline(const std::vector< std::shared_ptr< IRenderShaderModule > > &shaderModules, std::shared_ptr< IRenderPipelineLayout > pipelineLayout, std::shared_ptr< IRenderGraphicsPipeline > basePipeline, std::shared_ptr< IRenderPass > renderPass, const RenderGraphicsPipelineDesc &desc, uint32_t subpass) = 0;
+	virtual std::shared_ptr< IRenderComputePipeline > CreateComputePipeline(std::shared_ptr< IRenderShaderModule > shaderModule, std::shared_ptr< IRenderPipelineLayout > pipelineLayout, std::shared_ptr< IRenderPipelineCache > pipelineCache) = 0;
+	virtual std::shared_ptr< IRenderGraphicsPipeline > CreateGraphicsPipeline(const std::vector< std::shared_ptr< IRenderShaderModule > > &shaderModules, std::shared_ptr< IRenderPipelineLayout > pipelineLayout, std::shared_ptr< IRenderPipelineCache > pipelineCache, std::shared_ptr< IRenderPass > renderPass, const RenderGraphicsPipelineDesc &desc, uint32_t subpass) = 0;
 
 	// Command Submission
 	virtual void Submit(EDeviceQueue queue, std::shared_ptr< IRenderCommandBuffer > commandBuffer, std::shared_ptr< IRenderSemaphore > waitSemaphore, EPipelineStage waitPipelineStage, std::shared_ptr< IRenderSemaphore > signalSemaphore, std::shared_ptr< IRenderFence > fence) = 0;
@@ -613,6 +615,13 @@ public:
 class IRenderPipelineLayout {
 public:
 	virtual ~IRenderPipelineLayout() = default;
+};
+
+class IRenderPipelineCache {
+public:
+	virtual ~IRenderPipelineCache() = default;
+
+	virtual bool RetrieveData(void **blob, size_t *blobSize) = 0;
 };
 
 class IRenderShaderModule {
