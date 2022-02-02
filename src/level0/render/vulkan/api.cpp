@@ -176,8 +176,8 @@ void VulkanAPI::DebugUtilsMessenger(
 )
 {
 	g_Log.Debug(
-		FMT_COMPILE("VulkanAPI::DebugUtilsMessenger messageSeverity:{:08X} messageType:{} id:{}({:X}) message:{}"),
-		static_cast< uint32_t >(messageSeverity), messageType, callbackData->pMessageIdName != nullptr ? callbackData->pMessageIdName : "unknown", callbackData->messageIdNumber, callbackData->pMessage != nullptr ? callbackData->pMessage : "unknown"
+		FMT_COMPILE("VulkanAPI::DebugUtilsMessenger messageSeverity:0x{:08X} messageType:{} id:{}(0x{:08X}) message:{}"),
+		static_cast< uint32_t >(messageSeverity), messageType, callbackData->pMessageIdName != nullptr ? callbackData->pMessageIdName : "unknown", static_cast< uint32_t >(callbackData->messageIdNumber), callbackData->pMessage != nullptr ? callbackData->pMessage : "unknown"
 	);
 }
 #endif
