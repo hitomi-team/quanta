@@ -146,10 +146,10 @@ public:
 	inline VkQueue GetQueue(EDeviceQueue queue) { return m_queues[queue]; }
 	inline uint32_t GetQueueFamilyIndex(EDeviceQueue queue) { return m_queueFamilyIndices[queue]; }
 	inline bool SupportsQueue(EDeviceQueue queue) { return m_supportsQueue[queue]; }
-private:
 	std::array< VkQueue, MAX_DEVICE_QUEUE_ENUM > m_queues {};
 	std::array< uint32_t, MAX_DEVICE_QUEUE_ENUM > m_queueFamilyIndices {};
 	std::array< bool, MAX_DEVICE_QUEUE_ENUM > m_supportsQueue {};
+	std::vector< VkQueueFamilyProperties > queueFamilies;
 };
 
 class VulkanAllocator : public IRenderAllocator {
@@ -275,6 +275,7 @@ public:
 	void Copy2DImageToSwapchainImage(std::shared_ptr< IRenderCommandBuffer > commandBuffer, std::shared_ptr< IRenderImage > image, uint32_t index, const RenderImageCopy &region);
 private:
 	void Init(ESwapchainPresentMode presentMode, bool useOldSwapchain);
+	VkQueue m_presentQueue;
 };
 
 class VulkanCommandPool : public IRenderCommandPool {

@@ -11,14 +11,14 @@ VulkanDevice::VulkanDevice(VulkanPhysicalDevice *physicalDevice)
 	uint32_t queueFamilyCount;
 	vkGetPhysicalDeviceQueueFamilyProperties(physicalDevice->handle, &queueFamilyCount, nullptr);
 
-	std::vector< VkQueueFamilyProperties > queueFamilies(queueFamilyCount);
-	vkGetPhysicalDeviceQueueFamilyProperties(physicalDevice->handle, &queueFamilyCount, queueFamilies.data());
+	this->queueFamilies.resize(queueFamilyCount);
+	vkGetPhysicalDeviceQueueFamilyProperties(physicalDevice->handle, &queueFamilyCount, this->queueFamilies.data());
 
 	auto findQueueFamilyIndex = [&](VkQueueFlags mask, VkQueueFlags flags) -> uint32_t {
 		uint32_t i;
 
-		for (i = 0; i < static_cast< uint32_t >(queueFamilies.size()); i++) {
-			if ((queueFamilies[i].queueFlags & mask) == flags)
+		for (i = 0; i < static_cast< uint32_t >(this->queueFamilies.size()); i++) {
+			if ((this->queueFamilies[i].queueFlags & mask) == flags)
 				return i;
 
 		}

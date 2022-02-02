@@ -58,8 +58,7 @@ ESwapchainResult VulkanSwapchain::PresentImage(std::shared_ptr< IRenderSemaphore
 	presentInfo.pImageIndices = &index;
 	presentInfo.pResults = nullptr;
 
-	// TODO: get the presenting queue from somewhere else
-	VkResult result = this->device->ftbl.vkQueuePresentKHR(this->device->GetQueue(DEVICE_QUEUE_GRAPHICS), &presentInfo);
+	VkResult result = this->device->ftbl.vkQueuePresentKHR(m_presentQueue, &presentInfo);
 	if (result == VK_SUBOPTIMAL_KHR || result == VK_ERROR_OUT_OF_DATE_KHR)
 		return SWAPCHAIN_RESULT_SUBOPTIMAL;
 	else if (result != VK_SUCCESS)
@@ -174,11 +173,23 @@ void VulkanSwapchain::Init(ESwapchainPresentMode _presentMode, bool useOldSwapch
 	VkSurfaceCapabilitiesKHR caps;
 	vkGetPhysicalDeviceSurfaceCapabilitiesKHR(this->device->phy->handle, g_VulkanAPI->surface, &caps);
 
-	auto doesQueueSupportPresent = [&](EDeviceQueue queue) -> bool {
+	std::array< uint32_t, 2 > queues { UINT32_MAX, UINT32_MAX };
+
+	for (uint32_t i = 0; i < static_cast< uint32_t >(this->device->queueFamilies.size()); i++) {
+		if (this->device->queueFamilies[i].queueFlags & VK_QUEUE_GRAPHICS_BIT)
+			queues[0] = i;
+
 		VkBool32 presentSupport = VK_FALSE;
-		vkGetPhysicalDeviceSurfaceSupportKHR(this->device->phy->handle, this->device->GetQueueFamilyIndex(queue), g_VulkanAPI->surface, &presentSupport);
-		return presentSupport != VK_FALSE;
-	};
+		vkGetPhysicalDeviceSurfaceSupportKHR(this->device->phy->handle, i, g_VulkanAPI->surface, &presentSupport);
+
+		if (presentSupport != VK_FALSE)
+			queues[1] = i;
+
+		if (queues[0] != UINT32_MAX && queues[1] != UINT32_MAX)
+			break;
+	}
+
+	this->device->ftbl.vkGetDeviceQueue(this->device->handle, queues[1], 0, &m_presentQueue);
 
 	// TODO: prefer a surface format supplied by the user
 	auto chosenSurfaceFormat = [&]() -> VkSurfaceFormatKHR {
@@ -228,7 +239,6 @@ void VulkanSwapchain::Init(ESwapchainPresentMode _presentMode, bool useOldSwapch
 	if (caps.maxImageCount > 0 && this->numImages > caps.maxImageCount)
 		this->numImages = caps.maxImageCount;
 
-	// TODO: share swapchain with different queue family indices
 	VkSwapchainCreateInfoKHR createInfo;
 	createInfo.sType = VK_STRUCTURE_TYPE_SWAPCHAIN_CREATE_INFO_KHR;
 	createInfo.pNext = nullptr;
@@ -240,9 +250,15 @@ void VulkanSwapchain::Init(ESwapchainPresentMode _presentMode, bool useOldSwapch
 	createInfo.imageExtent = chosenExtent;
 	createInfo.imageArrayLayers = 1;
 	createInfo.imageUsage = VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT | VK_IMAGE_USAGE_TRANSFER_DST_BIT;
-	createInfo.imageSharingMode = VK_SHARING_MODE_EXCLUSIVE;
-	createInfo.queueFamilyIndexCount = 0;
-	createInfo.pQueueFamilyIndices = nullptr;
+	if (queues[0] != queues[1]) {
+		createInfo.imageSharingMode = VK_SHARING_MODE_CONCURRENT;
+		createInfo.queueFamilyIndexCount = static_cast< uint32_t >(queues.size());
+		createInfo.pQueueFamilyIndices = queues.data();
+	} else {
+		createInfo.imageSharingMode = VK_SHARING_MODE_EXCLUSIVE;
+		createInfo.queueFamilyIndexCount = 0;
+		createInfo.pQueueFamilyIndices = nullptr;
+	}
 	createInfo.preTransform = caps.currentTransform;
 	createInfo.compositeAlpha = VK_COMPOSITE_ALPHA_OPAQUE_BIT_KHR;
 	createInfo.presentMode = chosenPresentMode;
